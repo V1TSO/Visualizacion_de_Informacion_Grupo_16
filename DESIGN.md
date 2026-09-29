@@ -1,38 +1,59 @@
 # V1: decisiones iniciales
 
-Pregunta: ¿dónde y a qué hora se concentran los viajes registrados de taxis amarillos, y qué cambia entre lunes–viernes y sábado–domingo?
+Pregunta: ¿qué cambia en los viajes de taxis amarillos entre lunes a viernes y el fin de semana, dónde y a qué hora?
 
-Mensaje: el fin de semana, Nueva York no madruga: trasnocha. Hay casi los mismos viajes por día, pero entre 00 y 05 h hay 3× más salidas que de lunes a viernes, y entre 06 y 10 h, la mitad.
+Mensaje: el fin de semana, Nueva York no madruga: trasnocha. En enero de 2026, a las 08:00 del fin de semana hay un 57 % menos de viajes que un día de semana; a la 01:00, 3,3 veces más. La noche se concentra en East Village, West Village y el Lower East Side, vuelve a casa cerca (Murray Hill, Kips Bay, Gramercy) y es rápida: 27,4 km/h a las 05:00 contra 12,5 km/h a las 11:00 de un día de semana.
 
-Contexto histórico: ocho eneros (2019–2026) repiten el patrón. La noche del fin de semana tiene de 2,7× a 4,8× más salidas; solo en 2021 (pandemia) baja a 1,5×. Los taxis amarillos hacen hoy la mitad de los viajes diarios que en 2019.
+Contexto histórico: ocho eneros (2019–2026) repiten el patrón. Entre 00:00 y 05:00, el fin de semana tiene de 2,6 a 4,8 veces los viajes de un día de semana; solo en 2021 (pandemia) baja a 1,5. Hoy hay la mitad de viajes que en 2019 y el viaje mediano cuesta el doble (23,09 contra 11,30 dólares).
 
-Audiencia: personas interesadas en patrones de movilidad urbana. Alcance: enero de 2019 a 2026 y taxis amarillos. No generalizar a toda la movilidad de Nueva York.
+Audiencia: personas interesadas en la vida urbana, sin formación en datos. Alcance: enero de 2019 a 2026 y taxis amarillos. No generalizar a toda la movilidad de Nueva York.
 
-- Posición geográfica para localizar patrones; color secuencial para cantidad absoluta por zona. Las zonas tienen áreas diferentes: esto no es densidad por km².
-- Escala logarítmica fija (1, 5, 25, 125, 1.100), común a todos los años. Con escala lineal, la zona mediana tiene 0,76 % del máximo y queda casi blanca; Manhattan concentra el 85,5 % de las salidas. La escala log muestra diferencias fuera de Manhattan y mantiene la misma escala en todas las horas.
-- Modo "Fin de semana vs semana": razón entre promedios diarios a la misma hora, con paleta divergente en los colores de las curvas. Responde la pregunta directamente, sin comparar de memoria dos filtros. Zonas con menos de 1 viaje/día en gris; el ranking de este modo exige 10+ viajes/día para evitar razones ruidosas.
-- Mapa como vista inicial; filtros para hora y tipo de día; detalle al pasar el puntero (tooltip) o al seleccionar una zona. El selector y el ranking permiten explorar sin depender del puntero sobre el mapa. Un clic en el gráfico horario cambia la hora.
-- Gráfico «Ocho eneros»: barras de la razón noche fin de semana / noche entre semana por año, con la línea de igualdad y la pandemia anotada. Usa el mismo enero para evitar la estacionalidad. Un clic cambia el año de toda la página.
-- Vista 3D opcional: la altura es lineal a los viajes (como Population Mountains) y el color mantiene la escala del modo. En el modo comparación, esto combina dos variables: la altura muestra cuánto se viaja y el color muestra cuándo. El 2D es la vista por defecto, porque la perspectiva y la oclusión distorsionan la comparación de alturas.
-- Dos curvas con color y trazo distintos (la banda «Noche» marca las 00–05 h) comparan tipos de día sobre los mismos ejes, desde cero.
-- Promedios por día para no confundir más fechas con más intensidad.
-- Sonido estéreo: lunes–viernes a la izquierda (sine, grave), sábado–domingo a la derecha (triangle, aguda). El ritmo codifica la cantidad (0,5–5 pulsos/s, relativo al máximo de ambas curvas); el volumen es constante. Sigue a la zona seleccionada o a toda la ciudad. Así se escucha la comparación, como pide la pauta (tono, ritmo, timbre). Activación voluntaria y control de pausa.
-- Paleta: papel frío #f7f9f9, agua #dfeaf0, tinta azul #173c50, amarillo taxi #f6bd16; escala secuencial amarillo–marrón; divergente azul #245978 – naranjo #b65d23. Barlow Condensed evoca señalética urbana; DM Sans prioriza legibilidad de controles.
+## Estructura
 
-Alternativas descartadas:
+- Martini glass: primero una historia guiada de 8 escenas (explicativa), después «Explora tú» (exploratoria) con el mismo mapa. Una persona que prueba la página por unos segundos recibe el mensaje sin tocar controles.
+- Cada escena se marca con su día y hora («Sábado y domingo, 01:00»), no con números: la secuencia es el reloj de la ciudad.
+- Tocar el mapa o un gráfico durante la historia salta a explorar desde esa vista, sin perder el contexto.
+- Portada: las dos curvas horarias de 2026 dibujadas como horizonte. El dato es la imagen de entrada.
+
+## Codificación
+
+- Posición geográfica para localizar patrones; color secuencial para cantidad absoluta por zona. Las zonas tienen áreas distintas: no es densidad por km².
+- Escala logarítmica fija (1, 5, 25, 125, 1.100), común a todas las horas y a los ocho años. Con escala lineal, la zona mediana tiene 0,76 % del máximo y queda casi blanca; Manhattan concentra el 85,5 % de las salidas.
+- «Comparar»: razón entre promedios diarios de sábado y domingo y de lunes a viernes a la misma hora; paleta divergente con los colores de las curvas (azul lun–vie, naranjo fin de semana). Zonas con menos de 1 viaje al día en gris.
+- Relieve 3D (escena 4 y capa opcional): altura lineal a los viajes y color por razón. Combina cuánto se viaja con cuándo. No es la vista por defecto porque la perspectiva y la oclusión distorsionan la comparación de alturas.
+- Flujos: arcos entre puntos interiores de las zonas, curvados a la derecha del sentido del viaje para que A→B y B→A no se tapen. Grosor = raíz de los viajes al día. La dirección se lee con un degradado de claro (origen) a oscuro (destino) y con taxis animados. Con flujos, el mapa pasa a gris neutro para que el movimiento sea lo único que compite por la atención.
+- Etiquetas en el mapa solo para las zonas que cita la escena, o la zona elegida y sus tres flujos principales.
+- Taxímetro: hora, viajes de esa hora y velocidad mediana, en un panel que evoca el taxímetro del taxi. Es el único elemento llamativo del escenario.
+- La hora oscurece el agua del mapa y el fondo de la historia (de 20:00 a 08:00). Refuerza día y noche sin cambiar la escala de color de los datos.
+- Gráfico del escenario: viajes por hora, velocidad por hora u ocho eneros, según la escena. En viajes se atenúa el tipo de día que no se ve en el mapa; en velocidad se muestran ambos porque la escena los compara.
+- Promedios por día de cada tipo para no confundir más fechas con más intensidad.
+- Paleta: papel #f4f6f5, tinta #173c50, noche #152433, amarillo taxi #f6bd16; secuencial amarillo–marrón; divergente #245978 – #b65d23. Barlow Condensed (señalética y taxímetro) y DM Sans (texto y controles).
+
+## Sonido
+
+- Dos voces en estéreo: lunes a viernes a la izquierda (sine), fin de semana a la derecha (triangle). En «Comparar» suenan ambas; en los otros modos, solo la que se ve.
+- Ritmo = cantidad de viajes (0,5–5 pulsos por segundo, relativo al máximo de ambas curvas de la selección).
+- Tono = velocidad mediana, en una escala pentatónica de 10 a 28 km/h. La noche rápida suena más aguda; la hora punta, más grave. Así el sonido agrega una variable que el mapa no muestra, como pide la pauta (tono, ritmo y timbre, no solo volumen).
+- Volumen constante. Cero viajes produce silencio: en 2021 el silencio también es un dato.
+
+## Alternativas descartadas
+
+- Dashboard con todos los controles visibles desde el inicio: el mensaje dependía de hacer clic en lo correcto.
+- Selector de «todos los días» y ranking separado: no ayudaban a responder la pregunta. Se reemplazaron por tres modos de días y una lista contextual (zonas, razones o destinos).
+- Menú desplegable de 263 zonas: se reemplazó por búsqueda con autocompletado y clic en el mapa.
 - Dibujar millones de viajes individuales: sobreposición y costo.
-- Colorear cada hora con un máximo distinto: impide comparar magnitudes.
-- Escala por cuantiles: oculta magnitudes reales y la leyenda es más difícil de leer.
-- Diferencia absoluta de viajes en el modo comparación: la dominan las zonas grandes; la razón compara la forma.
+- Colorear cada hora o año con un máximo distinto: impide comparar magnitudes.
+- Escala por cuantiles: oculta magnitudes reales.
+- Diferencia absoluta en «Comparar»: la dominan las zonas grandes; la razón compara la forma.
+- Todos los meses de 2025: mezclaría estacionalidad con el efecto del tipo de día.
+- Fondo oscuro también bajo las zonas: invertiría la lectura de la escala (lo claro parecería más).
 - Mapa de balance salidas − llegadas: queda para una iteración futura.
-- Todos los meses de 2025: mezclaría estacionalidad con el efecto del tipo de día; se eligió comparar el mismo mes entre años.
-- 3D como vista por defecto: oculta zonas detrás de las torres (JFK, Midtown).
 
 ## Preguntas para R1
 
-1. ¿Se entiende que el color representa viajes por zona y no densidad por superficie?
-2. ¿El mapa de razón fin de semana / semana se lee sin explicación? ¿La vista 3D aporta o distrae frente al 2D?
-3. ¿Las dos voces estéreo ayudan a comparar los tipos de día, o distraen?
+1. ¿La historia guiada se entiende sin explicación, o las 8 escenas son demasiadas?
+2. ¿Los flujos se leen con el degradado y los taxis animados, o hace falta otra marca de dirección?
+3. ¿El tono por velocidad se distingue del ritmo por cantidad cuando suenan las dos voces?
 
 ## Registro pendiente
 

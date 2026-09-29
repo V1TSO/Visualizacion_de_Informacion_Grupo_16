@@ -11,21 +11,20 @@ npm ci
 npm run dev
 ```
 
-Abrir la URL que indica Vite. `npm run build` genera `dist/`. `npm run preview` sirve esa versión. Para GitHub Pages, publicar **el contenido de dist**, no los archivos de código. `base: './'` permite servir desde la subcarpeta del repositorio. No se ha creado repositorio, commit ni despliegue.
+Abrir la URL que indica Vite. `npm run build` genera `dist/` y `npm run preview` sirve esa versión. Cada push a `main` publica en GitHub Pages con `.github/workflows/pages.yml`.
 
-## Explorar
+## Recorrido
 
-- El mapa muestra viajes por zona, hora y día promedio.
-- Año: enero de 2019 a 2026 (selector o clic en el gráfico «Ocho eneros»). Cada año se carga al elegirlo.
-- Tipo de día: todos (31) o lunes–viernes y sábado–domingo según el calendario de cada enero.
-- Vista 3D: la altura es lineal a los viajes; el color mantiene la escala del modo elegido.
-- Salidas y llegadas usan su propia fecha y hora local.
-- El selector horario o Reproducir día recorre las 24 horas.
-- Un clic en el mapa, el ranking o el selector de zona actualiza el detalle y el gráfico.
-- El gráfico siempre compara ambos tipos de día para la zona seleccionada. El filtro de día afecta mapa, cifra, ranking y sonido.
-- Mapa: **Cantidad** (escala logarítmica fija) o **Fin de semana vs semana** (razón sábado–domingo / lunes–viernes a la misma hora; desactiva el filtro de día).
-- Pasar el puntero sobre una zona muestra su valor. Un clic en el gráfico horario cambia la hora.
-- Activar sonido necesita un clic. Dos voces: lunes–viernes a la izquierda (sine, grave) y sábado–domingo a la derecha (triangle, aguda). Más viajes, más pulsos (0,5–5 Hz), relativo al máximo de ambas curvas de la zona seleccionada o de la ciudad. Volumen constante. Cero actividad produce silencio. Cambiar de pestaña pausa reproducción y sonido.
+La página tiene dos partes que comparten el mismo mapa fijo:
+
+1. **Historia** (8 escenas al hacer scroll). Cada escena fija año, hora, días, cámara, capas y gráfico. Las cifras del texto se verifican en `src/story.test.ts`. Tocar el mapa o un gráfico durante la historia salta a explorar desde esa misma vista.
+2. **Explora tú**: año (2019–2026), días (lunes a viernes, fin de semana o comparar), salidas o llegadas, hora con reproducción del día, capas (flujos o relieve 3D), búsqueda de zona y lista de zonas o destinos.
+
+- **Taxímetro** (arriba a la izquierda): hora, viajes de esa hora (promedio por día), velocidad mediana y botón de sonido.
+- **Mapa**: escala logarítmica común a los ocho años. En «Comparar», razón sábado y domingo / lunes a viernes a la misma hora. En «Relieve 3D», altura lineal a los viajes. En «Flujos», arcos de origen (claro) a destino (oscuro), con grosor por viajes al día y taxis animados (sin animación si el sistema pide reducir movimiento).
+- **Gráfico**: viajes por hora, velocidad por hora o la madrugada del fin de semana en ocho eneros. Un clic cambia la hora o el año.
+- **Fondo**: el agua del mapa y el fondo de la historia se oscurecen entre las 20:00 y las 08:00. No cambia la codificación de color de los datos.
+- **Sonido** (necesita un clic): lunes a viernes a la izquierda (sine) y fin de semana a la derecha (triangle). Ritmo = viajes (0,5–5 pulsos/s, relativo al máximo de ambas curvas de la selección). Tono = velocidad mediana en una escala pentatónica (10–28 km/h). En «Comparar» suenan ambas voces; en los otros modos, solo la del tipo de día elegido. Cambiar de pestaña pausa sonido y reproducción.
 
 ## Datos y reproducibilidad
 
@@ -41,9 +40,13 @@ Para regenerar (requiere `uv` y conexión; descarga unos 500 MB):
 npm run data
 ```
 
-El script usa DuckDB y GeoPandas. Guarda originales en `data/raw/` (excluido de Git), simplifica geometrías en WGS84 y genera `public/data/trips-YYYY.json`, `years.json` y `zones.geojson`. Cada JSON anual incluye SHA-256 y conteos de exclusión. `years.json` tiene las curvas horarias de la ciudad y el máximo por zona de todos los años.
+El script usa DuckDB y GeoPandas. Guarda originales en `data/raw/` (excluido de Git), simplifica geometrías en WGS84 y genera `public/data/trips-YYYY.json`, `years.json` y `zones.geojson`. Cada JSON anual incluye conteos por zona y hora, velocidades medianas, flujos origen→destino, SHA-256 y conteos de exclusión. `years.json` tiene las curvas horarias y de velocidad de la ciudad, la tarifa mediana y el máximo por zona de todos los años. `zones.geojson` incluye un punto interior por zona para dibujar los flujos.
 
-Enero de 2026 tiene **3.724.889 filas**; enero de 2019, 7.696.617. No se filtran tarifas o distancias: la métrica cuenta registros, no personas ni demanda insatisfecha. No incluye otros servicios. Lunes–viernes incluye feriados. No se aplican conversiones UTC a las horas locales del archivo.
+- **Velocidad**: distancia / duración en viajes de 1 min a 3 h, 0,1 a 50 millas y 1 a 70 mph; mediana por hora de salida, en km/h. Una zona necesita 10 viajes en esa hora del mes; si no, la página usa la de la ciudad.
+- **Flujos**: pares de zonas distintas por hora de salida con al menos medio viaje al día. Se guardan los 6 destinos y 6 orígenes principales por zona y los 40 pares mayores de la ciudad.
+- **Tarifa**: mediana de `total_amount` en esos mismos viajes, en dólares corrientes.
+
+Enero de 2026 tiene **3.724.889 filas**; enero de 2019, 7.696.617. Los conteos no filtran tarifas ni distancias: cuentan registros, no personas ni demanda insatisfecha. No incluye otros servicios. Lunes–viernes incluye feriados. No se aplican conversiones UTC a las horas locales del archivo.
 
 La escala del mapa se fija con el máximo de todas las zonas, horas, filtros y años (1.100 viajes/día, redondeado a centenas), para comparar años con los mismos colores y alturas. Las medias incluyen días sin eventos. Por eso no se pueden sumar directamente las medias de los dos tipos de día: hay que ponderarlas por la cantidad de días de cada tipo.
 
@@ -54,8 +57,8 @@ npm test
 npm run build
 ```
 
-Los tests comprueban, para cada año, el calendario, la conservación de conteos, la media ponderada, la selección por zona, las curvas de `years.json` y el límite de la escala común.
+`src/data.test.ts` comprueba, para cada año, el calendario, la conservación de conteos, la media ponderada, la selección por zona, las curvas de `years.json` y el límite de la escala común. `src/story.test.ts` recalcula cada cifra y zona que cita la historia, y prueba el arco, la nota y la curva de noche.
 
 ## Dependencias externas y límites
 
-React, TypeScript, Vite, MapLibre GL JS, Plotly.js y Tone.js. El mapa usa geometrías locales sin tokens ni servidor de mapas; no muestra calles. Las fuentes se descargan de Google Fonts, con alternativas del sistema sin conexión. La primera descarga incluye bibliotecas de gráficos grandes. El mapa requiere WebGL; el sonido requiere Web Audio y autorización mediante clic.
+React, TypeScript, Vite, MapLibre GL JS, Plotly.js y Tone.js. El mapa usa geometrías locales sin tokens ni servidor de mapas; no muestra calles. Las fuentes se descargan de Google Fonts, con alternativas del sistema sin conexión. La primera descarga incluye bibliotecas de gráficos grandes y cerca de 1,3 MB de datos por año elegido. El mapa requiere WebGL; el sonido requiere Web Audio y autorización mediante clic.

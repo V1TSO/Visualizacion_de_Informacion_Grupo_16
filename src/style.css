@@ -103,9 +103,9 @@ input[type=range] { width: 100%; accent-color: #c39515; margin: 6px 0 12px; }
 .sound[aria-pressed=true] { background: var(--taxi); color: var(--night); border-color: var(--taxi); }
 .meter-hint { font-size: 11px; line-height: 1.5; color: #93a8b4; margin: 8px 0 0; }
 .legend { position: absolute; right: 16px; bottom: 34px; width: 232px; background: #fffffff2; border-radius: 8px; padding: 12px; font-size: 11px; }
-.legend svg { width: 100%; height: 16px; }
-.ramp { height: 10px; border-radius: 2px; background: linear-gradient(90deg, #fff3bd, #f5cc52, #e89b27, #bc5c21, #762e1d); }
-.ramp.diverging { background: linear-gradient(90deg, #245978, #8fb3c9, #f1f1ec, #e8a36b, #b65d23); }
+.legend svg { width: 100%; height: 30px; }
+.ramp { height: 10px; border-radius: 2px; background: linear-gradient(90deg, #dcd5ee, #b3a7d8, #8a78bf, #5f479c, #35166b); }
+.ramp.diverging { background: linear-gradient(90deg, #245978, #8fb3c9, #ffffff, #e8a36b, #b65d23); box-shadow: inset 0 0 0 1px #d5dee1; }
 .ticks { display: flex; justify-content: space-between; margin: 4px 0 6px; font-variant-numeric: tabular-nums; }
 .legend small { display: block; font-size: 11px; line-height: 1.45; color: #50636e; }
 .chart-card { position: absolute; left: 18px; bottom: 34px; width: min(460px, calc(100% - 290px)); background: #fffffff5; border-radius: 10px; padding: 12px 14px 4px; }
@@ -115,6 +115,8 @@ input[type=range] { width: 100%; accent-color: #c39515; margin: 6px 0 12px; }
 .segmented.small button { min-height: 28px; font-size: 11px; padding: 3px 8px; }
 .tooltip { position: absolute; z-index: 3; transform: translate(14px, 14px); background: #fffffff7; border-radius: 6px; padding: 8px 10px; box-shadow: 0 3px 12px #2a475226; pointer-events: none; font-size: 12px; max-width: 240px; }
 .tooltip strong { display: block; margin-bottom: 2px; }
+.tooltip em { display: block; margin-top: 4px; font-style: normal; font-size: 11px; color: #5d7480; }
+.legend .caveat { margin-top: 6px; color: #8a5a16; }
 .zone-label { background: var(--ink); color: #fff; font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 4px; white-space: nowrap; pointer-events: none; box-shadow: 0 2px 6px #0b162140; }
 
 .method { max-width: 780px; margin: 0 auto; padding: 72px 24px 40px; font-size: 15px; line-height: 1.7; color: var(--ink-2); }

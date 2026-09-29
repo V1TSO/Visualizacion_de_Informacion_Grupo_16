@@ -3,6 +3,7 @@ name: Publicar en GitHub Pages
 on:
   push:
     branches: [main]
+  # Tras crear un tag vN: Actions → «Publicar en GitHub Pages» → Run workflow.
   workflow_dispatch:
 
 permissions:
@@ -19,13 +20,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # tags (v1, v2…) y ramas de prototipos para /versiones/
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
       - run: npm test
-      - run: npm run build
+      - run: bash scripts/build_pages.sh
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

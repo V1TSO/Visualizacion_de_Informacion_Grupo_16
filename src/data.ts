@@ -9,11 +9,15 @@ export interface Dataset {
   rows: [Movement, number, DayType, number, number][];
   speed: { city: Record<DayType, Curve>; zones: Record<Movement, Record<string, Record<DayType, Curve>>> };
   flows: Record<DayType, Flow[]>;
+  // Zona, hora de salida, viajes en el mes que empiezan y terminan en esa zona.
+  stays: Record<DayType, [number, number, number][]>;
   metadata: { rawRows: number; month: string; source: string; sha256: string; coverage: Record<Movement, {inMonth: number; mapped: number; unknownZone: number; outsideMonth: number}> };
 }
 export interface Summary {
   zoneMax: number;
-  years: Record<string, { rawRows: number; days: Record<Day, number>; city: Record<Movement, Record<DayType, number[]>>; speed: Record<DayType, Curve>; fare: number }>;
+  densityMax: number;
+  cpiBase: number;
+  years: Record<string, { rawRows: number; days: Record<Day, number>; city: Record<Movement, Record<DayType, number[]>>; speed: Record<DayType, Curve>; fare: number; fareReal: number }>;
 }
 export function aggregate(data: Dataset, movement: Movement, day: Day, zone?: number) {
   const hours = Array<number>(24).fill(0);
@@ -33,9 +37,16 @@ export function topFlows(data: Dataset, day: DayType, hour: number, movement: Mo
   const side = movement === 'pickup' ? 0 : 1;
   return data.flows[day]
     .filter(f => f[2] === hour && (zone === undefined || f[side] === zone))
-    .sort((a, b) => b[3] - a[3])
+    .sort((a, b) => b[3] - a[3] || a[0] - b[0] || a[1] - b[1])
     .slice(0, zone === undefined ? 40 : 6)
     .map(([from, to, , n]) => ({from, to, perDay: n / data.days[day]}));
+}
+export function topStays(data: Dataset, day: DayType, hour: number, zone?: number) {
+  return data.stays[day]
+    .filter(s => s[1] === hour && (zone === undefined || s[0] === zone))
+    .sort((a, b) => b[2] - a[2] || a[0] - b[0])
+    .slice(0, zone === undefined ? 12 : 1)
+    .map(([id, , n]) => ({zone: id, perDay: n / data.days[day]}));
 }
 
 // Curva cuadrática que se dobla a la derecha del sentido del viaje: A→B y B→A no se superponen.
@@ -49,11 +60,17 @@ export function arc(a: [number, number], b: [number, number], steps = 24): [numb
   });
 }
 
-// Escala pentatónica: cualquier velocidad suena afinada. 10 km/h o menos = nota más grave; 28 km/h o más = más aguda.
-export const SCALE = ['C4', 'D4', 'E4', 'G4', 'A4', 'C5', 'D5', 'E5', 'G5', 'A5'];
-export const noteFor = (kmh: number) => SCALE[Math.max(0, Math.min(SCALE.length - 1, Math.round((kmh - 10) / 18 * (SCALE.length - 1))))];
+const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
+// Un auto que pasa: más rápido suena más agudo (motor) y pasa en menos tiempo, como en la calle.
+export const carSound = (kmh: number) => ({freq: 55 + clamp(kmh, 5, 40) * 4, dur: clamp(1.6 - kmh * 0.04, 0.45, 1.3)});
+// Bocinas = atasco: aparecen bajo 15 km/h y son más frecuentes cuanto más lento va el tráfico.
+export const honkChance = (kmh: number) => clamp((15 - kmh) / 6, 0, 0.5);
 
-// 0 de día (08:00–20:00), 1 de madrugada; transición suave al amanecer y al anochecer.
+// Los gráficos van de mediodía a mediodía para que la noche (20:00–05:00) quede entera en el centro.
+export const DAY_ORDER = Array.from({length: 24}, (_, i) => (i + 12) % 24);
+export const dayPosition = (hour: number) => (hour + 12) % 24;
+
+// Fondo de la historia (no del mapa): 0 de día (08:00–20:00), 1 de madrugada; transición suave.
 export const nightness = (hour: number) => {
   const t = Math.min(1, Math.max(0, (((1 + Math.cos(2 * Math.PI * (hour - 2) / 24)) / 2) ** 2 - 0.3) / 0.6));
   return t * t * (3 - 2 * t);

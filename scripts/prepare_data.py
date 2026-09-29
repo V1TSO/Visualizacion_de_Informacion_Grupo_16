@@ -17,6 +17,8 @@ YEARS = range(2019, 2027)
 MPH_TO_KMH = 1.609344
 FLOW_TOP, FLOW_CITY_TOP, FLOW_MIN_PER_DAY = 6, 40, 0.5
 SPEED_MIN_TRIPS = 10
+# IPC de enero, área Nueva York–Newark–Jersey City (BLS, serie CUURS12ASA0). Lleva las tarifas a dólares de enero de 2026.
+CPI_NY = {2019: 275.144, 2020: 282.020, 2021: 285.525, 2022: 300.164, 2023: 318.151, 2024: 328.006, 2025: 341.144, 2026: 350.947}
 downloads = [('misc/taxi_zones.zip', 'zones.zip')] + [(f'trip-data/yellow_tripdata_{y}-01.parquet', f'yellow_{y}-01.parquet') for y in YEARS]
 for remote, name in downloads:
     target = RAW / name
@@ -29,16 +31,19 @@ zones = zones.dissolve(by='LocationID', as_index=False)
 # Punto interior (no centroide geométrico) para que los flujos nazcan dentro de cada zona.
 inside = zones.to_crs(2263).representative_point().to_crs(4326)
 zones['cx'], zones['cy'] = inside.x.round(5), inside.y.round(5)
+# Superficie en km² (EPSG:2263 mide en pies cuadrados) para mostrar densidad en vez de conteos por zona.
+zones['km2'] = (zones.to_crs(2263).area * 0.09290304 / 1e6).round(4)
 zones.geometry = zones.geometry.simplify(0.00008, preserve_topology=True)
-features = json.loads(zones[['LocationID', 'zone', 'borough', 'cx', 'cy', 'geometry']].to_json())
+features = json.loads(zones[['LocationID', 'zone', 'borough', 'cx', 'cy', 'km2', 'geometry']].to_json())
 for feature in features['features']:
     feature['id'] = int(feature['properties']['LocationID'])
 (OUT / 'zones.geojson').write_text(json.dumps(features, separators=(',', ':')))
 
 db = duckdb.connect()
 valid_ids = ','.join(str(f['id']) for f in features['features'])
+km2 = {f['id']: f['properties']['km2'] for f in features['features']}
 DAY = "CASE WHEN dayofweek({t}) IN (0,6) THEN 'weekend' ELSE 'weekday' END"
-summary = {'years': {}, 'zoneMax': 0}
+summary = {'years': {}, 'zoneMax': 0, 'densityMax': 0, 'cpiBase': 2026}
 for year in YEARS:
     raw = RAW / f'yellow_{year}-01.parquet'
     db.execute(f"CREATE OR REPLACE VIEW trips AS SELECT * FROM read_parquet('{raw}')")
@@ -62,7 +67,9 @@ for year in YEARS:
         for z, day, hour, count in rows:
             all_days[(z, hour)] = all_days.get((z, hour), 0) + count
             summary['zoneMax'] = max(summary['zoneMax'], count / days[day])
+            summary['densityMax'] = max(summary['densityMax'], count / days[day] / km2[z])
         summary['zoneMax'] = max(summary['zoneMax'], max(all_days.values()) / 31)
+        summary['densityMax'] = max(summary['densityMax'], max(n / 31 / km2[z] for (z, _), n in all_days.items()))
         print(year, movement, data['metadata']['coverage'][movement], flush=True)
 
     # Viajes válidos para velocidad y tarifa: hora de salida en el mes, 1 min–3 h, 0,1–50 millas, 1–70 mph.
@@ -84,21 +91,32 @@ for year in YEARS:
     fare = db.execute('SELECT median(total_amount) FROM clean WHERE total_amount > 0').fetchone()[0]
 
     # Flujos origen→destino por hora de salida: top por origen, top por destino y top de la ciudad (sin viajes dentro de la misma zona).
+    # Los empates se ordenan por zona para que el resultado sea igual en cada corrida.
     flows = db.execute(f"""
         WITH a AS (SELECT PULocationID pu, DOLocationID dl, {DAY.format(t='tpep_pickup_datetime')} d, hour(tpep_pickup_datetime) h, count(*) n
                    FROM trips WHERE tpep_pickup_datetime >= TIMESTAMP '{year}-01-01' AND tpep_pickup_datetime < TIMESTAMP '{year}-02-01'
                      AND PULocationID IN ({valid_ids}) AND DOLocationID IN ({valid_ids}) AND PULocationID <> DOLocationID GROUP BY ALL),
              b AS (SELECT * FROM a WHERE n >= {FLOW_MIN_PER_DAY} * CASE d WHEN 'weekend' THEN {days['weekend']} ELSE {days['weekday']} END)
-        SELECT * FROM b QUALIFY row_number() OVER (PARTITION BY pu, d, h ORDER BY n DESC) <= {FLOW_TOP}
-        UNION SELECT * FROM b QUALIFY row_number() OVER (PARTITION BY dl, d, h ORDER BY n DESC) <= {FLOW_TOP}
-        UNION SELECT * FROM b QUALIFY row_number() OVER (PARTITION BY d, h ORDER BY n DESC) <= {FLOW_CITY_TOP}""").fetchall()
+        SELECT * FROM b QUALIFY row_number() OVER (PARTITION BY pu, d, h ORDER BY n DESC, dl) <= {FLOW_TOP}
+        UNION SELECT * FROM b QUALIFY row_number() OVER (PARTITION BY dl, d, h ORDER BY n DESC, pu) <= {FLOW_TOP}
+        UNION SELECT * FROM b QUALIFY row_number() OVER (PARTITION BY d, h ORDER BY n DESC, pu, dl) <= {FLOW_CITY_TOP}""").fetchall()
     data['flows'] = {'weekday': [], 'weekend': []}
     for pu, dl, d, h, n in sorted(flows):
         data['flows'][d].append([int(pu), int(dl), int(h), int(n)])
+    # Viajes que empiezan y terminan en la misma zona: no caben en un arco y se dibujan como anillos.
+    stays = db.execute(f"""SELECT * FROM (
+        SELECT PULocationID z, {DAY.format(t='tpep_pickup_datetime')} d, hour(tpep_pickup_datetime) h, count(*) n FROM trips
+        WHERE tpep_pickup_datetime >= TIMESTAMP '{year}-01-01' AND tpep_pickup_datetime < TIMESTAMP '{year}-02-01'
+          AND PULocationID IN ({valid_ids}) AND PULocationID = DOLocationID GROUP BY ALL)
+        WHERE n >= {FLOW_MIN_PER_DAY} * CASE d WHEN 'weekend' THEN {days['weekend']} ELSE {days['weekday']} END""").fetchall()
+    data['stays'] = {'weekday': [], 'weekend': []}
+    for z, d, h, n in sorted(stays):
+        data['stays'][d].append([int(z), int(h), int(n)])
 
     (OUT / f'trips-{year}.json').write_text(json.dumps(data, separators=(',', ':')))
-    summary['years'][year] = {'rawRows': raw_count, 'days': days, 'city': city, 'speed': speed['city'], 'fare': round(fare, 2)}
+    summary['years'][year] = {'rawRows': raw_count, 'days': days, 'city': city, 'speed': speed['city'], 'fare': round(fare, 2), 'fareReal': round(fare * CPI_NY[2026] / CPI_NY[year], 2)}
     print(year, f'{len(flows):,} flujos, tarifa mediana {fare:.2f}', flush=True)
 summary['zoneMax'] = -(-summary['zoneMax'] // 100) * 100
+summary['densityMax'] = -(-summary['densityMax'] // 100) * 100
 (OUT / 'years.json').write_text(json.dumps(summary, separators=(',', ':')))
 print(f'Datos guardados en {OUT}')

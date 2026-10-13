@@ -12,47 +12,55 @@ const fmt1 = (n: number) => n.toLocaleString('es-CL', {maximumFractionDigits: 1}
 const says = (i: number, ...parts: string[]) => { for (const p of parts) assert.ok(STEPS[i].text.includes(p), `escena ${i + 1}: falta «${p}» en «${STEPS[i].text}»`); };
 const week = aggregate(data, 'pickup', 'weekday'), end = aggregate(data, 'pickup', 'weekend');
 const top = (zonesByHour: Record<number, number[]>, h: number, n: number) => Object.entries(zonesByHour).sort((a, b) => b[1][h] - a[1][h]).slice(0, n).map(([id]) => zones[Number(id)].zone);
-const EAST_VILLAGE = 79;
+const EAST_VILLAGE = 79, MIDTOWN_CENTER = 161;
 
-test('Escenas 1–3: viajes por hora y zonas más activas', () => {
+test('Escenas 1, 3 y 4: viajes por hora y zonas más activas', () => {
   says(0, fmt(week.hours[8]));
   assert.deepEqual(top(week.zones, 8, 3), ['Upper East Side North', 'Upper East Side South', 'Penn Station/Madison Sq West']);
-  says(1, fmt(end.hours[8]), `${fmt((1 - end.hours[8] / week.hours[8]) * 100)} %`);
-  says(2, fmt(end.hours[1]), `${fmt1(end.hours[1] / week.hours[1])} veces`);
+  says(2, fmt(end.hours[8]), `${fmt((1 - end.hours[8] / week.hours[8]) * 100)} %`);
+  says(3, fmt(end.hours[1]), `${fmt1(end.hours[1] / week.hours[1])} veces`);
   assert.deepEqual(top(end.zones, 1, 3), ['East Village', 'West Village', 'Lower East Side']);
 });
 
-test('Escena 4: la torre más alta y JFK', () => {
+test('Escena 2: lunes a viernes, los flujos van a Midtown', () => {
+  const flows = topFlows(data, 'weekday', 8, 'pickup');
+  const midtown = flows.filter(f => zones[f.to].zone.startsWith('Midtown'));
+  says(1, `${midtown.length} de los 40`, `${midtown.filter(f => zones[f.from].zone.startsWith('Upper East Side')).length} vienen del Upper East Side`);
+  const arrivals = (day: 'weekday' | 'weekend') => aggregate(data, 'dropoff', day).zones[MIDTOWN_CENTER][8];
+  says(1, `${fmt1(arrivals('weekday') / arrivals('weekend'))} veces`);
+});
+
+test('Escena 5: la torre más alta y JFK', () => {
   const all = aggregate(data, 'pickup', 'all');
   assert.equal(top(all.zones, 1, 1)[0], 'East Village');
-  says(3, `${fmt1(end.zones[EAST_VILLAGE][1] / week.zones[EAST_VILLAGE][1])} veces`);
+  says(4, `${fmt1(end.zones[EAST_VILLAGE][1] / week.zones[EAST_VILLAGE][1])} veces`);
   const jfk = end.zones[132][1] / week.zones[132][1];
   assert.ok(jfk > 0.9 && jfk < 1.2, `JFK ${jfk}`);
 });
 
-test('Escena 5: flujos de la noche', () => {
+test('Escena 6: flujos de la noche', () => {
   const flows = topFlows(data, 'weekend', 1, 'pickup');
   assert.equal(flows.length, 40);
-  says(4, `${flows.filter(f => f.from === EAST_VILLAGE).length} de los 40`);
+  says(5, `${flows.filter(f => f.from === EAST_VILLAGE).length} de los 40`);
   assert.ok(flows.every(f => zones[f.from].borough === 'Manhattan' && zones[f.to].borough === 'Manhattan'));
   assert.deepEqual(topFlows(data, 'weekend', 1, 'pickup', EAST_VILLAGE).slice(0, 3).map(f => zones[f.to].zone), ['Murray Hill', 'Kips Bay', 'Gramercy']);
 });
 
-test('Escena 6: velocidad', () => {
+test('Escena 7: velocidad', () => {
   const {weekday, weekend} = summary.years['2026'].speed;
-  says(5, `${fmt1(weekend[5]!)} km/h`, `${fmt1(weekday[11]!)} km/h`);
+  says(6, `${fmt1(weekend[5]!)} km/h`, `${fmt1(weekday[11]!)} km/h`);
   assert.equal(Math.min(...weekday as number[]), weekday[11]);
   assert.ok(weekday[11]! < weekend[5]! / 2);
 });
 
-test('Escenas 7–8: ocho eneros', () => {
+test('Escenas 8–9: ocho eneros', () => {
   const ratio = (y: string) => windowRatio(summary.years[y].city.pickup.weekend, summary.years[y].city.pickup.weekday, NIGHT);
   const others = Object.keys(summary.years).filter(y => y !== '2021').map(ratio);
-  says(6, `${fmt1(ratio('2021'))} veces`, `entre ${fmt1(Math.min(...others))} y ${fmt1(Math.max(...others))}`);
+  says(7, `${fmt1(ratio('2021'))} veces`, `entre ${fmt1(Math.min(...others))} y ${fmt1(Math.max(...others))}`);
   const perDay = (y: string) => { const v = summary.years[y]; const s = (a: number[]) => a.reduce((x, n) => x + n, 0); return s(v.city.pickup.weekday) * v.days.weekday + s(v.city.pickup.weekend) * v.days.weekend; };
   const trips = perDay('2026') / perDay('2019'), fare = summary.years['2026'].fare / summary.years['2019'].fare;
   assert.ok(trips > 0.45 && trips < 0.55 && fare > 1.9 && fare < 2.1, `${trips} ${fare}`);
-  says(7, summary.years['2026'].fare.toLocaleString('es-CL', {minimumFractionDigits: 2}), summary.years['2019'].fare.toLocaleString('es-CL', {minimumFractionDigits: 2}));
+  says(8, summary.years['2026'].fare.toLocaleString('es-CL', {minimumFractionDigits: 2}), summary.years['2019'].fare.toLocaleString('es-CL', {minimumFractionDigits: 2}));
 });
 
 test('Las etiquetas del mapa nombran zonas citadas en el texto', () => {

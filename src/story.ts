@@ -10,6 +10,7 @@ export const CITY: Camera = {center: [-73.93, 40.72], zoom: 10.1, pitch: 0, bear
 const NIGHTLIFE: Camera = {center: [-73.99, 40.728], zoom: 12.2, pitch: 0, bearing: 0};
 const RELIEF: Camera = {center: [-73.87, 40.685], zoom: 10.9, pitch: 55, bearing: -22};
 const FLOWS: Camera = {center: [-73.985, 40.737], zoom: 12.6, pitch: 0, bearing: 0};
+const MIDTOWN: Camera = {center: [-73.968, 40.765], zoom: 12.5, pitch: 0, bearing: 0};
 const base = {year: 2026, movement: 'pickup', three: false, flows: false, chart: 'day'} as const;
 
 // Las cifras salen de public/data; src/story.test.ts las vuelve a calcular.
@@ -19,6 +20,12 @@ export const STEPS: Step[] = [
     title: 'La ciudad que madruga',
     text: 'Un día de semana, entre las 8:00 y las 9:00, empiezan 5.719 viajes. Salen sobre todo del Upper East Side y de Penn Station: la ciudad va a trabajar.',
     view: {...base, lens: 'weekday', hour: 8, camera: CITY, labels: [236, 237, 186]},
+  },
+  {
+    when: 'Lunes a viernes, 08:00',
+    title: 'Y va a Midtown',
+    text: '17 de los 40 flujos más grandes de la hora terminan en Midtown, donde se concentran las oficinas; 6 vienen del Upper East Side. A Midtown Center llegan 6,6 veces más viajes que a la misma hora de un fin de semana.',
+    view: {...base, lens: 'weekday', hour: 8, flows: true, camera: MIDTOWN, labels: [161, 236]},
   },
   {
     when: 'Sábado y domingo, 08:00',

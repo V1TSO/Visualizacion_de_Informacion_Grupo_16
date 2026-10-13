@@ -24,6 +24,12 @@ const TOWER_METERS = 6000;
 const WATER_DAY = [223, 234, 240], WATER_NIGHT = [21, 36, 51];
 const water = (t: number) => `rgb(${WATER_DAY.map((d, i) => Math.round(d + (WATER_NIGHT[i] - d) * t)).join(',')})`;
 const LENS: Record<Lens, string> = {weekday: 'Lunes a viernes', weekend: 'Sábado y domingo', diff: 'Fin de semana contra lunes a viernes'};
+// Qué codifica cada parámetro del sonido. Se ve antes de activarlo: el sonido no debe necesitar explicación oral.
+const SOUND_KEY = [['Ritmo', 'más viajes, pulsos más seguidos', ''], ['Tono', 'más velocidad, nota más aguda', ''], ['Izquierda', 'lunes a viernes', 'label-week'], ['Derecha', 'fin de semana', 'label-end']] as const;
+const SoundKey = ({className, title}: {className: string; title?: string}) => <ul className={`sound-key ${className}`}>
+  {title && <li className="sound-key-title">{title}</li>}
+  {SOUND_KEY.map(([k, v, tone]) => <li key={k} className={tone}><strong>{k}:</strong> {v}</li>)}
+</ul>;
 const EXPLORE_START: View = {year: 2026, hour: 1, lens: 'diff', movement: 'pickup', three: false, flows: false, chart: 'day'};
 const EMPTY: FeatureCollection = {type: 'FeatureCollection', features: []};
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -362,6 +368,7 @@ function App() {
           <button className="ghost" onClick={() => void start(false)}>Empezar sin sonido</button>
           <a href="#explorar">Ir directo a explorar</a>
         </div>
+        <SoundKey className="hero-key" title="Cómo suena"/>
       </div>
       {summary && <Horizon summary={summary}/>}
     </header>
@@ -420,7 +427,7 @@ function App() {
             <div><dt>km/h, velocidad mediana {day === 'weekday' ? 'de lunes a viernes' : 'del fin de semana'}</dt><dd>{kmh === null ? 'sin datos' : fmt1(kmh)}</dd></div>
           </dl> : <p className="meter-when" role="status">Cargando enero de {v.year}…</p>}
           <button className="sound" aria-pressed={sound} onClick={() => void toggleSound()}>{sound ? 'Silenciar' : 'Activar sonido'}</button>
-          {sound && <p className="meter-hint">Ritmo: cantidad de viajes. Tono: velocidad. Izquierda: lunes a viernes. Derecha: fin de semana.</p>}
+          <SoundKey className="meter-hint"/>
         </div>
         <div className="legend">
           {v.flows ? <><svg viewBox="0 0 160 14" aria-hidden="true"><defs><linearGradient id="flow"><stop offset="0" stopColor="#173c50" stopOpacity="0.12"/><stop offset="1" stopColor="#173c50"/></linearGradient></defs><path d="M4 11 Q80 -4 156 7" stroke="url(#flow)" strokeWidth="5" fill="none" strokeLinecap="round"/></svg>

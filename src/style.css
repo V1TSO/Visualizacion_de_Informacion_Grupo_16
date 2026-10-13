@@ -27,7 +27,10 @@ a { color: #24668c; }
 .hero-top { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #9fb3bd; }
 .brand { display: flex; align-items: center; gap: 12px; font-weight: 600; color: #e6edf0; }
 .roof { display: grid; place-items: center; width: 44px; height: 26px; border-radius: 13px 13px 4px 4px; background: var(--taxi); color: var(--night); font: 700 14px var(--display); letter-spacing: .04em; }
-.hero-copy { align-self: center; max-width: 1180px; padding: 2vh 0 1vh; }
+/* La leyenda del sonido va a la derecha de los botones: no agrega alto a la portada. */
+.hero-copy { align-self: center; max-width: 1180px; padding: 2vh 0 1vh; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 48px; }
+.hero-copy h1 { grid-column: 1 / -1; }
+.hero-copy p, .hero-actions { grid-column: 1; }
 .hero h1 { font: 700 clamp(48px, 7vw, 108px)/.92 var(--display); letter-spacing: -.012em; margin: 0 0 24px; max-width: 17ch; color: #f4f6f5; }
 .hero-copy p { font-size: 18px; line-height: 1.6; color: #b4c4cc; max-width: 52ch; margin: 0 0 32px; }
 .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
@@ -36,7 +39,7 @@ a { color: #24668c; }
 .primary:hover { background: #ffcc2e; }
 .ghost { background: transparent; border: 1px solid #4a6273; border-radius: 8px; padding: 12px 20px; color: #e6edf0; }
 .ghost:hover { border-color: #8aa2b0; }
-.horizon-figure { margin: 0; }
+.horizon-figure { margin: 20px 0 0; }
 .horizon-figure figcaption { font-size: 13px; color: #9fb3bd; margin: 0 0 22px; }
 .horizon { width: 100%; height: auto; overflow: visible; }
 .horizon .base { stroke: #3a5061; stroke-width: 1; }
@@ -50,8 +53,8 @@ a { color: #24668c; }
 .line-week { stroke: #8fb3c9; stroke-width: 3; }
 .line-end { stroke: #e8a36b; stroke-width: 4.5; }
 .horizon text { font: 500 15px 'DM Sans', sans-serif; opacity: 0; animation: appear .6s ease 2.4s forwards; }
-.label-week { fill: #8fb3c9; }
-.label-end { fill: #e8a36b; }
+.label-week { fill: #8fb3c9; color: #8fb3c9; }
+.label-end { fill: #e8a36b; color: #e8a36b; }
 .horizon .tick { fill: #6f8795; font-size: 13px; }
 @keyframes draw { to { stroke-dashoffset: 0; } }
 @keyframes appear { to { opacity: 1; } }
@@ -113,7 +116,11 @@ input[type=range] { width: 100%; accent-color: #c39515; margin: 6px 0 12px; }
 .meter dd { margin: 0 0 2px; font: 600 30px/1 var(--display); color: #fff; font-variant-numeric: tabular-nums; }
 .sound { width: 100%; min-height: 36px; border: 1px solid #3a5163; background: transparent; color: #e6edf0; border-radius: 7px; font-size: 13px; }
 .sound[aria-pressed=true] { background: var(--taxi); color: var(--night); border-color: var(--taxi); }
+.sound-key { list-style: none; padding: 0; }
+.hero-key { grid-column: 2; grid-row: 2 / span 2; align-self: end; margin: 0; padding: 12px 16px; border: 1px solid #2d4254; border-radius: 10px; font-size: 13px; line-height: 1.7; color: #9fb3bd; }
+.sound-key-title { color: #e6edf0; font-weight: 600; }
 .meter-hint { font-size: 11px; line-height: 1.5; color: #93a8b4; margin: 8px 0 0; }
+.meter-hint strong, .hero-key strong { font-weight: 600; }
 .legend { position: absolute; right: 16px; bottom: 34px; width: 232px; background: #fffffff2; border-radius: 8px; padding: 12px; font-size: 11px; }
 .legend svg { width: 100%; height: 16px; }
 .ramp { height: 10px; border-radius: 2px; background: linear-gradient(90deg, #fff3bd, #f5cc52, #e89b27, #bc5c21, #762e1d); }
@@ -146,6 +153,8 @@ footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12
   .legend { right: 8px; bottom: 26px; width: 180px; padding: 8px; }
   .legend small { display: none; }
   .hero h1 { max-width: 14ch; }
+  .hero-copy { display: block; }
+  .hero-key { margin-top: 18px; }
   .horizon text { font-size: 38px; }
   .horizon .tick { font-size: 32px; }
   .horizon .note-head { font-size: 30px; }

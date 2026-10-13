@@ -16,7 +16,8 @@ const fmt1 = (n: number) => n.toLocaleString('es-CL', {maximumFractionDigits: 1}
 const clock = (h: number) => `${String(h).padStart(2, '0')}:00`;
 const YEARS = [2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
 const HOURS = Array.from({length: 24}, (_, h) => h);
-const COLORS = ['#fff3bd', '#f5cc52', '#e89b27', '#bc5c21', '#762e1d'];
+// Cantidad en violeta: el azul y el naranjo ya significan lunes a viernes y fin de semana.
+const COLORS = ['#dcd5ee', '#b3a7d8', '#8a78bf', '#5f479c', '#35166b'];
 const DIVERGING = ['#245978', '#8fb3c9', '#f1f1ec', '#e8a36b', '#b65d23'];
 const LAND = '#e3e7e5';
 // Altura 3D lineal: la longitud se lee como cantidad; el color sigue siendo logarítmico.

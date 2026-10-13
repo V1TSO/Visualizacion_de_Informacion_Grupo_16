@@ -47,7 +47,7 @@ export const STEPS: Step[] = [
   },
   {
     when: 'Sábado y domingo, 01:00',
-    title: 'Y vuelve a casa cerca',
+    title: 'Y termina cerca',
     text: '18 de los 40 flujos más grandes de la hora salen de East Village. Van a Murray Hill, Kips Bay y Gramercy. Ninguno de los 40 sale de Manhattan.',
     view: {...base, lens: 'weekend', hour: 1, flows: true, camera: FLOWS, labels: [79, 170, 137, 107]},
   },
@@ -59,14 +59,14 @@ export const STEPS: Step[] = [
   },
   {
     when: 'Enero de 2021',
-    title: 'Solo la pandemia apagó la noche',
-    text: 'En enero de 2021, entre las 00:00 y las 05:00, el fin de semana tuvo 1,5 veces los viajes de un día de semana. En los otros siete eneros, entre 2,6 y 4,8 veces.',
+    title: 'En 2021, la noche casi se apagó',
+    text: 'En enero de 2021, en plena pandemia, entre las 00:00 y las 05:00 el fin de semana tuvo solo 1,5 veces los viajes de un día de semana. En los otros siete eneros, entre 2,6 y 4,8 veces.',
     view: {...base, year: 2021, lens: 'diff', hour: 1, chart: 'years', camera: CITY},
   },
   {
     when: 'Enero de 2026',
     title: 'La noche volvió; el taxi cambió',
-    text: 'Hoy hay la mitad de viajes que en 2019, y el viaje mediano cuesta el doble: 23,09 dólares, contra 11,30. Pero la noche del fin de semana sigue ahí.',
+    text: 'Hoy hay la mitad de viajes que en 2019, y el viaje mediano cuesta 23,09 dólares: un 60 % más que en 2019, ya descontada la inflación de Nueva York. Pero la noche del fin de semana sigue ahí.',
     view: {...base, lens: 'diff', hour: 1, chart: 'years', camera: CITY},
   },
 ];

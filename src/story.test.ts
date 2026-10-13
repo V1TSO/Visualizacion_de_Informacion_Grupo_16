@@ -59,8 +59,10 @@ test('Escenas 8–9: ocho eneros', () => {
   says(7, `${fmt1(ratio('2021'))} veces`, `entre ${fmt1(Math.min(...others))} y ${fmt1(Math.max(...others))}`);
   const perDay = (y: string) => { const v = summary.years[y]; const s = (a: number[]) => a.reduce((x, n) => x + n, 0); return s(v.city.pickup.weekday) * v.days.weekday + s(v.city.pickup.weekend) * v.days.weekend; };
   const trips = perDay('2026') / perDay('2019'), fare = summary.years['2026'].fare / summary.years['2019'].fare;
-  assert.ok(trips > 0.45 && trips < 0.55 && fare > 1.9 && fare < 2.1, `${trips} ${fare}`);
-  says(8, summary.years['2026'].fare.toLocaleString('es-CL', {minimumFractionDigits: 2}), summary.years['2019'].fare.toLocaleString('es-CL', {minimumFractionDigits: 2}));
+  assert.ok(trips > 0.45 && trips < 0.55, `${trips}`);
+  // IPC de enero, área Nueva York–Newark–Jersey City (BLS, serie CUURS12ASA0): el alza en dólares corrientes (el doble) exagera.
+  const CPI_2019 = 275.144, CPI_2026 = 350.947;
+  says(8, `${summary.years['2026'].fare.toLocaleString('es-CL', {minimumFractionDigits: 2})} dólares`, `un ${fmt((fare * CPI_2019 / CPI_2026 - 1) * 100)} % más`);
 });
 
 test('Las etiquetas del mapa nombran zonas citadas en el texto', () => {

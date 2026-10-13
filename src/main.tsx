@@ -24,6 +24,12 @@ const TOWER_METERS = 6000;
 const WATER_DAY = [223, 234, 240], WATER_NIGHT = [21, 36, 51];
 const water = (t: number) => `rgb(${WATER_DAY.map((d, i) => Math.round(d + (WATER_NIGHT[i] - d) * t)).join(',')})`;
 const LENS: Record<Lens, string> = {weekday: 'Lunes a viernes', weekend: 'Sábado y domingo', diff: 'Fin de semana contra lunes a viernes'};
+// Qué codifica cada parámetro del sonido. Se ve antes de activarlo: el sonido no debe necesitar explicación oral.
+const SOUND_KEY = [['Ritmo', 'más viajes, pulsos más seguidos', ''], ['Tono', 'más velocidad, nota más aguda', ''], ['Izquierda', 'lunes a viernes', 'label-week'], ['Derecha', 'fin de semana', 'label-end']] as const;
+const SoundKey = ({className, title}: {className: string; title?: string}) => <ul className={`sound-key ${className}`}>
+  {title && <li className="sound-key-title">{title}</li>}
+  {SOUND_KEY.map(([k, v, tone]) => <li key={k} className={tone}><strong>{k}:</strong> {v}</li>)}
+</ul>;
 const EXPLORE_START: View = {year: 2026, hour: 1, lens: 'diff', movement: 'pickup', three: false, flows: false, chart: 'day'};
 const EMPTY: FeatureCollection = {type: 'FeatureCollection', features: []};
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -38,16 +44,31 @@ type Arc = {coords: [number, number][]; w: number};
 
 function Horizon({summary}: {summary: Summary}) {
   const {weekday, weekend} = summary.years['2026'].city.pickup;
-  const W = 1200, H = 170, max = Math.max(...weekday, ...weekend);
+  const W = 1200, H = 170, TOP = -82, max = Math.max(...weekday, ...weekend);
   const x = (h: number) => h / 23 * W, y = (n: number) => H - n / max * (H - 24);
   const points = (a: number[]) => a.map((n, h) => `${x(h).toFixed(1)},${y(n).toFixed(1)}`).join(' ');
-  return <svg className="horizon" viewBox={`0 -10 ${W} ${H + 40}`} role="img" aria-label="Viajes por hora en enero de 2026. El fin de semana tiene su máximo de madrugada; los días de semana, en la mañana y la tarde.">
-    <polyline className="line-week" points={points(weekday)} pathLength={1}/>
-    <polyline className="line-end" points={points(weekend)} pathLength={1}/>
-    <text className="label-end" x={x(1) + 14} y={y(weekend[1]) - 12}>sábado y domingo</text>
-    <text className="label-week" x={x(8) - 10} y={y(weekday[8]) - 14} textAnchor="end">lunes a viernes</text>
-    {[0, 6, 12, 18, 23].map(h => <text key={h} className="tick" x={x(h)} y={H + 26} textAnchor={h === 0 ? 'start' : h === 23 ? 'end' : 'middle'}>{clock(h)}</text>)}
-  </svg>;
+  const less = `${fmt((1 - weekend[8] / weekday[8]) * 100)} %`, times = fmt1(weekend[1] / weekday[1]);
+  // Las dos horas del título, con su cifra: el lector no necesita un eje Y para leer la diferencia.
+  const note = (h: number, head: string) => <g className="note">
+    <line className="leader" x1={x(h)} x2={x(h)} y1={TOP + 64} y2={y(Math.max(weekday[h], weekend[h])) - 8}/>
+    <line className="gap" x1={x(h)} x2={x(h)} y1={y(weekday[h])} y2={y(weekend[h])}/>
+    <circle className="dot-week" cx={x(h)} cy={y(weekday[h])} r={6}/>
+    <circle className="dot-end" cx={x(h)} cy={y(weekend[h])} r={6}/>
+    <text className="note-head" x={x(h) - 6} y={TOP + 16}>{head}</text>
+    <text className="note-line label-end" x={x(h) - 6} y={TOP + 37}>{fmt(weekend[h])} sábado y domingo</text>
+    <text className="note-line label-week" x={x(h) - 6} y={TOP + 56}>{fmt(weekday[h])} lunes a viernes</text>
+  </g>;
+  return <figure className="horizon-figure">
+    <figcaption>Viajes de taxi que empiezan en cada hora, promedio por día, enero de 2026. <span className="label-end">Naranjo: sábado y domingo.</span> <span className="label-week">Azul: lunes a viernes.</span></figcaption>
+    <svg className="horizon" viewBox={`0 ${TOP} ${W} ${H - TOP + 30}`} role="img" aria-label={`Viajes por hora en enero de 2026. A las 08:00 el fin de semana tiene ${less} menos viajes que lunes a viernes; a la 01:00, ${times} veces más.`}>
+      <line className="base" x1={0} x2={W} y1={H} y2={H}/>
+      <polyline className="line-week" points={points(weekday)} pathLength={1}/>
+      <polyline className="line-end" points={points(weekend)} pathLength={1}/>
+      {note(1, `01:00 · ${times} veces más`)}
+      {note(8, `08:00 · ${less} menos`)}
+      {[0, 6, 12, 18, 23].map(h => <text key={h} className="tick" x={x(h)} y={H + 26} textAnchor={h === 0 ? 'start' : h === 23 ? 'end' : 'middle'}>{clock(h)}</text>)}
+    </svg>
+  </figure>;
 }
 
 function App() {
@@ -249,20 +270,21 @@ function App() {
     const el = chartNode.current;
     if (!el || !curves || !summary || !data) return;
     const font = {family: 'DM Sans, Arial, sans-serif', color: '#47606b', size: 11};
-    const common = {margin: {t: 8, r: 12, b: 28, l: 38}, height: 170, paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', font, showlegend: false};
+    // Separadores en español (8.000; 1,5) y etiquetas separadas del eje: el 0 del eje Y no pisa el 00 del eje X.
+    const common = {margin: {t: 8, r: 12, b: 30, l: 46}, height: 170, paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', font, showlegend: false, separators: ',.'};
     // En viajes se atenúa el tipo de día que no se ve en el mapa; en velocidad se comparan ambos.
     const opacity = (d: DayType) => v.chart === 'speed' || v.lens === 'diff' || v.lens === d ? 1 : 0.3;
     let plot: Promise<Plotly.PlotlyHTMLElement>;
     if (v.chart === 'years') {
       const ratios = YEARS.map(y => windowRatio(summary.years[y].city[v.movement].weekend, summary.years[y].city[v.movement].weekday, NIGHT));
-      plot = Plotly.react(el, [{type: 'bar', x: YEARS.map(String), y: ratios, marker: {color: YEARS.map(y => y === v.year ? '#f6bd16' : '#b9c9d1')}, hovertemplate: 'Enero de %{x}: %{y:.1f} veces<extra></extra>'}], {...common, xaxis: {type: 'category', fixedrange: true}, yaxis: {rangemode: 'tozero', fixedrange: true, gridcolor: '#e5e9e9', ticksuffix: '×'}, bargap: 0.35, shapes: [{type: 'line', xref: 'paper', x0: 0, x1: 1, y0: 1, y1: 1, line: {color: '#47606b', width: 1, dash: 'dot'}}], annotations: [{x: YEARS.indexOf(2021), y: ratios[YEARS.indexOf(2021)], yanchor: 'bottom', text: 'Pandemia', showarrow: false, font: {...font, color: '#173c50'}}, {xref: 'paper', x: 1, y: 1, xanchor: 'right', yanchor: 'bottom', text: 'igual', showarrow: false, font: {...font, size: 10}}]}, {displayModeBar: false, responsive: true});
+      plot = Plotly.react(el, [{type: 'bar', x: YEARS.map(String), y: ratios, marker: {color: YEARS.map(y => y === v.year ? '#f6bd16' : '#b9c9d1')}, hovertemplate: 'Enero de %{x}: %{y:.1f} veces<extra></extra>'}], {...common, xaxis: {type: 'category', fixedrange: true}, yaxis: {rangemode: 'tozero', fixedrange: true, gridcolor: '#e5e9e9', ticksuffix: '×', ticks: 'outside', ticklen: 6, tickcolor: 'rgba(0,0,0,0)'}, bargap: 0.35, shapes: [{type: 'line', xref: 'paper', x0: 0, x1: 1, y0: 1, y1: 1, line: {color: '#47606b', width: 1, dash: 'dot'}}], annotations: [{x: YEARS.indexOf(2021), y: ratios[YEARS.indexOf(2021)], yanchor: 'bottom', text: 'Pandemia', showarrow: false, font: {...font, color: '#173c50'}}, {xref: 'paper', x: 1, y: 1, xanchor: 'right', yanchor: 'bottom', text: 'igual', showarrow: false, font: {...font, size: 10}}]}, {displayModeBar: false, responsive: true});
     } else {
       const series = v.chart === 'day' ? curves : {weekday: HOURS.map(h => speedAt('weekday', h)), weekend: HOURS.map(h => speedAt('weekend', h))};
       const unit = v.chart === 'day' ? 'viajes' : 'km/h';
       plot = Plotly.react(el, [
         {x: HOURS, y: series.weekday, type: 'scatter', mode: 'lines', opacity: opacity('weekday'), line: {color: '#245978', width: 3}, hovertemplate: `%{y:.1f} ${unit}<extra>Lunes a viernes</extra>`},
         {x: HOURS, y: series.weekend, type: 'scatter', mode: 'lines', opacity: opacity('weekend'), line: {color: '#b65d23', width: 3, dash: 'dot'}, hovertemplate: `%{y:.1f} ${unit}<extra>Sábado y domingo</extra>`},
-      ], {...common, hovermode: 'x unified', xaxis: {range: [0, 23], tickvals: [0, 6, 12, 18, 23], ticktext: ['00', '06', '12', '18', '23'], fixedrange: true}, yaxis: {rangemode: 'tozero', fixedrange: true, gridcolor: '#e5e9e9'}, shapes: [{type: 'rect', xref: 'x', yref: 'paper', x0: 0, x1: 5, y0: 0, y1: 1, fillcolor: '#152433', opacity: 0.06, line: {width: 0}, layer: 'below'}, {type: 'line', xref: 'x', yref: 'paper', x0: v.hour, x1: v.hour, y0: 0, y1: 1, line: {color: '#bc911a', width: 2, dash: 'dot'}}], annotations: [{x: 2.5, xref: 'x', y: 1, yref: 'paper', yanchor: 'top', text: 'madrugada', showarrow: false, font: {...font, size: 10}}]}, {displayModeBar: false, responsive: true});
+      ], {...common, hovermode: 'x unified', xaxis: {range: [0, 23], tickvals: [0, 6, 12, 18, 23], ticktext: ['00', '06', '12', '18', '23'], fixedrange: true, ticks: 'outside', ticklen: 4, tickcolor: 'rgba(0,0,0,0)'}, yaxis: {rangemode: 'tozero', fixedrange: true, gridcolor: '#e5e9e9', tickformat: ',', ticks: 'outside', ticklen: 6, tickcolor: 'rgba(0,0,0,0)'}, shapes: [{type: 'rect', xref: 'x', yref: 'paper', x0: 0, x1: 5, y0: 0, y1: 1, fillcolor: '#152433', opacity: 0.06, line: {width: 0}, layer: 'below'}, {type: 'line', xref: 'x', yref: 'paper', x0: v.hour, x1: v.hour, y0: 0, y1: 1, line: {color: '#bc911a', width: 2, dash: 'dot'}}], annotations: [{x: 2.5, xref: 'x', y: 1, yref: 'paper', yanchor: 'top', text: 'madrugada', showarrow: false, font: {...font, size: 10}}]}, {displayModeBar: false, responsive: true});
     }
     void plot.then(p => {p.removeAllListeners('plotly_click'); p.on('plotly_click', e => act(v.chart === 'years' ? {year: Number(e.points[0].x)} : {hour: Number(e.points[0].x)}));});
   }, [curves, summary, data, v.chart, v.hour, v.year, v.lens, v.movement, zoneSpeed, step]);
@@ -287,7 +309,7 @@ function App() {
       const n = curves[d][v.hour];
       if (!n || !top) return [];
       const voice = voices.current![d === 'weekday' ? 0 : 1], note = noteFor(speedAt(d, v.hour) ?? 15);
-      const pulse = () => voice.triggerAttackRelease(note, '32n', Tone.now(), 0.25);
+      const pulse = () => voice.triggerAttackRelease(note, '32n', Tone.now(), 0.5);
       pulse();
       return [window.setInterval(pulse, 1000 / (0.5 + 4.5 * n / top))];
     });
@@ -302,7 +324,7 @@ function App() {
     if (sound) {setSound(false); return;}
     try {
       await Tone.start();
-      voices.current ??= ([['sine', -0.8], ['triangle', 0.8]] as const).map(([type, pan]) => new Tone.Synth({oscillator: {type}, envelope: {attack: 0.005, decay: 0.06, sustain: 0, release: 0.1}, volume: -14}).connect(new Tone.Panner(pan).toDestination()));
+      voices.current ??= ([['sine', -0.8], ['triangle', 0.8]] as const).map(([type, pan]) => new Tone.Synth({oscillator: {type}, envelope: {attack: 0.005, decay: 0.06, sustain: 0, release: 0.1}, volume: -6}).connect(new Tone.Panner(pan).toDestination()));
       setSound(true);
     } catch {setError('No se pudo activar el audio. Puedes seguir la historia sin sonido.');}
   }
@@ -327,7 +349,7 @@ function App() {
   }, [total, week, end, flows, v.selected, v.flows, v.lens, v.hour, v.movement, zoneById]);
 
   const place = v.selected === undefined ? 'toda la ciudad' : nameOf(v.selected);
-  const chartTitle = v.chart === 'years' ? 'La madrugada del fin de semana, en ocho eneros' : v.chart === 'day' ? `Viajes por hora, ${place}` : `Velocidad mediana en km/h, ${place}`;
+  const chartTitle = v.chart === 'years' ? 'La madrugada del fin de semana, en ocho eneros' : v.chart === 'day' ? `Viajes por hora, promedio por día, ${place}` : `Velocidad mediana en km/h, ${place}`;
   const chartNote = v.chart === 'years' ? 'Viajes de 00:00 a 05:00, sábado y domingo dividido por lunes a viernes' : 'Azul: lunes a viernes. Naranjo punteado: sábado y domingo.';
   const hovered = hover && (() => {
     const w = week?.zones[hover.id]?.[v.hour] ?? 0, e = end?.zones[hover.id]?.[v.hour] ?? 0;
@@ -337,7 +359,7 @@ function App() {
 
   return <>
     <header className="hero">
-      <div className="hero-top"><span className="brand"><span className="roof">NY</span>El pulso de Nueva York</span><span>InfoVis, Grupo 16, V1</span></div>
+      <div className="hero-top"><span className="brand"><span className="roof">NY</span>El pulso de Nueva York</span><span>InfoVis, Grupo 16, V2</span></div>
       <div className="hero-copy">
         <h1>El fin de semana, Nueva York no madruga: trasnocha.</h1>
         <p>Ocho eneros de taxis amarillos, de 2019 a 2026{totalRows ? `: ${fmt(totalRows / 1e6)} millones de viajes` : ''} contados hora a hora. Recorre un día y una noche de la ciudad.</p>
@@ -346,6 +368,7 @@ function App() {
           <button className="ghost" onClick={() => void start(false)}>Empezar sin sonido</button>
           <a href="#explorar">Ir directo a explorar</a>
         </div>
+        <SoundKey className="hero-key" title="Cómo suena"/>
       </div>
       {summary && <Horizon summary={summary}/>}
     </header>
@@ -357,6 +380,7 @@ function App() {
             <p className="when">{s.when}</p>
             <h2>{s.title}</h2>
             <p>{s.text}</p>
+            {s.points && <ul className="points">{s.points.map(p => {const [lead, ...rest] = p.split(': '); return <li key={p}><strong>{lead}:</strong> {rest.join(': ')}</li>;})}</ul>}
           </article>
         </section>)}
         <section className="explore" id="explorar" ref={exploreNode}>
@@ -403,7 +427,7 @@ function App() {
             <div><dt>km/h, velocidad mediana {day === 'weekday' ? 'de lunes a viernes' : 'del fin de semana'}</dt><dd>{kmh === null ? 'sin datos' : fmt1(kmh)}</dd></div>
           </dl> : <p className="meter-when" role="status">Cargando enero de {v.year}…</p>}
           <button className="sound" aria-pressed={sound} onClick={() => void toggleSound()}>{sound ? 'Silenciar' : 'Activar sonido'}</button>
-          {sound && <p className="meter-hint">Ritmo: cantidad de viajes. Tono: velocidad. Izquierda: lunes a viernes. Derecha: fin de semana.</p>}
+          <SoundKey className="meter-hint"/>
         </div>
         <div className="legend">
           {v.flows ? <><svg viewBox="0 0 160 14" aria-hidden="true"><defs><linearGradient id="flow"><stop offset="0" stopColor="#173c50" stopOpacity="0.12"/><stop offset="1" stopColor="#173c50"/></linearGradient></defs><path d="M4 11 Q80 -4 156 7" stroke="url(#flow)" strokeWidth="5" fill="none" strokeLinecap="round"/></svg>
@@ -425,11 +449,11 @@ function App() {
       <h2>Datos y método</h2>
       <p>Fuente: registros de viajes de taxis amarillos de la <a href="https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page" target="_blank" rel="noreferrer">NYC Taxi & Limousine Commission</a>, enero de 2019 a 2026. Enero de {v.year} tiene {fmt(data?.metadata.rawRows ?? 0)} filas. No incluye Uber, Lyft ni transporte público, y cuenta viajes, no personas.</p>
       <p>Contamos salidas y llegadas con su propia fecha y hora local, dentro de enero y con una zona reconocida. Cada valor es un promedio por día: dividimos por los {data?.days.weekday} días de lunes a viernes o los {data?.days.weekend} de sábado y domingo de {v.year}. Lunes a viernes incluye feriados. En {v.movement === 'pickup' ? 'salidas' : 'llegadas'} quedaron fuera {fmt(data?.metadata.coverage[v.movement].unknownZone ?? 0)} viajes sin zona y {fmt(data?.metadata.coverage[v.movement].outsideMonth ?? 0)} fuera de enero.</p>
-      <p>Velocidad: distancia del viaje dividida por su duración, en viajes de 1 minuto a 3 horas, de 0,16 a 80 km y de 1,6 a 113 km/h. Mostramos la mediana por hora de salida; una zona necesita al menos 10 viajes en esa hora del mes, si no, usamos la de la ciudad. Tarifa: mediana del total pagado en esos mismos viajes, en dólares corrientes.</p>
+      <p>Velocidad: distancia del viaje dividida por su duración, en viajes de 1 minuto a 3 horas, de 0,16 a 80 km y de 1,6 a 113 km/h. Mostramos la mediana por hora de salida; una zona necesita al menos 10 viajes en esa hora del mes, si no, usamos la de la ciudad. Tarifa: mediana del total pagado en esos mismos viajes. Para comparar 2019 con 2026 descontamos la inflación con el índice de precios de enero del área de Nueva York (BLS, serie CUURS12ASA0).</p>
       <p>Flujos: pares de zonas distintas por hora de salida, con al menos medio viaje al día. Guardamos los 6 destinos y los 6 orígenes principales de cada zona y los 40 pares más grandes de la ciudad.</p>
       <p>Color: escala logarítmica común a todas las horas y años (1, 5, 25, 125 y {fmt(summary?.zoneMax ?? 0)} viajes). Comparar: razón entre los promedios de sábado y domingo y de lunes a viernes a la misma hora. Relieve 3D: altura lineal a los viajes. Sonido: una voz por tipo de día, en estéreo; el ritmo va de 0,5 a 5 pulsos por segundo según los viajes, y el tono sigue una escala pentatónica según la velocidad mediana, de 10 a 28 km/h.</p>
     </section>
-    <footer><span>Grupo 16: Vicente Reñasco, David Parra y Mariano De Sarratea</span><span>V1, visualización interactiva y sonora</span></footer>
+    <footer><span>Grupo 16: Vicente Reñasco, David Parra y Mariano De Sarratea</span><span>V2, visualización interactiva y sonora</span></footer>
   </>;
 }
 createRoot(document.getElementById('root')!).render(<App/>);

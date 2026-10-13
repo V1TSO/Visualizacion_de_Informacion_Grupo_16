@@ -10,6 +10,7 @@ export const CITY: Camera = {center: [-73.93, 40.72], zoom: 10.1, pitch: 0, bear
 const NIGHTLIFE: Camera = {center: [-73.99, 40.728], zoom: 12.2, pitch: 0, bearing: 0};
 const RELIEF: Camera = {center: [-73.87, 40.685], zoom: 10.9, pitch: 55, bearing: -22};
 const FLOWS: Camera = {center: [-73.985, 40.737], zoom: 12.6, pitch: 0, bearing: 0};
+const DAYTIME: Camera = {center: [-73.975, 40.735], zoom: 11.9, pitch: 0, bearing: 0};
 const MIDTOWN: Camera = {center: [-73.968, 40.765], zoom: 12.5, pitch: 0, bearing: 0};
 const base = {year: 2026, movement: 'pickup', three: false, flows: false, chart: 'day'} as const;
 
@@ -32,6 +33,12 @@ export const STEPS: Step[] = [
     title: 'El fin de semana no madruga',
     text: 'A la misma hora del fin de semana empiezan 2.461 viajes: un 57 % menos. El mapa casi se apaga.',
     view: {...base, lens: 'weekend', hour: 8, camera: CITY},
+  },
+  {
+    when: 'Sábado y domingo, 13:00',
+    title: 'De día, sale a pasear',
+    text: 'A la 1 de la tarde llegan el doble de viajes que un día de semana a Times Square y el Theatre District: 387 contra 194. Pasa lo mismo en East Village y West Village, barrios de teatros, bares y tiendas.',
+    view: {...base, lens: 'diff', movement: 'dropoff', hour: 13, camera: DAYTIME, labels: [230, 79, 249]},
   },
   {
     when: 'Sábado y domingo, 01:00',
@@ -75,7 +82,7 @@ export const STEPS: Step[] = [
     text: 'Lo que muestran los viajes de taxi:',
     points: [
       'De lunes a viernes, la ciudad madruga: a las 08:00 empiezan 5.719 viajes, y muchos van a Midtown.',
-      'El fin de semana no madruga: a esa hora hay un 57 % menos.',
+      'El fin de semana no madruga, pero sale de día: a las 08:00 hay un 57 % menos viajes, y a las 13:00 llegan el doble a Times Square.',
       'Pero trasnocha: a la 01:00 hay 3,3 veces más viajes, sobre todo desde East Village.',
       'Pasa en los ocho eneros: de madrugada, el fin de semana tiene entre 1,5 y 4,8 veces los viajes de lunes a viernes.',
     ],

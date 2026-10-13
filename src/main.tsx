@@ -303,7 +303,7 @@ function App() {
       const n = curves[d][v.hour];
       if (!n || !top) return [];
       const voice = voices.current![d === 'weekday' ? 0 : 1], note = noteFor(speedAt(d, v.hour) ?? 15);
-      const pulse = () => voice.triggerAttackRelease(note, '32n', Tone.now(), 0.25);
+      const pulse = () => voice.triggerAttackRelease(note, '32n', Tone.now(), 0.5);
       pulse();
       return [window.setInterval(pulse, 1000 / (0.5 + 4.5 * n / top))];
     });
@@ -318,7 +318,7 @@ function App() {
     if (sound) {setSound(false); return;}
     try {
       await Tone.start();
-      voices.current ??= ([['sine', -0.8], ['triangle', 0.8]] as const).map(([type, pan]) => new Tone.Synth({oscillator: {type}, envelope: {attack: 0.005, decay: 0.06, sustain: 0, release: 0.1}, volume: -14}).connect(new Tone.Panner(pan).toDestination()));
+      voices.current ??= ([['sine', -0.8], ['triangle', 0.8]] as const).map(([type, pan]) => new Tone.Synth({oscillator: {type}, envelope: {attack: 0.005, decay: 0.06, sustain: 0, release: 0.1}, volume: -6}).connect(new Tone.Panner(pan).toDestination()));
       setSound(true);
     } catch {setError('No se pudo activar el audio. Puedes seguir la historia sin sonido.');}
   }

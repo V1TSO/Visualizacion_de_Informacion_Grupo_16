@@ -359,7 +359,7 @@ function App() {
 
   return <>
     <header className="hero">
-      <div className="hero-top"><span className="brand"><span className="roof">NY</span>El pulso de Nueva York</span><span>InfoVis, Grupo 16, V1</span></div>
+      <div className="hero-top"><span className="brand"><span className="roof">NY</span>El pulso de Nueva York</span><span>InfoVis, Grupo 16, V2</span></div>
       <div className="hero-copy">
         <h1>El fin de semana, Nueva York no madruga: trasnocha.</h1>
         <p>Ocho eneros de taxis amarillos, de 2019 a 2026{totalRows ? `: ${fmt(totalRows / 1e6)} millones de viajes` : ''} contados hora a hora. Recorre un día y una noche de la ciudad.</p>
@@ -453,7 +453,7 @@ function App() {
       <p>Flujos: pares de zonas distintas por hora de salida, con al menos medio viaje al día. Guardamos los 6 destinos y los 6 orígenes principales de cada zona y los 40 pares más grandes de la ciudad.</p>
       <p>Color: escala logarítmica común a todas las horas y años (1, 5, 25, 125 y {fmt(summary?.zoneMax ?? 0)} viajes). Comparar: razón entre los promedios de sábado y domingo y de lunes a viernes a la misma hora. Relieve 3D: altura lineal a los viajes. Sonido: una voz por tipo de día, en estéreo; el ritmo va de 0,5 a 5 pulsos por segundo según los viajes, y el tono sigue una escala pentatónica según la velocidad mediana, de 10 a 28 km/h.</p>
     </section>
-    <footer><span>Grupo 16: Vicente Reñasco, David Parra y Mariano De Sarratea</span><span>V1, visualización interactiva y sonora</span></footer>
+    <footer><span>Grupo 16: Vicente Reñasco, David Parra y Mariano De Sarratea</span><span>V2, visualización interactiva y sonora</span></footer>
   </>;
 }
 createRoot(document.getElementById('root')!).render(<App/>);

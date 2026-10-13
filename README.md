@@ -1,6 +1,6 @@
 # El pulso de Nueva York
 
-V1 del grupo 16: visualización de taxis amarillos de enero de 2019 a 2026, con datos oficiales NYC TLC.
+V2 del grupo 16: visualización de taxis amarillos de enero de 2019 a 2026, con datos oficiales NYC TLC.
 
 ## Abrir
 

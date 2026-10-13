@@ -4,7 +4,7 @@ export type Lens = 'weekday' | 'weekend' | 'diff';
 export type ChartMode = 'day' | 'speed' | 'years';
 export interface Camera { center: [number, number]; zoom: number; pitch: number; bearing: number }
 export interface View { year: number; hour: number; lens: Lens; movement: Movement; three: boolean; flows: boolean; selected?: number; chart: ChartMode; camera?: Camera; labels?: number[] }
-export interface Step { when: string; title: string; text: string; view: View }
+export interface Step { when: string; title: string; text: string; points?: string[]; view: View }
 
 export const CITY: Camera = {center: [-73.93, 40.72], zoom: 10.1, pitch: 0, bearing: 0};
 const NIGHTLIFE: Camera = {center: [-73.99, 40.728], zoom: 12.2, pitch: 0, bearing: 0};
@@ -68,5 +68,17 @@ export const STEPS: Step[] = [
     title: 'La noche volvió; el taxi cambió',
     text: 'Hoy hay la mitad de viajes que en 2019, y el viaje mediano cuesta 23,09 dólares: un 60 % más que en 2019, ya descontada la inflación de Nueva York. Pero la noche del fin de semana sigue ahí.',
     view: {...base, lens: 'diff', hour: 1, chart: 'years', camera: CITY},
+  },
+  {
+    when: 'Ocho eneros, de 2019 a 2026',
+    title: 'En resumen',
+    text: 'Lo que muestran los viajes de taxi:',
+    points: [
+      'De lunes a viernes, la ciudad madruga: a las 08:00 empiezan 5.719 viajes, y muchos van a Midtown.',
+      'El fin de semana no madruga: a esa hora hay un 57 % menos.',
+      'Pero trasnocha: a la 01:00 hay 3,3 veces más viajes, sobre todo desde East Village.',
+      'Pasa en los ocho eneros: de madrugada, el fin de semana tiene entre 1,5 y 4,8 veces los viajes de lunes a viernes.',
+    ],
+    view: {...base, lens: 'diff', hour: 1, camera: CITY, labels: [79]},
   },
 ];

@@ -372,6 +372,7 @@ function App() {
             <p className="when">{s.when}</p>
             <h2>{s.title}</h2>
             <p>{s.text}</p>
+            {s.points && <ul className="points">{s.points.map(p => {const [lead, ...rest] = p.split(': '); return <li key={p}><strong>{lead}:</strong> {rest.join(': ')}</li>;})}</ul>}
           </article>
         </section>)}
         <section className="explore" id="explorar" ref={exploreNode}>

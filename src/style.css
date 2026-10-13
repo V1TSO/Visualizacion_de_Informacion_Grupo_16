@@ -68,6 +68,9 @@ a { color: #24668c; }
 .card .when { font: 600 20px var(--display); color: #8a6a00; margin: 0 0 6px; }
 .card h2 { font-size: 26px; line-height: 1.15; letter-spacing: -.01em; margin: 0 0 12px; }
 .card p { font-size: 16px; line-height: 1.65; color: var(--ink-2); margin: 0; max-width: 44ch; }
+.card .points { margin: 10px 0 0; padding-left: 20px; font-size: 16px; line-height: 1.55; color: var(--ink-2); max-width: 44ch; }
+.card .points li { margin: 0 0 8px; }
+.card .points strong { color: var(--ink); }
 .explore { padding: 16vh 0 10vh; }
 .panel h2 { font: 700 40px/1 var(--display); letter-spacing: -.01em; margin: 0 0 10px; }
 .panel .lede { margin-bottom: 22px; }

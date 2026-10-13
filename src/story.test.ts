@@ -9,7 +9,8 @@ const data: Dataset = read('trips-2026.json');
 const zones: Record<number, {zone: string; borough: string}> = Object.fromEntries(read('zones.geojson').features.map((f: {id: number; properties: {zone: string; borough: string}}) => [f.id, f.properties]));
 const fmt = (n: number) => n.toLocaleString('es-CL', {maximumFractionDigits: 0});
 const fmt1 = (n: number) => n.toLocaleString('es-CL', {maximumFractionDigits: 1});
-const says = (i: number, ...parts: string[]) => { for (const p of parts) assert.ok(STEPS[i].text.includes(p), `escena ${i + 1}: falta «${p}» en «${STEPS[i].text}»`); };
+const words = (i: number) => [STEPS[i].text, ...(STEPS[i].points ?? [])].join(' ');
+const says = (i: number, ...parts: string[]) => { for (const p of parts) assert.ok(words(i).includes(p), `escena ${i + 1}: falta «${p}» en «${words(i)}»`); };
 const week = aggregate(data, 'pickup', 'weekday'), end = aggregate(data, 'pickup', 'weekend');
 const top = (zonesByHour: Record<number, number[]>, h: number, n: number) => Object.entries(zonesByHour).sort((a, b) => b[1][h] - a[1][h]).slice(0, n).map(([id]) => zones[Number(id)].zone);
 const EAST_VILLAGE = 79, MIDTOWN_CENTER = 161;
@@ -65,9 +66,16 @@ test('Escenas 8–9: ocho eneros', () => {
   says(8, `${summary.years['2026'].fare.toLocaleString('es-CL', {minimumFractionDigits: 2})} dólares`, `un ${fmt((fare * CPI_2019 / CPI_2026 - 1) * 100)} % más`);
 });
 
+test('Escena 10: el resumen repite las cifras de la historia', () => {
+  const last = STEPS.length - 1;
+  const ratios = Object.values(summary.years).map(y => windowRatio(y.city.pickup.weekend, y.city.pickup.weekday, NIGHT));
+  says(last, fmt(week.hours[8]), 'Midtown', `${fmt((1 - end.hours[8] / week.hours[8]) * 100)} %`, `${fmt1(end.hours[1] / week.hours[1])} veces`, 'East Village');
+  says(last, `entre ${fmt1(Math.min(...ratios))} y ${fmt1(Math.max(...ratios))} veces`);
+});
+
 test('Las etiquetas del mapa nombran zonas citadas en el texto', () => {
   const short = (name: string) => name.replace(/ (North|South)$/, '').replace(/\/.*$/, '').replace(' Airport', '');
-  STEPS.forEach((s, i) => (s.view.labels ?? []).forEach(id => assert.ok(s.text.includes(short(zones[id].zone)), `escena ${i + 1}: ${zones[id].zone}`)));
+  STEPS.forEach((s, i) => (s.view.labels ?? []).forEach(id => assert.ok(words(i).includes(short(zones[id].zone)), `escena ${i + 1}: ${zones[id].zone}`)));
 });
 
 test('Ayudas: arco, nota y noche', () => {

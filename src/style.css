@@ -36,7 +36,16 @@ a { color: #24668c; }
 .primary:hover { background: #ffcc2e; }
 .ghost { background: transparent; border: 1px solid #4a6273; border-radius: 8px; padding: 12px 20px; color: #e6edf0; }
 .ghost:hover { border-color: #8aa2b0; }
+.horizon-figure { margin: 0; }
+.horizon-figure figcaption { font-size: 13px; color: #9fb3bd; margin: 0 0 6px; }
 .horizon { width: 100%; height: auto; overflow: visible; }
+.horizon .base { stroke: #3a5061; stroke-width: 1; }
+.horizon .leader { stroke: #6f8795; stroke-width: 1; stroke-dasharray: 3 4; }
+.horizon .gap { stroke: #f4f6f5; stroke-width: 1.5; stroke-dasharray: 2 4; }
+.dot-week { fill: #8fb3c9; stroke: var(--night); stroke-width: 2; }
+.dot-end { fill: #e8a36b; stroke: var(--night); stroke-width: 2; }
+.horizon .note-head { fill: #f4f6f5; font-weight: 700; font-size: 19px; }
+.horizon .note circle, .horizon .note line { opacity: 0; animation: appear .6s ease 2.4s forwards; }
 .horizon polyline { fill: none; stroke-linejoin: round; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 2.6s cubic-bezier(.4, 0, .2, 1) .3s forwards; }
 .line-week { stroke: #8fb3c9; stroke-width: 3; }
 .line-end { stroke: #e8a36b; stroke-width: 4.5; }
@@ -136,9 +145,11 @@ footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12
   .hero h1 { max-width: 14ch; }
   .horizon text { font-size: 38px; }
   .horizon .tick { font-size: 32px; }
+  .horizon .note-head { font-size: 30px; }
+  .horizon .note-line { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .horizon polyline { animation: none; stroke-dashoffset: 0; }
-  .horizon text { animation: none; opacity: 1; }
+  .horizon text, .horizon .note circle, .horizon .note line { animation: none; opacity: 1; }
   .scrolly, .card { transition: none; }
 }

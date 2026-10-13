@@ -38,16 +38,31 @@ type Arc = {coords: [number, number][]; w: number};
 
 function Horizon({summary}: {summary: Summary}) {
   const {weekday, weekend} = summary.years['2026'].city.pickup;
-  const W = 1200, H = 170, max = Math.max(...weekday, ...weekend);
+  const W = 1200, H = 170, TOP = -82, max = Math.max(...weekday, ...weekend);
   const x = (h: number) => h / 23 * W, y = (n: number) => H - n / max * (H - 24);
   const points = (a: number[]) => a.map((n, h) => `${x(h).toFixed(1)},${y(n).toFixed(1)}`).join(' ');
-  return <svg className="horizon" viewBox={`0 -10 ${W} ${H + 40}`} role="img" aria-label="Viajes por hora en enero de 2026. El fin de semana tiene su máximo de madrugada; los días de semana, en la mañana y la tarde.">
-    <polyline className="line-week" points={points(weekday)} pathLength={1}/>
-    <polyline className="line-end" points={points(weekend)} pathLength={1}/>
-    <text className="label-end" x={x(1) + 14} y={y(weekend[1]) - 12}>sábado y domingo</text>
-    <text className="label-week" x={x(8) - 10} y={y(weekday[8]) - 14} textAnchor="end">lunes a viernes</text>
-    {[0, 6, 12, 18, 23].map(h => <text key={h} className="tick" x={x(h)} y={H + 26} textAnchor={h === 0 ? 'start' : h === 23 ? 'end' : 'middle'}>{clock(h)}</text>)}
-  </svg>;
+  const less = `${fmt((1 - weekend[8] / weekday[8]) * 100)} %`, times = fmt1(weekend[1] / weekday[1]);
+  // Las dos horas del título, con su cifra: el lector no necesita un eje Y para leer la diferencia.
+  const note = (h: number, head: string) => <g className="note">
+    <line className="leader" x1={x(h)} x2={x(h)} y1={TOP + 64} y2={y(Math.max(weekday[h], weekend[h])) - 8}/>
+    <line className="gap" x1={x(h)} x2={x(h)} y1={y(weekday[h])} y2={y(weekend[h])}/>
+    <circle className="dot-week" cx={x(h)} cy={y(weekday[h])} r={6}/>
+    <circle className="dot-end" cx={x(h)} cy={y(weekend[h])} r={6}/>
+    <text className="note-head" x={x(h) - 6} y={TOP + 16}>{head}</text>
+    <text className="note-line label-end" x={x(h) - 6} y={TOP + 37}>{fmt(weekend[h])} sábado y domingo</text>
+    <text className="note-line label-week" x={x(h) - 6} y={TOP + 56}>{fmt(weekday[h])} lunes a viernes</text>
+  </g>;
+  return <figure className="horizon-figure">
+    <figcaption>Viajes de taxi que empiezan en cada hora, promedio por día, enero de 2026. <span className="label-end">Naranjo: sábado y domingo.</span> <span className="label-week">Azul: lunes a viernes.</span></figcaption>
+    <svg className="horizon" viewBox={`0 ${TOP} ${W} ${H - TOP + 30}`} role="img" aria-label={`Viajes por hora en enero de 2026. A las 08:00 el fin de semana tiene ${less} menos viajes que lunes a viernes; a la 01:00, ${times} veces más.`}>
+      <line className="base" x1={0} x2={W} y1={H} y2={H}/>
+      <polyline className="line-week" points={points(weekday)} pathLength={1}/>
+      <polyline className="line-end" points={points(weekend)} pathLength={1}/>
+      {note(1, `01:00 · ${times} veces más`)}
+      {note(8, `08:00 · ${less} menos`)}
+      {[0, 6, 12, 18, 23].map(h => <text key={h} className="tick" x={x(h)} y={H + 26} textAnchor={h === 0 ? 'start' : h === 23 ? 'end' : 'middle'}>{clock(h)}</text>)}
+    </svg>
+  </figure>;
 }
 
 function App() {

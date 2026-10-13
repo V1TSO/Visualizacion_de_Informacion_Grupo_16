@@ -27,7 +27,7 @@ a { color: #24668c; }
 .hero-top { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #9fb3bd; }
 .brand { display: flex; align-items: center; gap: 12px; font-weight: 600; color: #e6edf0; }
 .roof { display: grid; place-items: center; width: 44px; height: 26px; border-radius: 13px 13px 4px 4px; background: var(--taxi); color: var(--night); font: 700 14px var(--display); letter-spacing: .04em; }
-.hero-copy { align-self: center; max-width: 1180px; padding: 4vh 0 2vh; }
+.hero-copy { align-self: center; max-width: 1180px; padding: 2vh 0 1vh; }
 .hero h1 { font: 700 clamp(48px, 7vw, 108px)/.92 var(--display); letter-spacing: -.012em; margin: 0 0 24px; max-width: 17ch; color: #f4f6f5; }
 .hero-copy p { font-size: 18px; line-height: 1.6; color: #b4c4cc; max-width: 52ch; margin: 0 0 32px; }
 .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
@@ -37,7 +37,7 @@ a { color: #24668c; }
 .ghost { background: transparent; border: 1px solid #4a6273; border-radius: 8px; padding: 12px 20px; color: #e6edf0; }
 .ghost:hover { border-color: #8aa2b0; }
 .horizon-figure { margin: 0; }
-.horizon-figure figcaption { font-size: 13px; color: #9fb3bd; margin: 0 0 6px; }
+.horizon-figure figcaption { font-size: 13px; color: #9fb3bd; margin: 0 0 22px; }
 .horizon { width: 100%; height: auto; overflow: visible; }
 .horizon .base { stroke: #3a5061; stroke-width: 1; }
 .horizon .leader { stroke: #6f8795; stroke-width: 1; stroke-dasharray: 3 4; }

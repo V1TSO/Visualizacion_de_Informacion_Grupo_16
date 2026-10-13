@@ -265,20 +265,21 @@ function App() {
     const el = chartNode.current;
     if (!el || !curves || !summary || !data) return;
     const font = {family: 'DM Sans, Arial, sans-serif', color: '#47606b', size: 11};
-    const common = {margin: {t: 8, r: 12, b: 28, l: 38}, height: 170, paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', font, showlegend: false};
+    // Separadores en español (8.000; 1,5) y etiquetas separadas del eje: el 0 del eje Y no pisa el 00 del eje X.
+    const common = {margin: {t: 8, r: 12, b: 30, l: 46}, height: 170, paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', font, showlegend: false, separators: ',.'};
     // En viajes se atenúa el tipo de día que no se ve en el mapa; en velocidad se comparan ambos.
     const opacity = (d: DayType) => v.chart === 'speed' || v.lens === 'diff' || v.lens === d ? 1 : 0.3;
     let plot: Promise<Plotly.PlotlyHTMLElement>;
     if (v.chart === 'years') {
       const ratios = YEARS.map(y => windowRatio(summary.years[y].city[v.movement].weekend, summary.years[y].city[v.movement].weekday, NIGHT));
-      plot = Plotly.react(el, [{type: 'bar', x: YEARS.map(String), y: ratios, marker: {color: YEARS.map(y => y === v.year ? '#f6bd16' : '#b9c9d1')}, hovertemplate: 'Enero de %{x}: %{y:.1f} veces<extra></extra>'}], {...common, xaxis: {type: 'category', fixedrange: true}, yaxis: {rangemode: 'tozero', fixedrange: true, gridcolor: '#e5e9e9', ticksuffix: '×'}, bargap: 0.35, shapes: [{type: 'line', xref: 'paper', x0: 0, x1: 1, y0: 1, y1: 1, line: {color: '#47606b', width: 1, dash: 'dot'}}], annotations: [{x: YEARS.indexOf(2021), y: ratios[YEARS.indexOf(2021)], yanchor: 'bottom', text: 'Pandemia', showarrow: false, font: {...font, color: '#173c50'}}, {xref: 'paper', x: 1, y: 1, xanchor: 'right', yanchor: 'bottom', text: 'igual', showarrow: false, font: {...font, size: 10}}]}, {displayModeBar: false, responsive: true});
+      plot = Plotly.react(el, [{type: 'bar', x: YEARS.map(String), y: ratios, marker: {color: YEARS.map(y => y === v.year ? '#f6bd16' : '#b9c9d1')}, hovertemplate: 'Enero de %{x}: %{y:.1f} veces<extra></extra>'}], {...common, xaxis: {type: 'category', fixedrange: true}, yaxis: {rangemode: 'tozero', fixedrange: true, gridcolor: '#e5e9e9', ticksuffix: '×', ticks: 'outside', ticklen: 6, tickcolor: 'rgba(0,0,0,0)'}, bargap: 0.35, shapes: [{type: 'line', xref: 'paper', x0: 0, x1: 1, y0: 1, y1: 1, line: {color: '#47606b', width: 1, dash: 'dot'}}], annotations: [{x: YEARS.indexOf(2021), y: ratios[YEARS.indexOf(2021)], yanchor: 'bottom', text: 'Pandemia', showarrow: false, font: {...font, color: '#173c50'}}, {xref: 'paper', x: 1, y: 1, xanchor: 'right', yanchor: 'bottom', text: 'igual', showarrow: false, font: {...font, size: 10}}]}, {displayModeBar: false, responsive: true});
     } else {
       const series = v.chart === 'day' ? curves : {weekday: HOURS.map(h => speedAt('weekday', h)), weekend: HOURS.map(h => speedAt('weekend', h))};
       const unit = v.chart === 'day' ? 'viajes' : 'km/h';
       plot = Plotly.react(el, [
         {x: HOURS, y: series.weekday, type: 'scatter', mode: 'lines', opacity: opacity('weekday'), line: {color: '#245978', width: 3}, hovertemplate: `%{y:.1f} ${unit}<extra>Lunes a viernes</extra>`},
         {x: HOURS, y: series.weekend, type: 'scatter', mode: 'lines', opacity: opacity('weekend'), line: {color: '#b65d23', width: 3, dash: 'dot'}, hovertemplate: `%{y:.1f} ${unit}<extra>Sábado y domingo</extra>`},
-      ], {...common, hovermode: 'x unified', xaxis: {range: [0, 23], tickvals: [0, 6, 12, 18, 23], ticktext: ['00', '06', '12', '18', '23'], fixedrange: true}, yaxis: {rangemode: 'tozero', fixedrange: true, gridcolor: '#e5e9e9'}, shapes: [{type: 'rect', xref: 'x', yref: 'paper', x0: 0, x1: 5, y0: 0, y1: 1, fillcolor: '#152433', opacity: 0.06, line: {width: 0}, layer: 'below'}, {type: 'line', xref: 'x', yref: 'paper', x0: v.hour, x1: v.hour, y0: 0, y1: 1, line: {color: '#bc911a', width: 2, dash: 'dot'}}], annotations: [{x: 2.5, xref: 'x', y: 1, yref: 'paper', yanchor: 'top', text: 'madrugada', showarrow: false, font: {...font, size: 10}}]}, {displayModeBar: false, responsive: true});
+      ], {...common, hovermode: 'x unified', xaxis: {range: [0, 23], tickvals: [0, 6, 12, 18, 23], ticktext: ['00', '06', '12', '18', '23'], fixedrange: true, ticks: 'outside', ticklen: 4, tickcolor: 'rgba(0,0,0,0)'}, yaxis: {rangemode: 'tozero', fixedrange: true, gridcolor: '#e5e9e9', tickformat: ',', ticks: 'outside', ticklen: 6, tickcolor: 'rgba(0,0,0,0)'}, shapes: [{type: 'rect', xref: 'x', yref: 'paper', x0: 0, x1: 5, y0: 0, y1: 1, fillcolor: '#152433', opacity: 0.06, line: {width: 0}, layer: 'below'}, {type: 'line', xref: 'x', yref: 'paper', x0: v.hour, x1: v.hour, y0: 0, y1: 1, line: {color: '#bc911a', width: 2, dash: 'dot'}}], annotations: [{x: 2.5, xref: 'x', y: 1, yref: 'paper', yanchor: 'top', text: 'madrugada', showarrow: false, font: {...font, size: 10}}]}, {displayModeBar: false, responsive: true});
     }
     void plot.then(p => {p.removeAllListeners('plotly_click'); p.on('plotly_click', e => act(v.chart === 'years' ? {year: Number(e.points[0].x)} : {hour: Number(e.points[0].x)}));});
   }, [curves, summary, data, v.chart, v.hour, v.year, v.lens, v.movement, zoneSpeed, step]);
@@ -343,7 +344,7 @@ function App() {
   }, [total, week, end, flows, v.selected, v.flows, v.lens, v.hour, v.movement, zoneById]);
 
   const place = v.selected === undefined ? 'toda la ciudad' : nameOf(v.selected);
-  const chartTitle = v.chart === 'years' ? 'La madrugada del fin de semana, en ocho eneros' : v.chart === 'day' ? `Viajes por hora, ${place}` : `Velocidad mediana en km/h, ${place}`;
+  const chartTitle = v.chart === 'years' ? 'La madrugada del fin de semana, en ocho eneros' : v.chart === 'day' ? `Viajes por hora, promedio por día, ${place}` : `Velocidad mediana en km/h, ${place}`;
   const chartNote = v.chart === 'years' ? 'Viajes de 00:00 a 05:00, sábado y domingo dividido por lunes a viernes' : 'Azul: lunes a viernes. Naranjo punteado: sábado y domingo.';
   const hovered = hover && (() => {
     const w = week?.zones[hover.id]?.[v.hour] ?? 0, e = end?.zones[hover.id]?.[v.hour] ?? 0;

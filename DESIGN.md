@@ -175,7 +175,7 @@ Preguntas que llevamos:
 
 ## V4: la versión final
 
-22 de octubre de 2026 · tag `v4` (commits desde `d346538`; la escala violeta se probó en `d346538` y se revirtió en `9eede9f`). Evidencia en `docs/evidencia/v4/` (capturas y `recorrido.mp4` con sonido).
+22 de octubre de 2026 · tag `v4` (commits desde `d346538`; la escala violeta se probó en `d346538` y se revirtió en `cd1faea`). Evidencia en `docs/evidencia/v4/` (capturas y `recorrido.mp4` con sonido).
 
 ### Qué cambió
 
@@ -194,7 +194,7 @@ Preguntas que llevamos:
 
 ### Qué se descartó
 
-- Volver a la escala violeta (`d346538`, revertida en `9eede9f`): separaba el naranjo de la cantidad del naranjo del fin de semana, pero la R2 destacó el amarillo a rojizo como intuitivo, y en cada vista solo se usa una de las dos escalas. Mantenemos el cruce como limitación conocida: la leyenda del mapa dice «viajes por zona».
+- Volver a la escala violeta (`d346538`, revertida en `cd1faea`): separaba el naranjo de la cantidad del naranjo del fin de semana, pero la R2 destacó el amarillo a rojizo como intuitivo, y en cada vista solo se usa una de las dos escalas. Mantenemos el cruce como limitación conocida: la leyenda del mapa dice «viajes por zona».
 - Cartograma o hexágonos para que el área no pese: rompe la geografía que la R2 pidió conservar, y la etiqueta con cifra resuelve el caso de JFK.
 - Gris para zonas con menos de 10 viajes en «Comparar»: Bushwick North (25) seguía igual de intenso. Atenuar de forma continua funciona mejor que un corte.
 - Cambiar el mapeo del sonido (tono contra ritmo con las dos voces): a la 01:00 las velocidades difieren en un paso de la escala, y rehacerlo obligaría a probar todo el sonido de nuevo sin tiempo para hacerlo.

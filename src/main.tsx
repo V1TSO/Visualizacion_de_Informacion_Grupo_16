@@ -258,11 +258,11 @@ function App() {
     const w = week.zones[id]?.[v.hour] ?? 0, e = end.zones[id]?.[v.hour] ?? 0;
     return v.lens === 'diff' ? ` · ${fmt1(e / Math.max(w, 0.05))}×` : ` · ${fmt(total.zones[id]?.[v.hour] ?? 0)} al día`;
   };
-  const labelKey = labelIds.map(id => `${id}|${figure(id)}`).join(',');
+  const labelKey = labelIds.map(id => `${id}|${figure(id)}`).join('\n');
   useEffect(() => {
     const m = map.current;
     if (!ready || !m || !labelKey) return;
-    const markers = labelKey.split(',').map(l => l.split('|')).flatMap(([id, fig]) => {
+    const markers = labelKey.split('\n').map(l => l.split('|')).flatMap(([id, fig]) => {
       const z = zoneById.get(Number(id));
       if (!z) return [];
       const el = document.createElement('span'); el.className = 'zone-label'; el.textContent = z.zone + fig;

@@ -1,6 +1,6 @@
 # El pulso de Nueva York
 
-V3 del grupo 16: visualización de taxis amarillos de enero de 2019 a 2026, con datos oficiales NYC TLC.
+V4 del grupo 16: visualización de taxis amarillos de enero de 2019 a 2026, con datos oficiales NYC TLC.
 
 ## Abrir
 
@@ -17,11 +17,11 @@ Abrir la URL que indica Vite. `npm run build` genera `dist/` y `npm run preview`
 
 La página abre con una **portada**: las curvas de viajes por hora de enero de 2026, con las 01:00 y las 08:00 anotadas con sus cifras, y una leyenda que explica el sonido antes de activarlo. Después vienen dos partes que comparten el mismo mapa fijo:
 
-1. **Historia** (11 escenas al hacer scroll): lunes a viernes madruga y va a Midtown; el fin de semana no madruga, sale de día y trasnocha; la noche termina cerca y es rápida; ocho eneros repiten el patrón. La última escena, «En resumen», repite las cuatro conclusiones con sus cifras. Cada escena fija año, hora, días, salidas o llegadas, cámara, capas y gráfico. Las cifras del texto se verifican en `src/story.test.ts`. Tocar el mapa o un gráfico durante la historia salta a explorar desde esa misma vista.
+1. **Historia** (11 escenas al hacer scroll): lunes a viernes madruga y va a Midtown; el fin de semana no madruga, sale de día y trasnocha; la noche termina cerca y es rápida; ocho eneros repiten el patrón. La última escena, «En resumen», repite las cuatro conclusiones con sus cifras. Cada escena fija año, hora, días, salidas o llegadas, cámara, capas y gráfico. Las cifras del texto se verifican en `src/story.test.ts`. En la historia, las zonas citadas llevan su cifra sobre el mapa, y el botón «Explorar desde aquí» de cada tarjeta lleva a explorar desde esa misma vista. Un clic en el mapa no saca de la historia.
 2. **Explora tú**: año (2019–2026), días (lunes a viernes, fin de semana o comparar), salidas o llegadas, hora con reproducción del día, capas (flujos o relieve 3D), búsqueda de zona y lista de zonas o destinos.
 
 - **Taxímetro** (arriba a la izquierda): hora, viajes de esa hora (promedio por día), velocidad mediana, botón de sonido y leyenda del sonido.
-- **Mapa**: escala logarítmica común a los ocho años. En «Comparar», razón sábado y domingo / lunes a viernes a la misma hora. En «Relieve 3D», altura lineal a los viajes. En «Flujos», arcos de origen (claro) a destino (oscuro), con grosor por viajes al día y taxis animados (sin animación si el sistema pide reducir movimiento).
+- **Mapa**: escala logarítmica común a los ocho años, en violeta (el azul y el naranjo quedan para los tipos de día). En «Comparar», razón sábado y domingo / lunes a viernes a la misma hora; la zona se atenúa con menos viajes, y la lista pide 50 viajes al día y muestra la razón con su cantidad. En «Relieve 3D», altura lineal a los viajes. En «Flujos», arcos de origen (claro) a destino (oscuro), con grosor por viajes al día y taxis animados (puntos amarillos) (sin animación si el sistema pide reducir movimiento).
 - **Gráfico**: viajes por hora, velocidad por hora o la madrugada del fin de semana en ocho eneros. Un clic cambia la hora o el año.
 - **Fondo**: el agua del mapa y el fondo de la historia se oscurecen entre las 20:00 y las 08:00. No cambia la codificación de color de los datos.
 - **Sonido** (necesita un clic): lunes a viernes a la izquierda (sine) y fin de semana a la derecha (triangle). Ritmo = viajes (0,5–5 pulsos/s, relativo al máximo de ambas curvas de la selección). Tono = velocidad mediana en una escala pentatónica (10–28 km/h). En «Comparar» suenan ambas voces; en los otros modos, solo la del tipo de día elegido. El volumen es fijo (pulsos de unos −12 dBFS) y no codifica datos. La portada y el taxímetro muestran qué codifica cada parámetro antes de activar el sonido. Cambiar de pestaña pausa sonido y reproducción.

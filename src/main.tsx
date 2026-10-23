@@ -25,11 +25,12 @@ const WATER_DAY = [223, 234, 240], WATER_NIGHT = [21, 36, 51];
 const water = (t: number) => `rgb(${WATER_DAY.map((d, i) => Math.round(d + (WATER_NIGHT[i] - d) * t)).join(',')})`;
 const LENS: Record<Lens, string> = {weekday: 'Lunes a viernes', weekend: 'Sábado y domingo', diff: 'Fin de semana contra lunes a viernes'};
 // Qué codifica cada parámetro del sonido. Se ve antes de activarlo: el sonido no debe necesitar explicación oral.
-const SOUND_KEY = [['Ritmo', 'más viajes, pulsos más seguidos', ''], ['Tono', 'más velocidad, nota más aguda', ''], ['Izquierda', 'lunes a viernes', 'label-week'], ['Derecha', 'fin de semana', 'label-end']] as const;
+const SOUND_KEY = [['Ritmo', 'más viajes, pulsos más seguidos', ''], ['Tono', 'más velocidad, nota más aguda', ''], ['Bocina', 'tráfico lento, bajo 15 km/h', ''], ['Izquierda', 'lunes a viernes', 'label-week'], ['Derecha', 'fin de semana', 'label-end']] as const;
 const SoundKey = ({className, title}: {className: string; title?: string}) => <ul className={`sound-key ${className}`}>
   {title && <li className="sound-key-title">{title}</li>}
   {SOUND_KEY.map(([k, v, tone]) => <li key={k} className={tone}><strong>{k}:</strong> {v}</li>)}
 </ul>;
+const HONK_KMH = 15;
 const EXPLORE_START: View = {year: 2026, hour: 1, lens: 'diff', movement: 'pickup', three: false, flows: false, chart: 'day'};
 const EMPTY: FeatureCollection = {type: 'FeatureCollection', features: []};
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -89,6 +90,7 @@ function App() {
   const exploreNode = useRef<HTMLElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const voices = useRef<Tone.Synth[] | null>(null);
+  const horns = useRef<Tone.Synth[] | null>(null);
   const arcs = useRef<Arc[]>([]);
   const onZone = useRef<(id: number) => void>(() => {});
   const loading = useRef(new Set<number>());
@@ -106,7 +108,7 @@ function App() {
   };
   useEffect(() => {
     Promise.all(['years.json', 'zones.geojson'].map(load)).then(([s, g]) => {setSummary(s); setGeo(g);}).catch(e => setError(String(e.message)));
-    return () => voices.current?.forEach(voice => voice.dispose());
+    return () => [...voices.current ?? [], ...horns.current ?? []].forEach(voice => voice.dispose());
   }, []);
   useEffect(() => want(v.year), [v.year]);
   // La historia visita 2021: se descarga antes de llegar a esa escena.
@@ -311,7 +313,14 @@ function App() {
       const voice = voices.current![d === 'weekday' ? 0 : 1], note = noteFor(speedAt(d, v.hour) ?? 15);
       const pulse = () => voice.triggerAttackRelease(note, '32n', Tone.now(), 0.5);
       pulse();
-      return [window.setInterval(pulse, 1000 / (0.5 + 4.5 * n / top))];
+      const ids = [window.setInterval(pulse, 1000 / (0.5 + 4.5 * n / top))];
+      // Bajo 15 km/h cambia el tipo de sonido, no solo su intensidad: una bocina, más seguida cuanto más lento.
+      const kmh = speedAt(d, v.hour);
+      if (kmh !== null && kmh < HONK_KMH && horns.current) {
+        const horn = horns.current[d === 'weekday' ? 0 : 1];
+        ids.push(window.setInterval(() => horn.triggerAttackRelease('F4', '16n', Tone.now(), 0.35), 1200 + 600 * Math.max(0, kmh - 10)));
+      }
+      return ids;
     });
     return () => ids.forEach(clearInterval);
   }, [sound, curves, v.hour, v.lens, zoneSpeed, data]);
@@ -325,6 +334,7 @@ function App() {
     try {
       await Tone.start();
       voices.current ??= ([['sine', -0.8], ['triangle', 0.8]] as const).map(([type, pan]) => new Tone.Synth({oscillator: {type}, envelope: {attack: 0.005, decay: 0.06, sustain: 0, release: 0.1}, volume: -6}).connect(new Tone.Panner(pan).toDestination()));
+      horns.current ??= [-0.8, 0.8].map(pan => new Tone.Synth({oscillator: {type: 'fatsquare', count: 2, spread: 30}, envelope: {attack: 0.01, decay: 0.05, sustain: 0.6, release: 0.08}, volume: -16}).connect(new Tone.Panner(pan).toDestination()));
       setSound(true);
     } catch {setError('No se pudo activar el audio. Puedes seguir la historia sin sonido.');}
   }
@@ -452,7 +462,7 @@ function App() {
       <p>Contamos salidas y llegadas con su propia fecha y hora local, dentro de enero y con una zona reconocida. Cada valor es un promedio por día: dividimos por los {data?.days.weekday} días de lunes a viernes o los {data?.days.weekend} de sábado y domingo de {v.year}. Lunes a viernes incluye feriados. Las horas de 00:00 a 05:00 del sábado y del domingo son, en la práctica, las noches del viernes y del sábado. En {v.movement === 'pickup' ? 'salidas' : 'llegadas'} quedaron fuera {fmt(data?.metadata.coverage[v.movement].unknownZone ?? 0)} viajes sin zona y {fmt(data?.metadata.coverage[v.movement].outsideMonth ?? 0)} fuera de enero.</p>
       <p>Velocidad: distancia del viaje dividida por su duración, en viajes de 1 minuto a 3 horas, de 0,16 a 80 km y de 1,6 a 113 km/h. Mostramos la mediana por hora de salida; una zona necesita al menos 10 viajes en esa hora del mes, si no, usamos la de la ciudad. Tarifa: mediana del total pagado en esos mismos viajes. Para comparar 2019 con 2026 descontamos la inflación con el índice de precios de enero del área de Nueva York (BLS, serie CUURS12ASA0).</p>
       <p>Flujos: pares de zonas distintas por hora de salida, con al menos medio viaje al día. Guardamos los 6 destinos y los 6 orígenes principales de cada zona y los 40 pares más grandes de la ciudad.</p>
-      <p>Color: escala logarítmica común a todas las horas y años (1, 5, 25, 125 y {fmt(summary?.zoneMax ?? 0)} viajes). Comparar: razón entre los promedios de sábado y domingo y de lunes a viernes a la misma hora. Relieve 3D: altura lineal a los viajes. Sonido: una voz por tipo de día, en estéreo; el ritmo va de 0,5 a 5 pulsos por segundo según los viajes, y el tono sigue una escala pentatónica según la velocidad mediana, de 10 a 28 km/h.</p>
+      <p>Color: escala logarítmica común a todas las horas y años (1, 5, 25, 125 y {fmt(summary?.zoneMax ?? 0)} viajes). Comparar: razón entre los promedios de sábado y domingo y de lunes a viernes a la misma hora. Relieve 3D: altura lineal a los viajes. Sonido: una voz por tipo de día, en estéreo; el ritmo va de 0,5 a 5 pulsos por segundo según los viajes, y el tono sigue una escala pentatónica según la velocidad mediana, de 10 a 28 km/h. Bajo 15 km/h suena además una bocina, más seguida cuanto más lento va el tráfico.</p>
     </section>
     <footer><span>Grupo 16: Vicente Reñasco, David Parra y Mariano De Sarratea</span><span>V2, visualización interactiva y sonora</span></footer>
   </>;

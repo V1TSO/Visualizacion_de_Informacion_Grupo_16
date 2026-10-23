@@ -60,7 +60,7 @@ export const STEPS: Step[] = [
   {
     when: 'Madrugada de sábado y domingo, 05:00',
     title: 'La noche es rápida',
-    text: 'A las 5:00 de un fin de semana, un taxi avanza a 27,4 km/h. Un día de semana a las 11:00, a 12,5 km/h: menos de la mitad. Con sonido, el tono sube con la velocidad.',
+    text: 'A las 5:00 de un fin de semana, un taxi avanza a 27,4 km/h. Un día de semana a las 11:00, a 12,5 km/h: menos de la mitad. Con sonido, el tono sube con la velocidad y la bocina del atasco se calla.',
     view: {...base, lens: 'weekend', hour: 5, chart: 'speed', camera: CITY},
   },
   {

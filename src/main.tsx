@@ -32,6 +32,7 @@ const SoundKey = ({className, title}: {className: string; title?: string}) => <u
   {SOUND_KEY.map(([k, v, tone]) => <li key={k} className={tone}><strong>{k}:</strong> {v}</li>)}
 </ul>;
 const HONK_KMH = 15;
+const LIST_MIN = 50;
 const EXPLORE_START: View = {year: 2026, hour: 1, lens: 'diff', movement: 'pickup', three: false, flows: false, chart: 'day'};
 const EMPTY: FeatureCollection = {type: 'FeatureCollection', features: []};
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -170,6 +171,8 @@ function App() {
     m.on('error', () => setError('El mapa no pudo cargar un recurso. Recarga la página; los gráficos y el sonido siguen disponibles.'));
     m.on('load', () => {
       m.addSource('zones', {type: 'geojson', data: geo});
+      // Debajo de la razón: una zona con pocos viajes se funde con este gris en vez de con el agua.
+      m.addLayer({id: 'land', type: 'fill', source: 'zones', paint: {'fill-color': LAND}});
       m.addLayer({id: 'fill', type: 'fill', source: 'zones', paint: {'fill-color': LAND}});
       m.addLayer({id: 'borders', type: 'line', source: 'zones', paint: {'line-color': '#ffffff', 'line-width': 0.6, 'line-opacity': 0.8}});
       m.addLayer({id: 'extrusion', type: 'fill-extrusion', source: 'zones', layout: {visibility: 'none'}, paint: {'fill-extrusion-color': LAND, 'fill-extrusion-opacity': 0.94}});
@@ -194,7 +197,7 @@ function App() {
     if (!ready || !m || !geo || !total || !week || !end || !summary) return;
     for (const feature of geo.features) {
       const id = Number(feature.id), w = week.zones[id]?.[v.hour] ?? 0, e = end.zones[id]?.[v.hour] ?? 0;
-      m.setFeatureState({source: 'zones', id}, {value: total.zones[id]?.[v.hour] ?? 0, low: Math.max(w, e) < 1, ratio: Math.log2(Math.max(e, 0.25) / Math.max(w, 0.25))});
+      m.setFeatureState({source: 'zones', id}, {value: total.zones[id]?.[v.hour] ?? 0, low: Math.max(w, e) < 1, trips: Math.max(w, e), ratio: Math.log2(Math.max(e, 0.25) / Math.max(w, 0.25))});
     }
     const value: maplibregl.ExpressionSpecification = ['coalesce', ['feature-state', 'value'], 0];
     // Escala logarítmica común a los ocho años: la zona mediana tiene <1 % del máximo, una escala lineal la deja casi blanca.
@@ -202,6 +205,8 @@ function App() {
       ? ['case', ['coalesce', ['feature-state', 'low'], true], LAND, ['interpolate', ['linear'], ['coalesce', ['feature-state', 'ratio'], 0], -2, DIVERGING[0], -1, DIVERGING[1], 0, DIVERGING[2], 1, DIVERGING[3], 2, DIVERGING[4]]]
       : ['case', ['==', value, 0], LAND, ['interpolate', ['linear'], value, 1, COLORS[0], 5, COLORS[1], 25, COLORS[2], 125, COLORS[3], summary.zoneMax, COLORS[4]]];
     m.setPaintProperty('fill', 'fill-color', color);
+    // En «Comparar», la razón se atenúa con pocos viajes: 25 viajes a 6× no deben pesar como 628 a 8×.
+    m.setPaintProperty('fill', 'fill-opacity', v.lens === 'diff' && !v.flows ? ['interpolate', ['linear'], ['coalesce', ['feature-state', 'trips'], 0], 1, 0.15, 10, 0.35, 50, 0.7, 150, 1] : 1);
     m.setPaintProperty('extrusion', 'fill-extrusion-color', color);
     m.setPaintProperty('extrusion', 'fill-extrusion-height', ['*', value, TOWER_METERS / summary.zoneMax]);
     m.setLayoutProperty('extrusion', 'visibility', relief ? 'visible' : 'none');
@@ -353,8 +358,8 @@ function App() {
     if (v.flows) return {title: `Flujos más grandes a las ${clock(v.hour)}`, items: flows.slice(0, 6).map(f => ({id: f.from, label: `${nameOf(f.from)} a ${nameOf(f.to)}`, value: `${fmt1(f.perDay)} al día`}))};
     if (v.lens === 'diff') return {
       title: `Donde más pesa el fin de semana a las ${clock(v.hour)}`,
-      // Umbral de 10 viajes al día: evita razones ruidosas en zonas casi vacías.
-      items: Object.keys(week.zones).map(Number).map(id => ({id, w: week.zones[id]?.[v.hour] ?? 0, e: end.zones[id]?.[v.hour] ?? 0})).filter(z => Math.max(z.w, z.e) >= 10).sort((a, b) => b.e / Math.max(b.w, 0.25) - a.e / Math.max(a.w, 0.25)).slice(0, 6).map(z => ({id: z.id, label: nameOf(z.id), value: `${fmt1(z.e / Math.max(z.w, 0.05))}×`})),
+      // Umbral de 50 viajes al día: con 10, Sunnyside (39 al día) quedaba sobre East Village (628). La razón va con su cantidad.
+      items: Object.keys(week.zones).map(Number).map(id => ({id, w: week.zones[id]?.[v.hour] ?? 0, e: end.zones[id]?.[v.hour] ?? 0})).filter(z => Math.max(z.w, z.e) >= LIST_MIN).sort((a, b) => b.e / Math.max(b.w, 0.25) - a.e / Math.max(a.w, 0.25)).slice(0, 6).map(z => ({id: z.id, label: nameOf(z.id), value: `${fmt1(z.e / Math.max(z.w, 0.05))}× · ${fmt(Math.max(z.w, z.e))} al día`})),
     };
     return {title: `Zonas con más ${v.movement === 'pickup' ? 'salidas' : 'llegadas'} a las ${clock(v.hour)}`, items: Object.entries(total.zones).map(([id, h]) => ({id: Number(id), n: h[v.hour]})).sort((a, b) => b.n - a.n).slice(0, 6).map(z => ({id: z.id, label: nameOf(z.id), value: fmt(z.n)}))};
   }, [total, week, end, flows, v.selected, v.flows, v.lens, v.hour, v.movement, zoneById]);
@@ -364,7 +369,7 @@ function App() {
   const chartNote = v.chart === 'years' ? 'Viajes de 00:00 a 05:00, sábado y domingo dividido por lunes a viernes' : 'Azul: lunes a viernes. Naranjo punteado: sábado y domingo.';
   const hovered = hover && (() => {
     const w = week?.zones[hover.id]?.[v.hour] ?? 0, e = end?.zones[hover.id]?.[v.hour] ?? 0;
-    const text = v.lens === 'diff' ? (Math.max(w, e) < 1 ? 'Menos de 1 viaje al día' : `${fmt1(e / Math.max(w, 0.05))} veces los viajes de lunes a viernes`) : `${fmt(total?.zones[hover.id]?.[v.hour] ?? 0)} viajes`;
+    const text = v.lens === 'diff' ? (Math.max(w, e) < 1 ? 'Menos de 1 viaje al día' : `${fmt1(e / Math.max(w, 0.05))} veces los viajes de lunes a viernes · ${fmt(Math.max(w, e))} al día`) : `${fmt(total?.zones[hover.id]?.[v.hour] ?? 0)} viajes`;
     return <div className="tooltip" style={{left: hover.x, top: hover.y}}><strong>{nameOf(hover.id)}</strong><span>{text}</span></div>;
   })();
 
@@ -449,7 +454,7 @@ function App() {
         <div className="legend">
           {v.flows ? <><svg viewBox="0 0 160 14" aria-hidden="true"><defs><linearGradient id="flow"><stop offset="0" stopColor="#173c50" stopOpacity="0.12"/><stop offset="1" stopColor="#173c50"/></linearGradient></defs><path d="M4 11 Q80 -4 156 7" stroke="url(#flow)" strokeWidth="5" fill="none" strokeLinecap="round"/></svg>
             <small>De la zona de origen (claro) a la de destino (oscuro). Grosor: viajes al día; el mayor tiene {fmt1(Math.max(...flows.map(f => f.perDay), 0))}.</small></>
-            : v.lens === 'diff' ? <><div className="ramp diverging"/><div className="ticks"><span>≥ 4× lun–vie</span><span>igual</span><span>≥ 4× sáb–dom</span></div><small>Razón entre promedios diarios a la misma hora{relief ? '. Altura: cantidad de viajes' : ''}. Gris: menos de 1 viaje al día.</small></>
+            : v.lens === 'diff' ? <><div className="ramp diverging"/><div className="ticks"><span>≥ 4× lun–vie</span><span>igual</span><span>≥ 4× sáb–dom</span></div><small>Razón entre promedios diarios a la misma hora{relief ? '. Altura: cantidad de viajes' : '. Más pálido: menos viajes; bajo 50 al día, la razón pesa poco'}. Gris: menos de 1 viaje al día.</small></>
             : <><div className="ramp"/><div className="ticks"><span>1</span><span>5</span><span>25</span><span>125</span><span>{fmt(summary?.zoneMax ?? 0)}</span></div><small>Viajes por zona en esta hora, promedio por día. Cada marca multiplica por 5: así se distinguen las zonas chicas y las grandes. Igual para los ocho años{relief ? '; altura lineal' : ''}.</small></>}
         </div>
         <div className="chart-card">

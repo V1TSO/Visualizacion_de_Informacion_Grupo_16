@@ -421,6 +421,7 @@ function App() {
         <div className="meter">
           <div className="meter-clock">{clock(v.hour)}</div>
           <p className="meter-when">{LENS[v.lens]}, enero de {v.year}</p>
+          {v.lens !== 'weekday' && v.hour < 6 && <p className="meter-when">De madrugada: la noche del viernes y la del sábado.</p>}
           <p className="meter-place">{v.selected === undefined ? 'Toda la ciudad' : nameOf(v.selected)}{v.movement === 'dropoff' ? ', llegadas' : ''}</p>
           {data ? <dl>
             <div><dt>{v.lens === 'diff' ? 'veces los viajes de lunes a viernes' : `viajes entre ${clock(v.hour)} y ${clock((v.hour + 1) % 24)}`}</dt><dd>{v.lens === 'diff' ? fmt1(ratio) : fmt(trips)}</dd></div>
@@ -432,7 +433,7 @@ function App() {
         <div className="legend">
           {v.flows ? <><svg viewBox="0 0 160 14" aria-hidden="true"><defs><linearGradient id="flow"><stop offset="0" stopColor="#173c50" stopOpacity="0.12"/><stop offset="1" stopColor="#173c50"/></linearGradient></defs><path d="M4 11 Q80 -4 156 7" stroke="url(#flow)" strokeWidth="5" fill="none" strokeLinecap="round"/></svg>
             <small>De la zona de origen (claro) a la de destino (oscuro). Grosor: viajes al día; el mayor tiene {fmt1(Math.max(...flows.map(f => f.perDay), 0))}.</small></>
-            : v.lens === 'diff' ? <><div className="ramp diverging"/><div className="ticks"><span>4× lun–vie</span><span>igual</span><span>4× sáb–dom</span></div><small>Razón entre promedios diarios a la misma hora{relief ? '. Altura: cantidad de viajes' : ''}. Gris: menos de 1 viaje al día.</small></>
+            : v.lens === 'diff' ? <><div className="ramp diverging"/><div className="ticks"><span>4× o más lun–vie</span><span>igual</span><span>4× o más sáb–dom</span></div><small>Razón entre promedios diarios a la misma hora{relief ? '. Altura: cantidad de viajes' : ''}. Gris: menos de 1 viaje al día.</small></>
             : <><div className="ramp"/><div className="ticks"><span>1</span><span>5</span><span>25</span><span>125</span><span>{fmt(summary?.zoneMax ?? 0)}</span></div><small>Viajes por zona en esta hora, promedio por día. Escala logarítmica igual para los ocho años{relief ? '; altura lineal' : ''}.</small></>}
         </div>
         <div className="chart-card">
@@ -448,7 +449,7 @@ function App() {
     <section className="method">
       <h2>Datos y método</h2>
       <p>Fuente: registros de viajes de taxis amarillos de la <a href="https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page" target="_blank" rel="noreferrer">NYC Taxi & Limousine Commission</a>, enero de 2019 a 2026. Enero de {v.year} tiene {fmt(data?.metadata.rawRows ?? 0)} filas. No incluye Uber, Lyft ni transporte público, y cuenta viajes, no personas.</p>
-      <p>Contamos salidas y llegadas con su propia fecha y hora local, dentro de enero y con una zona reconocida. Cada valor es un promedio por día: dividimos por los {data?.days.weekday} días de lunes a viernes o los {data?.days.weekend} de sábado y domingo de {v.year}. Lunes a viernes incluye feriados. En {v.movement === 'pickup' ? 'salidas' : 'llegadas'} quedaron fuera {fmt(data?.metadata.coverage[v.movement].unknownZone ?? 0)} viajes sin zona y {fmt(data?.metadata.coverage[v.movement].outsideMonth ?? 0)} fuera de enero.</p>
+      <p>Contamos salidas y llegadas con su propia fecha y hora local, dentro de enero y con una zona reconocida. Cada valor es un promedio por día: dividimos por los {data?.days.weekday} días de lunes a viernes o los {data?.days.weekend} de sábado y domingo de {v.year}. Lunes a viernes incluye feriados. Las horas de 00:00 a 05:00 del sábado y del domingo son, en la práctica, las noches del viernes y del sábado. En {v.movement === 'pickup' ? 'salidas' : 'llegadas'} quedaron fuera {fmt(data?.metadata.coverage[v.movement].unknownZone ?? 0)} viajes sin zona y {fmt(data?.metadata.coverage[v.movement].outsideMonth ?? 0)} fuera de enero.</p>
       <p>Velocidad: distancia del viaje dividida por su duración, en viajes de 1 minuto a 3 horas, de 0,16 a 80 km y de 1,6 a 113 km/h. Mostramos la mediana por hora de salida; una zona necesita al menos 10 viajes en esa hora del mes, si no, usamos la de la ciudad. Tarifa: mediana del total pagado en esos mismos viajes. Para comparar 2019 con 2026 descontamos la inflación con el índice de precios de enero del área de Nueva York (BLS, serie CUURS12ASA0).</p>
       <p>Flujos: pares de zonas distintas por hora de salida, con al menos medio viaje al día. Guardamos los 6 destinos y los 6 orígenes principales de cada zona y los 40 pares más grandes de la ciudad.</p>
       <p>Color: escala logarítmica común a todas las horas y años (1, 5, 25, 125 y {fmt(summary?.zoneMax ?? 0)} viajes). Comparar: razón entre los promedios de sábado y domingo y de lunes a viernes a la misma hora. Relieve 3D: altura lineal a los viajes. Sonido: una voz por tipo de día, en estéreo; el ritmo va de 0,5 a 5 pulsos por segundo según los viajes, y el tono sigue una escala pentatónica según la velocidad mediana, de 10 a 28 km/h.</p>

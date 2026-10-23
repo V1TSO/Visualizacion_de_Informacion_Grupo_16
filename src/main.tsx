@@ -369,10 +369,11 @@ function App() {
 
   return <>
     <header className="hero">
-      <div className="hero-top"><span className="brand"><span className="roof">NY</span>El pulso de Nueva York</span><span>InfoVis, Grupo 16, V2</span></div>
+      <div className="hero-top"><span className="brand"><span className="roof">NY</span>El pulso de Nueva York</span><span>InfoVis, Grupo 16, V3</span></div>
       <div className="hero-copy">
+        <p className="question">¿A qué hora y dónde se mueve Nueva York el fin de semana, comparado con lunes a viernes?</p>
         <h1>El fin de semana, Nueva York no madruga: trasnocha.</h1>
-        <p>Ocho eneros de taxis amarillos, de 2019 a 2026{totalRows ? `: ${fmt(totalRows / 1e6)} millones de viajes` : ''} contados hora a hora. Recorre un día y una noche de la ciudad.</p>
+        <p>Ocho eneros de taxis amarillos, de 2019 a 2026{totalRows ? `: ${fmt(totalRows / 1e6)} millones de viajes` : ''} contados hora a hora. Solo enero, para que la estación del año no se mezcle con el tipo de día. Recorre un día y una noche de la ciudad.</p>
         <div className="hero-actions">
           <button className="primary" onClick={() => void start(true)}>Empezar con sonido</button>
           <button className="ghost" onClick={() => void start(false)}>Empezar sin sonido</button>
@@ -396,17 +397,11 @@ function App() {
         <section className="explore" id="explorar" ref={exploreNode}>
           <div className={`card panel${inStory ? '' : ' active'}`}>
             <h2>Explora tú</h2>
-            <p className="lede">Elige un año, una hora y una zona. Haz clic en una zona para ver a dónde van sus viajes.</p>
-            <fieldset><legend>Enero de</legend><div className="chips">{YEARS.map(y => <button key={y} aria-pressed={v.year === y} onClick={() => act({year: y})}>{y}</button>)}</div></fieldset>
+            <p className="lede">Elige los días y la hora, o haz clic en una zona para ver a dónde van sus viajes.</p>
             <fieldset><legend>Días</legend><div className="segmented">{(['weekday', 'weekend', 'diff'] as const).map(l => <button key={l} aria-pressed={v.lens === l} onClick={() => act({lens: l})}>{l === 'weekday' ? 'Lunes a viernes' : l === 'weekend' ? 'Fin de semana' : 'Comparar'}</button>)}</div></fieldset>
-            <fieldset><legend>Viajes</legend><div className="segmented">{(['pickup', 'dropoff'] as const).map(m => <button key={m} aria-pressed={v.movement === m} onClick={() => act({movement: m})}>{m === 'pickup' ? 'Salidas' : 'Llegadas'}</button>)}</div></fieldset>
             <div className="hour"><label htmlFor="hour">Hora de Nueva York</label><output htmlFor="hour">{clock(v.hour)}</output></div>
             <input id="hour" type="range" min="0" max="23" value={v.hour} onChange={e => act({hour: Number(e.target.value)})}/>
             <button className="primary wide" aria-pressed={playing} onClick={() => setPlaying(!playing)}>{playing ? 'Pausar' : 'Reproducir el día'}</button>
-            <fieldset><legend>Capas del mapa</legend><div className="segmented">
-              <button aria-pressed={v.flows} onClick={() => act({flows: !v.flows, three: false})}>Flujos</button>
-              <button aria-pressed={relief} onClick={() => act({three: !relief, flows: false})}>Relieve 3D</button>
-            </div></fieldset>
             <label htmlFor="zone">Zona</label>
             <div className="search">
               <input id="zone" list="zones" placeholder="Busca una zona, por ejemplo East Village" value={query} onChange={e => {
@@ -417,6 +412,16 @@ function App() {
               {v.selected !== undefined && <button onClick={() => act({selected: undefined})}>Ver toda la ciudad</button>}
             </div>
             <datalist id="zones">{zoneNames.map(([id, z]) => <option key={id} value={z.zone}/>)}</datalist>
+            {/* Lo que no hace falta para el mensaje queda plegado: año, llegadas y capas (R2: «demasiadas opciones»). */}
+            <details className="more">
+              <summary>Más opciones: año, llegadas, flujos y relieve 3D</summary>
+              <fieldset><legend>Enero de</legend><div className="chips">{YEARS.map(y => <button key={y} aria-pressed={v.year === y} onClick={() => act({year: y})}>{y}</button>)}</div></fieldset>
+              <fieldset><legend>Viajes</legend><div className="segmented">{(['pickup', 'dropoff'] as const).map(m => <button key={m} aria-pressed={v.movement === m} onClick={() => act({movement: m})}>{m === 'pickup' ? 'Salidas' : 'Llegadas'}</button>)}</div></fieldset>
+              <fieldset><legend>Capas del mapa</legend><div className="segmented">
+                <button aria-pressed={v.flows} onClick={() => act({flows: !v.flows, three: false})}>Flujos</button>
+                <button aria-pressed={relief} onClick={() => act({three: !relief, flows: false})}>Relieve 3D</button>
+              </div></fieldset>
+            </details>
             <div className="list">
               <h3>{list.title}</h3>
               {list.items.length ? <ol>{list.items.map(r => <li key={`${r.id}-${r.label}`}><button onClick={() => act({selected: r.id})}><span>{r.label}</span><strong>{r.value}</strong></button></li>)}</ol>
@@ -443,8 +448,8 @@ function App() {
         <div className="legend">
           {v.flows ? <><svg viewBox="0 0 160 14" aria-hidden="true"><defs><linearGradient id="flow"><stop offset="0" stopColor="#173c50" stopOpacity="0.12"/><stop offset="1" stopColor="#173c50"/></linearGradient></defs><path d="M4 11 Q80 -4 156 7" stroke="url(#flow)" strokeWidth="5" fill="none" strokeLinecap="round"/></svg>
             <small>De la zona de origen (claro) a la de destino (oscuro). Grosor: viajes al día; el mayor tiene {fmt1(Math.max(...flows.map(f => f.perDay), 0))}.</small></>
-            : v.lens === 'diff' ? <><div className="ramp diverging"/><div className="ticks"><span>4× o más lun–vie</span><span>igual</span><span>4× o más sáb–dom</span></div><small>Razón entre promedios diarios a la misma hora{relief ? '. Altura: cantidad de viajes' : ''}. Gris: menos de 1 viaje al día.</small></>
-            : <><div className="ramp"/><div className="ticks"><span>1</span><span>5</span><span>25</span><span>125</span><span>{fmt(summary?.zoneMax ?? 0)}</span></div><small>Viajes por zona en esta hora, promedio por día. Escala logarítmica igual para los ocho años{relief ? '; altura lineal' : ''}.</small></>}
+            : v.lens === 'diff' ? <><div className="ramp diverging"/><div className="ticks"><span>≥ 4× lun–vie</span><span>igual</span><span>≥ 4× sáb–dom</span></div><small>Razón entre promedios diarios a la misma hora{relief ? '. Altura: cantidad de viajes' : ''}. Gris: menos de 1 viaje al día.</small></>
+            : <><div className="ramp"/><div className="ticks"><span>1</span><span>5</span><span>25</span><span>125</span><span>{fmt(summary?.zoneMax ?? 0)}</span></div><small>Viajes por zona en esta hora, promedio por día. Cada marca multiplica por 5: así se distinguen las zonas chicas y las grandes. Igual para los ocho años{relief ? '; altura lineal' : ''}.</small></>}
         </div>
         <div className="chart-card">
           <div className="chart-head">
@@ -464,7 +469,7 @@ function App() {
       <p>Flujos: pares de zonas distintas por hora de salida, con al menos medio viaje al día. Guardamos los 6 destinos y los 6 orígenes principales de cada zona y los 40 pares más grandes de la ciudad.</p>
       <p>Color: escala logarítmica común a todas las horas y años (1, 5, 25, 125 y {fmt(summary?.zoneMax ?? 0)} viajes). Comparar: razón entre los promedios de sábado y domingo y de lunes a viernes a la misma hora. Relieve 3D: altura lineal a los viajes. Sonido: una voz por tipo de día, en estéreo; el ritmo va de 0,5 a 5 pulsos por segundo según los viajes, y el tono sigue una escala pentatónica según la velocidad mediana, de 10 a 28 km/h. Bajo 15 km/h suena además una bocina, más seguida cuanto más lento va el tráfico.</p>
     </section>
-    <footer><span>Grupo 16: Vicente Reñasco, David Parra y Mariano De Sarratea</span><span>V2, visualización interactiva y sonora</span></footer>
+    <footer><span>Grupo 16: Vicente Reñasco, David Parra y Mariano De Sarratea</span><span>V3, visualización interactiva y sonora</span></footer>
   </>;
 }
 createRoot(document.getElementById('root')!).render(<App/>);

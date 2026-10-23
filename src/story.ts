@@ -18,8 +18,8 @@ export const STEPS: Step[] = [
   {
     when: 'Lunes a viernes, 08:00',
     title: 'La ciudad que madruga',
-    text: 'Un día de semana, entre las 8:00 y las 9:00, empiezan 5.719 viajes. Salen sobre todo del Upper East Side y de Penn Station: la ciudad va a trabajar.',
-    view: {...base, lens: 'weekday', hour: 8, camera: CITY, labels: [236, 237, 186]},
+    text: 'Un día de semana, entre las 8:00 y las 9:00, empiezan 5.719 viajes. Salen sobre todo del Upper East Side y de Penn Station: la ciudad va a trabajar. JFK se ve grande por su superficie, pero salen 125 viajes al día; del Upper East Side North, 343.',
+    view: {...base, lens: 'weekday', hour: 8, camera: CITY, labels: [236, 186, 132]},
   },
   {
     when: 'Lunes a viernes, 08:00',
@@ -54,7 +54,7 @@ export const STEPS: Step[] = [
   {
     when: 'Noches de viernes y sábado, 01:00',
     title: 'Y termina cerca',
-    text: '18 de los 40 flujos más grandes de la hora salen de East Village. Van a Murray Hill, Kips Bay y Gramercy. Ninguno de los 40 sale de Manhattan.',
+    text: '18 de los 40 flujos más grandes de la hora salen de East Village. Van a Murray Hill, Kips Bay y Gramercy. Los 40 empiezan y terminan en Manhattan.',
     view: {...base, lens: 'weekend', hour: 1, flows: true, camera: FLOWS, labels: [79, 170, 137, 107]},
   },
   {

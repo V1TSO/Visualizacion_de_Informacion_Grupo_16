@@ -95,6 +95,7 @@ function App() {
   const horns = useRef<Tone.Synth[] | null>(null);
   const arcs = useRef<Arc[]>([]);
   const onZone = useRef<(id: number) => void>(() => {});
+  const storyNow = useRef(true);
   const loading = useRef(new Set<number>());
 
   const inStory = step < STEPS.length;
@@ -149,12 +150,15 @@ function App() {
   const kmh = speedAt(day, v.hour);
   const totalRows = summary ? Object.values(summary.years).reduce((s, y) => s + y.rawRows, 0) : 0;
 
-  function act(patch: Partial<View>) {
+  // Durante la historia, el mapa y el gráfico no cambian la vista: un clic sin querer sacaba al lector de la historia.
+  // Solo el botón «Explorar desde aquí» lleva a explorar desde la vista de la escena.
+  function act(patch: Partial<View>, fromStory = false) {
+    if (inStory && !fromStory) return;
     setExplore(prev => ({...(inStory ? v : prev), ...patch, camera: undefined}));
-    // Tocar el mapa o un gráfico durante la historia lleva a explorar desde esa misma vista.
     if (inStory) exploreNode.current?.scrollIntoView({behavior: 'auto', block: 'start'});
   }
   onZone.current = id => act({selected: id});
+  storyNow.current = inStory;
   useEffect(() => setQuery(v.selected === undefined ? '' : nameOf(v.selected)), [v.selected, zoneById]);
   useEffect(() => {if (inStory) setPlaying(false);}, [inStory]);
 
@@ -186,7 +190,7 @@ function App() {
       setReady(true);
     });
     m.on('click', ['fill', 'extrusion'], e => {const id = e.features?.[0]?.id; if (id !== undefined) onZone.current(Number(id));});
-    m.on('mousemove', ['fill', 'extrusion'], e => {const id = e.features?.[0]?.id; m.getCanvas().style.cursor = 'pointer'; if (id !== undefined) setHover({id: Number(id), x: e.point.x, y: e.point.y});});
+    m.on('mousemove', ['fill', 'extrusion'], e => {const id = e.features?.[0]?.id; m.getCanvas().style.cursor = storyNow.current ? '' : 'pointer'; if (id !== undefined) setHover({id: Number(id), x: e.point.x, y: e.point.y});});
     m.on('mouseleave', ['fill', 'extrusion'], () => {m.getCanvas().style.cursor = ''; setHover(undefined);});
     const observer = new ResizeObserver(() => m.resize()); observer.observe(mapNode.current);
     return () => {observer.disconnect(); m.remove(); map.current = null;};
@@ -247,14 +251,21 @@ function App() {
   }, [ready, v.flows]);
 
   // Nombres sobre el mapa: los que cita la escena o, al explorar, la zona elegida y sus tres flujos principales.
-  const labelKey = (inStory ? v.labels ?? [] : v.selected === undefined ? [] : [v.selected, ...(v.flows ? flows.slice(0, 3).map(f => v.movement === 'pickup' ? f.to : f.from) : [])]).join(',');
+  const labelIds = inStory ? v.labels ?? [] : v.selected === undefined ? [] : [v.selected, ...(v.flows ? flows.slice(0, 3).map(f => v.movement === 'pickup' ? f.to : f.from) : [])];
+  // En la historia, cada nombre lleva su cifra: el área de una zona (JFK) no debe leerse como cantidad.
+  const figure = (id: number) => {
+    if (!inStory || v.flows || !total || !week || !end) return '';
+    const w = week.zones[id]?.[v.hour] ?? 0, e = end.zones[id]?.[v.hour] ?? 0;
+    return v.lens === 'diff' ? ` · ${fmt1(e / Math.max(w, 0.05))}×` : ` · ${fmt(total.zones[id]?.[v.hour] ?? 0)} al día`;
+  };
+  const labelKey = labelIds.map(id => `${id}|${figure(id)}`).join(',');
   useEffect(() => {
     const m = map.current;
     if (!ready || !m || !labelKey) return;
-    const markers = labelKey.split(',').map(Number).flatMap(id => {
-      const z = zoneById.get(id);
+    const markers = labelKey.split(',').map(l => l.split('|')).flatMap(([id, fig]) => {
+      const z = zoneById.get(Number(id));
       if (!z) return [];
-      const el = document.createElement('span'); el.className = 'zone-label'; el.textContent = z.zone;
+      const el = document.createElement('span'); el.className = 'zone-label'; el.textContent = z.zone + fig;
       return [new maplibregl.Marker({element: el, anchor: 'bottom', offset: [0, -6]}).setLngLat([z.cx, z.cy]).addTo(m)];
     });
     return () => markers.forEach(marker => marker.remove());
@@ -375,7 +386,7 @@ function App() {
 
   return <>
     <header className="hero">
-      <div className="hero-top"><span className="brand"><span className="roof">NY</span>El pulso de Nueva York</span><span>InfoVis, Grupo 16, V3</span></div>
+      <div className="hero-top"><span className="brand"><span className="roof">NY</span>El pulso de Nueva York</span><span>InfoVis, Grupo 16, V4</span></div>
       <div className="hero-copy">
         <p className="question">¿A qué hora y dónde se mueve Nueva York el fin de semana, comparado con lunes a viernes?</p>
         <h1>El fin de semana, Nueva York no madruga: trasnocha.</h1>
@@ -398,6 +409,7 @@ function App() {
             <h2>{s.title}</h2>
             <p>{s.text}</p>
             {s.points && <ul className="points">{s.points.map(p => {const [lead, ...rest] = p.split(': '); return <li key={p}><strong>{lead}:</strong> {rest.join(': ')}</li>;})}</ul>}
+            <button className="explore-here" tabIndex={i === step ? 0 : -1} onClick={() => act({}, true)}>Explorar desde aquí</button>
           </article>
         </section>)}
         <section className="explore" id="explorar" ref={exploreNode}>
@@ -453,7 +465,7 @@ function App() {
         </div>
         <div className="legend">
           {v.flows ? <><svg viewBox="0 0 160 14" aria-hidden="true"><defs><linearGradient id="flow"><stop offset="0" stopColor="#173c50" stopOpacity="0.12"/><stop offset="1" stopColor="#173c50"/></linearGradient></defs><path d="M4 11 Q80 -4 156 7" stroke="url(#flow)" strokeWidth="5" fill="none" strokeLinecap="round"/></svg>
-            <small>De la zona de origen (claro) a la de destino (oscuro). Grosor: viajes al día; el mayor tiene {fmt1(Math.max(...flows.map(f => f.perDay), 0))}.</small></>
+            <small>De la zona de origen (claro) a la de destino (oscuro). Puntos amarillos: taxis que van del origen al destino. Grosor: viajes al día; el mayor tiene {fmt1(Math.max(...flows.map(f => f.perDay), 0))}.</small></>
             : v.lens === 'diff' ? <><div className="ramp diverging"/><div className="ticks"><span>≥ 4× lun–vie</span><span>igual</span><span>≥ 4× sáb–dom</span></div><small>Razón entre promedios diarios a la misma hora{relief ? '. Altura: cantidad de viajes' : '. Más pálido: menos viajes; bajo 50 al día, la razón pesa poco'}. Gris: menos de 1 viaje al día.</small></>
             : <><div className="ramp"/><div className="ticks"><span>1</span><span>5</span><span>25</span><span>125</span><span>{fmt(summary?.zoneMax ?? 0)}</span></div><small>Viajes por zona en esta hora, promedio por día. Cada marca multiplica por 5: así se distinguen las zonas chicas y las grandes. Igual para los ocho años{relief ? '; altura lineal' : ''}.</small></>}
         </div>
@@ -475,7 +487,7 @@ function App() {
       <p>Flujos: pares de zonas distintas por hora de salida, con al menos medio viaje al día. Guardamos los 6 destinos y los 6 orígenes principales de cada zona y los 40 pares más grandes de la ciudad.</p>
       <p>Color: escala logarítmica común a todas las horas y años (1, 5, 25, 125 y {fmt(summary?.zoneMax ?? 0)} viajes). Comparar: razón entre los promedios de sábado y domingo y de lunes a viernes a la misma hora. Relieve 3D: altura lineal a los viajes. Sonido: una voz por tipo de día, en estéreo; el ritmo va de 0,5 a 5 pulsos por segundo según los viajes, y el tono sigue una escala pentatónica según la velocidad mediana, de 10 a 28 km/h. Bajo 15 km/h suena además una bocina, más seguida cuanto más lento va el tráfico.</p>
     </section>
-    <footer><span>Grupo 16: Vicente Reñasco, David Parra y Mariano De Sarratea</span><span>V3, visualización interactiva y sonora</span></footer>
+    <footer><span>Grupo 16: Vicente Reñasco, David Parra y Mariano De Sarratea</span><span>V4, visualización interactiva y sonora</span></footer>
   </>;
 }
 createRoot(document.getElementById('root')!).render(<App/>);

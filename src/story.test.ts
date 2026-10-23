@@ -16,7 +16,8 @@ const top = (zonesByHour: Record<number, number[]>, h: number, n: number) => Obj
 const EAST_VILLAGE = 79, WEST_VILLAGE = 249, MIDTOWN_CENTER = 161, TIMES_SQUARE = 230;
 
 test('Escenas 1, 3 y 5: viajes por hora y zonas más activas', () => {
-  says(0, fmt(week.hours[8]));
+  says(0, fmt(week.hours[8]), `salen ${fmt(week.zones[132][8])} viajes al día`, `Upper East Side North, ${fmt(week.zones[236][8])}`);
+  assert.ok(week.zones[132][8] < week.zones[236][8] / 2, 'JFK tiene menos de la mitad que el Upper East Side North');
   assert.deepEqual(top(week.zones, 8, 3), ['Upper East Side North', 'Upper East Side South', 'Penn Station/Madison Sq West']);
   says(2, fmt(end.hours[8]), `${fmt((1 - end.hours[8] / week.hours[8]) * 100)} %`);
   says(4, fmt(end.hours[1]), `${fmt1(end.hours[1] / week.hours[1])} veces`);
@@ -51,6 +52,7 @@ test('Escena 7: flujos de la noche', () => {
   const flows = topFlows(data, 'weekend', 1, 'pickup');
   assert.equal(flows.length, 40);
   says(6, `${flows.filter(f => f.from === EAST_VILLAGE).length} de los 40`);
+  says(6, 'Los 40 empiezan y terminan en Manhattan');
   assert.ok(flows.every(f => zones[f.from].borough === 'Manhattan' && zones[f.to].borough === 'Manhattan'));
   assert.deepEqual(topFlows(data, 'weekend', 1, 'pickup', EAST_VILLAGE).slice(0, 3).map(f => zones[f.to].zone), ['Murray Hill', 'Kips Bay', 'Gramercy']);
 });

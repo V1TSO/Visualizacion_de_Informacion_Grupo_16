@@ -1,6 +1,6 @@
 # Registro de diseño
 
-Sigue la plantilla de la E1: contexto general y, en orden, cada versión con la revisión que la siguió. Los campos que dependen de apuntes del grupo dicen «[completar]».
+Sigue la plantilla de la E1 (estado: V3): contexto general y, en orden, cada versión con la revisión que la siguió. Los campos que dependen de apuntes del grupo dicen «[completar]».
 
 ## Contexto general
 
@@ -82,7 +82,17 @@ Lo que nos dijeron (según las notas del grupo):
 - Los gráficos de la portada no se entendían.
 - Mostrar a dónde va la gente de lunes a viernes (oficinas y aeropuerto) y el fin de semana (zonas de recreación).
 
-Decisiones: adoptamos las cuatro, con dos ajustes por los datos. El aeropuerto queda fuera, y las «zonas de recreación» se nombran como barrios concretos (detalle en V2).
+Formulario completo del otro grupo (sobre la versión que vieron, V1):
+- Mensaje: el título no deja clara la pregunta, y demasiados datos y filtros abruman.
+- Contexto: falta la época del año.
+- Escalas: los rangos 1–5, 5–25 y 125–1.100 pueden esconder información.
+- Color: amarillo a rojizo, intuitivo; conservar.
+- Minimalismo: demasiados filtros, y tres gráficos que sugieren más de un mensaje.
+- Interacción: aporta, pero marea. Destacan el 3D.
+- Sonido: muy bajo, no lo pudieron evaluar.
+- Cambiar: subir el volumen, sacar lo que no suma al mensaje y quizás poner primero «explorar».
+
+Decisiones: V2 adoptó el volumen, la conclusión, la portada y a dónde va la gente. V3 adoptó la pregunta explícita, el contexto de enero y las opciones plegadas. Descartamos poner primero «explorar» y mantener el 3D en la historia (ver V3).
 
 ## V2: primera iteración de diseño
 
@@ -111,11 +121,46 @@ Decisiones: adoptamos las cuatro, con dos ajustes por los datos. El aeropuerto q
 - Llamar «recreativas» a las zonas como si fuera un dato: se nombran los barrios, y «teatros, bares y tiendas» se presenta como contexto.
 - Escala de cantidad en violeta (`c87f13e`, revertida en `5b94157`): separaba el naranjo de la cantidad del naranjo del fin de semana. Motivo del descarte: [completar; la pauta no acepta «no nos gustó»]. El cruce de colores sigue abierto.
 
-## Preguntas para R3
+## R3: revisión con el equipo docente
 
+Ocurrió después de V2, pero no tomamos notas de lo conversado y no las reconstruimos de memoria. Llevamos las tres preguntas de abajo; V3 las responde con nuestros argumentos.
+
+Preguntas que llevamos:
 1. ¿La portada se entiende sin explicación?
 2. ¿«En resumen» cierra bien, o sobran escenas?
 3. ¿Mantenemos el relieve 3D en la historia (el checklist nombra «3D innecesario»)?
+
+## V3: segunda iteración de diseño
+
+22 de octubre de 2026 · tag `v3`. Hecha el día de la entrega: el atraso es nuestro y lo dejamos visible en el historial.
+
+### Qué cambió
+
+- La portada pregunta antes de afirmar: «¿A qué hora y dónde se mueve Nueva York el fin de semana, comparado con lunes a viernes?».
+- La portada dice por qué solo enero: para que la estación no se mezcle con el tipo de día.
+- «Explora tú» muestra solo días, hora y zona. Año, llegadas, flujos y relieve 3D quedan en «Más opciones».
+- La escena «La noche tiene relieve» (3D) pasa a «Donde la noche pesa más», en un mapa plano con la misma razón.
+- Las escenas de 01:00 se rotulan «Noches de viernes y sábado». Sobre el mapa, el taxímetro lo aclara de madrugada.
+- Leyendas: los extremos de la razón dicen «≥ 4×», y la escala de cantidad, que cada marca multiplica por 5.
+- Sonido: una bocina corta bajo 15 km/h, más seguida cuanto más lento va el tráfico. Se suma a la leyenda del sonido.
+
+### Por qué cambió
+
+- R2, «no queda claro cuál es la pregunta»: la vista general debe responder una pregunta explícita (cap. 19 y E1 §1). La pregunta va arriba y el título la responde.
+- R2, «falta la época del año»: es contexto que falta (heurística de Zuk-Carpendale). Elegimos enero a propósito, y ahora se dice en la portada.
+- R2, «demasiadas opciones; uno se pierde»: menos es más (cap. 20). Shneiderman (cap. 25): primero lo necesario para el mensaje, y el detalle bajo demanda. Lo plegado sigue disponible.
+- 3D en la historia: la R2 lo destacó, pero lo sacamos de la escena que compara East Village con JFK. La perspectiva y la oclusión distorsionan la comparación de alturas (cap. 10; heurística «las distancias visuales engañan»). Lo conservamos como capa opcional, que es lo que el otro grupo valoraba.
+- «Sábado 01:00» es la noche del viernes: el rótulo anterior invitaba a una hipótesis errada (cap. 22).
+- La razón satura en 4×: rotular el extremo evita leer «4×» donde hay 8× (cap. 11 y 15).
+- R2, «los rangos de la escala esconden información»: mantenemos la escala logarítmica, porque los datos cubren 3 órdenes de magnitud y en escala lineal la zona mediana queda blanca (cap. 15). Lo que cambia es la leyenda, que explica el paso ×5.
+- Bocina: el checklist pide que el tipo de sonido cambie con el dato, no solo su intensidad. Un earcon de atasco se entiende sin explicación (cap. 27, earcons y alarmas).
+
+### Qué se descartó
+
+- R2, «ir primero a explorar»: lo descartamos. El mensaje es explicativo y el martini glass pone primero la historia (cap. 19). El enlace «Ir directo a explorar» ya permite el otro orden.
+- Sacar el 3D por completo: el otro grupo lo valoró para ubicar zonas, y como capa opcional no compite con el mensaje.
+- Escala por cuantiles para responder a la crítica de los rangos: oculta las magnitudes reales.
+- Reemplazar los pulsos por sonidos de autos grabados: no alcanzaba a probarse antes de la entrega, y la bocina cubre el cambio de timbre.
 
 ## Pendiente
 

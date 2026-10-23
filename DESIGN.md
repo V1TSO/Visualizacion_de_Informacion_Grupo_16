@@ -74,7 +74,16 @@ Trabajo paralelo: la rama `feat/course-principles` (PR #1, borrador, 29 de septi
 
 ## R2: revisión entre pares
 
-8 de octubre de 2026. Grupo evaluado y feedback que dimos: [completar].
+8 de octubre de 2026. Presentamos la V1: la V2 aún no estaba cerrada.
+
+Evaluamos al grupo 2: estadios de fútbol con mayor capacidad y dónde están. Lo que les dijimos:
+- El mensaje es claro desde el inicio y la imagen responde la consigna.
+- Falta una historia que guíe.
+- El tamaño de los círculos compara bien.
+- El filtro de confederación sobra.
+- El sonido (ritmo de llenado) aclara el mensaje.
+- Conservar el mapa.
+- Cambiar: agregar una sección guiada (un estadio pequeño y luego uno grande) y un filtro de capacidad por rango.
 
 Lo que nos dijeron (según las notas del grupo):
 - Subir el volumen del sonido y explicar mejor cómo funciona.
@@ -123,7 +132,7 @@ Decisiones: V2 adoptó el volumen, la conclusión, la portada y a dónde va la g
 
 ## R3: revisión con el equipo docente
 
-Ocurrió después de V2, pero no tomamos notas de lo conversado y no las reconstruimos de memoria. Llevamos las tres preguntas de abajo; V3 las responde con nuestros argumentos.
+Martes 13 de octubre de 2026, sobre la V2. No tomamos notas de lo conversado y no las reconstruimos de memoria. Llevamos las tres preguntas de abajo; V3 las responde con nuestros argumentos.
 
 Preguntas que llevamos:
 1. ¿La portada se entiende sin explicación?

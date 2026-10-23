@@ -175,11 +175,10 @@ Preguntas que llevamos:
 
 ## V4: la versión final
 
-22 de octubre de 2026 · tag `v4` (commits `d346538` a `f9d0188`). Evidencia en `docs/evidencia/v4/` (capturas y `recorrido.mp4` con sonido).
+22 de octubre de 2026 · tag `v4` (commits desde `d346538`; la escala violeta se probó en `d346538` y se revirtió en `9eede9f`). Evidencia en `docs/evidencia/v4/` (capturas y `recorrido.mp4` con sonido).
 
 ### Qué cambió
 
-- La escala de cantidad pasa de amarillo-naranjo a violeta. El azul y el naranjo quedan solo para lunes a viernes y fin de semana.
 - «Comparar»: la lista pide 50 viajes al día y muestra la razón con su cantidad («East Village · 7,9× · 628 al día»). En el mapa, la zona se atenúa cuando tiene menos viajes. El tooltip también muestra la cantidad.
 - En la historia, cada etiqueta del mapa lleva su cifra. La escena 1 etiqueta JFK (125 al día) junto al Upper East Side North (343).
 - Un clic en el mapa o en el gráfico ya no saca de la historia. Cada tarjeta tiene el botón «Explorar desde aquí».
@@ -187,7 +186,6 @@ Preguntas que llevamos:
 
 ### Por qué cambió
 
-- Color (cap. 11; heurística «el color confunde»): la escena 1 es de lunes a viernes, pero el mapa se veía naranjo, y el naranjo es el fin de semana en la portada, las curvas y el mapa de razón. Un color, un significado. Es el cruce que dejamos abierto en la V2; el revert `5b94157` no tenía otro argumento.
 - Razón sin magnitud (cap. 11 y 15; evidencia de los datos): a la 01:00, con umbral de 10 viajes, la lista ponía primero a Sunnyside (11,8×, 39 al día) y segundo a East Village (7,9×, 628). Eso contradecía la escena 6. Con 50 viajes, la lista y la historia dicen lo mismo, y la cantidad al lado evita leer «más veces» como «más viajes».
 - Zonas pálidas: en el mapa de razón, Bushwick North (25 viajes, más de 4×) se veía igual de intenso que East Village (628). Atenuar por cantidad le baja el peso visual a una razón que sale de pocos viajes, sin cambiar la escala divergente.
 - Área contra cantidad (heurística «las distancias visuales engañan»): JFK es la zona más grande del mapa, pero a las 08:00 es la número 15. La cifra en la etiqueta corrige la lectura donde ocurre.
@@ -196,6 +194,7 @@ Preguntas que llevamos:
 
 ### Qué se descartó
 
+- Volver a la escala violeta (`d346538`, revertida en `9eede9f`): separaba el naranjo de la cantidad del naranjo del fin de semana, pero la R2 destacó el amarillo a rojizo como intuitivo, y en cada vista solo se usa una de las dos escalas. Mantenemos el cruce como limitación conocida: la leyenda del mapa dice «viajes por zona».
 - Cartograma o hexágonos para que el área no pese: rompe la geografía que la R2 pidió conservar, y la etiqueta con cifra resuelve el caso de JFK.
 - Gris para zonas con menos de 10 viajes en «Comparar»: Bushwick North (25) seguía igual de intenso. Atenuar de forma continua funciona mejor que un corte.
 - Cambiar el mapeo del sonido (tono contra ritmo con las dos voces): a la 01:00 las velocidades difieren en un paso de la escala, y rehacerlo obligaría a probar todo el sonido de nuevo sin tiempo para hacerlo.
@@ -203,8 +202,8 @@ Preguntas que llevamos:
 
 ### Balance del recorrido
 
-- Mejoró desde V1: el mensaje es una pregunta con respuesta (V3); las afirmaciones que excedían los datos se corrigieron y cada cifra se prueba (V2); la portada se lee sin ayuda (V2); el sonido se explica antes de sonar y cambia de timbre con el atasco (V2, V3); y en V4 el color, la razón y las etiquetas dejan de invitar a lecturas erradas.
-- No cambió, a propósito: el martini glass (historia y después exploración), la escala logarítmica común a los ocho años, la razón como forma de comparar los tipos de día y el sonido de dos voces en estéreo. Cada uno se discutió (R2, V3) y lo mantuvimos con argumentos.
+- Mejoró desde V1: el mensaje es una pregunta con respuesta (V3); las afirmaciones que excedían los datos se corrigieron y cada cifra se prueba (V2); la portada se lee sin ayuda (V2); el sonido se explica antes de sonar y cambia de timbre con el atasco (V2, V3); y en V4 la razón y las etiquetas dejan de invitar a lecturas erradas.
+- No cambió, a propósito: el martini glass (historia y después exploración), la escala logarítmica común a los ocho años en amarillo a rojizo, la razón como forma de comparar los tipos de día y el sonido de dos voces en estéreo. Cada uno se discutió (R2, V3) y lo mantuvimos con argumentos.
 
 ## Evaluación con usuarios
 

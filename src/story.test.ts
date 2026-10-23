@@ -39,7 +39,7 @@ test('Escena 4: de día, el fin de semana llega el doble a Times Square', () => 
   for (const id of [EAST_VILLAGE, WEST_VILLAGE]) assert.ok(times(id) > 1.8 && times(id) < 2.2, `${zones[id].zone}: ${times(id)}`);
 });
 
-test('Escena 6: la torre más alta y JFK', () => {
+test('Escena 6: East Village y JFK', () => {
   const all = aggregate(data, 'pickup', 'all');
   assert.equal(top(all.zones, 1, 1)[0], 'East Village');
   says(5, `${fmt1(end.zones[EAST_VILLAGE][1] / week.zones[EAST_VILLAGE][1])} veces`);

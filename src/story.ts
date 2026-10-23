@@ -8,7 +8,6 @@ export interface Step { when: string; title: string; text: string; points?: stri
 
 export const CITY: Camera = {center: [-73.93, 40.72], zoom: 10.1, pitch: 0, bearing: 0};
 const NIGHTLIFE: Camera = {center: [-73.99, 40.728], zoom: 12.2, pitch: 0, bearing: 0};
-const RELIEF: Camera = {center: [-73.87, 40.685], zoom: 10.9, pitch: 55, bearing: -22};
 const FLOWS: Camera = {center: [-73.985, 40.737], zoom: 12.6, pitch: 0, bearing: 0};
 const DAYTIME: Camera = {center: [-73.975, 40.735], zoom: 11.9, pitch: 0, bearing: 0};
 const MIDTOWN: Camera = {center: [-73.968, 40.765], zoom: 12.5, pitch: 0, bearing: 0};
@@ -48,9 +47,9 @@ export const STEPS: Step[] = [
   },
   {
     when: 'Sábado y domingo, 01:00',
-    title: 'La noche tiene relieve',
-    text: 'La altura muestra cuántos viajes salen; el color, cuánto más que un día de semana. La torre más alta, East Village, tiene 7,9 veces más viajes. JFK también es alta, pero casi no cambia: el aeropuerto no sale de fiesta.',
-    view: {...base, lens: 'diff', hour: 1, three: true, camera: RELIEF, labels: [79, 132]},
+    title: 'Donde la noche pesa más',
+    text: 'El color muestra cuántas veces más viajes salen que un día de semana a la misma hora. East Village tiene 7,9 veces más. JFK casi no cambia: el aeropuerto no sale de fiesta.',
+    view: {...base, lens: 'diff', hour: 1, camera: CITY, labels: [79, 132]},
   },
   {
     when: 'Sábado y domingo, 01:00',

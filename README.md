@@ -13,6 +13,8 @@ npm run dev
 
 Abrir la URL que indica Vite. `npm run build` genera `dist/` y `npm run preview` sirve esa versión. Cada push a `main` publica en GitHub Pages con `.github/workflows/pages.yml`.
 
+El modelo 3D del prototipo físico-digital está en `public/modelo1/index.html` y se publica en `/modelo1/`. Es una página independiente: trae sus datos dentro (curvas de `public/data/years.json`) y carga Three.js desde jsDelivr.
+
 ## Recorrido
 
 La página abre con una **portada**: las curvas de viajes por hora de enero de 2026, con las 01:00 y las 08:00 anotadas con sus cifras, y una leyenda que explica el sonido antes de activarlo. Después vienen dos partes que comparten el mismo mapa fijo:

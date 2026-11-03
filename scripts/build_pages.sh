@@ -39,6 +39,7 @@ row() {
 
 current=$(git rev-parse --abbrev-ref HEAD)
 rows=$(row "../" "Versión vigente" HEAD "Rama $current: la versión publicada en la raíz del sitio." ok)
+rows+=$'\n'$(row "../modelo1/" "Modelo del prototipo físico" HEAD "Modelo 3D interactivo del prototipo físico-digital (public/modelo1)." ok)
 
 for tag in $(git tag --list 'v*' --sort=version:refname); do
   if build_ref "$tag" "$tag"; then status=ok; else status=error; echo "::warning::No se pudo construir $tag"; fi

@@ -1,0 +1,1176 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f6bd16">
+<meta name="description" content="Prototipo físico-digital: un taxi de juguete recorre una avenida de cartón a la velocidad mediana de los taxis de Nueva York en cada hora de enero.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23f6bd16'/%3E%3C/svg%3E">
+<title>Prototipo físico · El pulso de Nueva York</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap">
+<style>
+/* Diseño: paleta y fuentes de «El pulso de Nueva York» . Mesa de trabajo: la avenida de cartón en 3D y el taxímetro arriba; debajo, la regla vista desde arriba con las banderitas, los datos, el ciclo y lo que falta comprobar. */
+:root {
+  --paper: #f4f6f5;
+  --surface: #ffffff;
+  --ink: #173c50;
+  --ink-2: #4c6573;
+  --line: #d5dee1;
+  --taxi: #f6bd16;
+  --taxi-ink: #8a6a00;
+  --week: #245978;
+  --end: #b65d23;
+  --kraft: #e7d3b3;
+  --kraft-ink: #5b4224;
+  --scene: #e3e9e8;
+  --meter-bg: #152433;
+  --meter-fg: #c9d6dd;
+  --meter-strong: #ffffff;
+  --meter-line: #34495a;
+  --display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --body: 'DM Sans', Arial, sans-serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0e1923; --surface: #152433; --ink: #e6edf0; --ink-2: #a3b6c1; --line: #2a3f50;
+    --taxi-ink: #f6bd16; --week: #8fb3c9; --end: #e8a36b; --kraft: #3a3125; --kraft-ink: #e7d3b3; --scene: #101d29;
+    --meter-bg: #0a131b; --meter-line: #2a3f50; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0e1923; --surface: #152433; --ink: #e6edf0; --ink-2: #a3b6c1; --line: #2a3f50;
+  --taxi-ink: #f6bd16; --week: #8fb3c9; --end: #e8a36b; --kraft: #3a3125; --kraft-ink: #e7d3b3; --scene: #101d29;
+  --meter-bg: #0a131b; --meter-line: #2a3f50; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+body {
+  background: var(--paper); color: var(--ink);
+  font: 15px/1.55 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 56px;
+}
+.wrap { max-width: 1280px; margin-inline: auto; }
+:focus-visible { outline: 2px solid var(--taxi); outline-offset: 2px; }
+button, select, input { font: inherit; color: inherit; }
+button:disabled, select:disabled, input:disabled { opacity: .45; cursor: not-allowed; }
+
+.top { padding-block: 28px 22px; display: grid; gap: 14px; }
+.brand { display: flex; align-items: center; gap: 10px; font: 600 15px var(--display); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); flex-wrap: wrap; }
+.roof { display: inline-grid; place-items: center; width: 46px; height: 24px; border-radius: 12px 12px 4px 4px; background: var(--taxi); color: #152433; font: 700 13px var(--display); letter-spacing: .05em; }
+h1 { font: 700 clamp(40px, 5.6vw, 76px)/.94 var(--display); letter-spacing: -.012em; margin: 0; max-width: 18ch; text-wrap: balance; }
+.lede { max-width: 66ch; font-size: 17px; color: var(--ink-2); margin: 0; }
+.sim-note { display: flex; gap: 10px; align-items: baseline; max-width: 82ch; margin: 0; font-size: 14px; color: var(--ink-2); }
+.sim-note a { color: inherit; }
+.pill { flex: none; font: 700 12px var(--display); letter-spacing: .08em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--taxi-ink); color: var(--taxi-ink); }
+
+.stage { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; }
+.viewport { position: relative; border-radius: 14px; overflow: hidden; background: var(--scene); height: clamp(420px, 50vw, 680px); min-width: 0; }
+.viewport canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+.stage-main { display: grid; gap: 10px; min-width: 0; align-content: start; }
+.views { display: flex; gap: 6px; flex-wrap: wrap; }
+.views button { font-size: 13px; font-weight: 600; background: color-mix(in srgb, var(--surface) 90%, transparent); border: 1px solid var(--line); border-radius: 999px; padding: 6px 13px; cursor: pointer; }
+.views button:hover { border-color: var(--ink-2); }
+.views button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.hint { margin: 0; font-size: 13px; color: var(--ink-2); max-width: 90ch; }
+.no-gl { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--ink-2); }
+
+.meter { background: var(--meter-bg); color: var(--meter-fg); border-radius: 14px; padding: 18px 18px 20px; display: grid; gap: 16px; align-content: start; min-width: 0; }
+.meter-head { display: flex; justify-content: space-between; align-items: baseline; font: 600 13px var(--display); letter-spacing: .1em; text-transform: uppercase; }
+.meter-head span:last-child { color: var(--taxi); }
+.meter-clock { font: 700 84px/.86 var(--display); color: var(--taxi); font-variant-numeric: tabular-nums; letter-spacing: .01em; }
+.meter-when { margin: 4px 0 0; font-size: 14px; color: var(--meter-strong); }
+.meter-when small { display: block; color: var(--meter-fg); font-size: 12px; }
+.phase { display: flex; align-items: center; gap: 8px; margin: 10px 0 0; font-size: 13px; color: var(--meter-strong); }
+.phase i { flex: none; width: 9px; height: 9px; border-radius: 50%; background: #6f8796; }
+.phase[data-phase="ida"] i { background: var(--taxi); }
+.phase[data-phase="pausa"] i { background: #ffffff; }
+.phase[data-phase="vuelta"] i { background: #8fb3c9; }
+.meter dl { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; margin: 0; padding-top: 14px; border-top: 1px solid var(--meter-line); }
+.meter dt { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+.meter dd { margin: 2px 0 0; font: 600 30px/1 var(--display); color: var(--meter-strong); font-variant-numeric: tabular-nums; }
+.meter dl .wide { grid-column: 1 / -1; }
+.meter dl .wide dd { font-size: 46px; }
+.busy, .story-note { margin: 0; font-size: 12.5px; color: var(--meter-fg); }
+.busy { color: var(--taxi); }
+.sound-box { display: grid; gap: 12px; padding-top: 14px; border-top: 1px solid var(--meter-line); }
+.demo { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.demo button { min-height: 42px; border-radius: 8px; border: 1px solid var(--meter-line); background: transparent; color: var(--meter-strong); font-size: 13px; cursor: pointer; }
+.demo button:hover, .seg button:hover:not(:disabled) { border-color: var(--meter-fg); }
+.meter dd small { font: 500 14px var(--body); color: var(--meter-fg); margin-left: 3px; }
+.controls { display: grid; gap: 12px; padding-top: 14px; border-top: 1px solid var(--meter-line); }
+.field-label { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; display: flex; justify-content: space-between; margin-bottom: 6px; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.seg button, .meter select { min-height: 38px; border-radius: 8px; border: 1px solid var(--meter-line); background: transparent; color: var(--meter-strong); font-size: 14px; cursor: pointer; }
+.seg button[aria-pressed="true"][data-day="0"] { background: #245978; border-color: #8fb3c9; }
+.seg button[aria-pressed="true"][data-day="1"] { background: #b65d23; border-color: #e8a36b; }
+.meter select { width: 100%; padding: 0 10px; background: var(--meter-bg); }
+.meter input[type="range"] { width: 100%; accent-color: var(--taxi); }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: end; }
+.btn { min-height: 42px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; border: 1px solid var(--taxi); padding: 0 10px; }
+.btn-primary { background: var(--taxi); color: #152433; }
+.btn-ghost { background: transparent; color: var(--meter-strong); border-color: var(--meter-line); }
+.btn-ghost[aria-pressed="true"] { background: var(--meter-strong); color: #152433; border-color: var(--meter-strong); }
+.legend { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: 13px; color: var(--meter-fg); }
+.legend b { color: var(--meter-strong); font-weight: 600; }
+
+section.block { padding-block: 40px 0; }
+h2 { font: 700 clamp(28px, 3.2vw, 40px)/1 var(--display); margin: 0 0 8px; letter-spacing: -.005em; text-wrap: balance; }
+.sub { margin: 0 0 18px; color: var(--ink-2); max-width: 72ch; }
+.top-view { display: block; width: 100%; height: 170px; }
+.top-view text { font: 12px var(--body); fill: var(--ink-2); }
+.top-view .road { fill: var(--surface); stroke: var(--line); }
+.top-view .strip { fill: var(--kraft); }
+.top-view .tick { stroke: var(--kraft-ink); stroke-width: 1.2; }
+.top-view .tick-label { fill: var(--kraft-ink); font-weight: 600; }
+.top-view .wall { stroke: var(--ink); stroke-width: 4; }
+.top-view .flag-label { fill: #ffffff; font: 700 9.5px var(--body); }
+.top-view .title { font-weight: 600; fill: var(--ink); font-size: 12.5px; }
+.top-view .row-label { font-weight: 600; font-size: 12px; }
+.top-view .car { fill: var(--taxi); stroke: var(--ink); stroke-width: 1.5; }
+.top-view .needle { stroke: var(--ink); stroke-width: 2; }
+.top-actions { display: flex; gap: 8px 18px; flex-wrap: wrap; align-items: center; margin-top: 10px; font-size: 13px; color: var(--ink-2); }
+.top-actions .key { display: inline-flex; align-items: center; gap: 6px; color: var(--ink); font-weight: 600; }
+.top-actions .key i { width: 12px; height: 12px; border-radius: 2px; }
+.top-actions button { margin-left: auto; }
+.top-actions button { min-height: 36px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); padding: 0 12px; font-size: 13px; cursor: pointer; }
+
+.charts { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+figure { margin: 0; min-width: 0; }
+figcaption { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+figcaption span { font-weight: 400; color: var(--ink-2); }
+.chart { display: block; width: 100%; height: 220px; cursor: crosshair; touch-action: pan-y; user-select: none; }
+.chart text { font: 12px var(--body); fill: var(--ink-2); }
+.chart .grid { stroke: var(--line); stroke-width: 1; }
+.chart .now { stroke: var(--taxi-ink); stroke-width: 1.5; stroke-dasharray: 3 3; }
+.chart .val { font-weight: 700; fill: var(--ink); font-size: 13px; }
+.chart .lab { font-weight: 600; font-size: 12px; }
+
+.loop { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 28px; }
+.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; display: grid; gap: 14px; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: start; }
+.steps li::before { content: counter(s); display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--ink); font: 700 16px var(--display); }
+.steps strong { display: block; }
+.steps span { color: var(--ink-2); }
+.steps code, td code, .checks code { font: 13px var(--mono); background: var(--surface); border: 1px solid var(--line); border-radius: 5px; padding: 0 5px; }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 9px 10px 9px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); font-weight: 600; }
+td:first-child { font-weight: 600; }
+.serial { margin-top: 22px; }
+.serial h3, .build h3 { font: 700 20px var(--display); margin: 0 0 8px; letter-spacing: .01em; }
+.log { margin: 0; padding: 12px 14px; list-style: none; background: var(--meter-bg); color: var(--meter-fg); border-radius: 10px; font: 12.5px/1.7 var(--mono); min-height: 190px; overflow-x: auto; }
+.log li { white-space: nowrap; }
+.log .to-arduino { color: var(--taxi); }
+.log .from-arduino { color: #8fb3c9; }
+
+.build { display: grid; gap: 0; max-width: 980px; }
+.build details > .table-wrap, .build details > .checks { margin-top: 12px; }
+.note { margin: 14px 0 6px; font-size: 13px; color: var(--ink-2); }
+caption { text-align: left; font: 700 20px var(--display); padding-bottom: 6px; }
+details { border-top: 1px solid var(--line); padding-block: 10px; }
+details:last-of-type { border-bottom: 1px solid var(--line); }
+summary { cursor: pointer; font-weight: 600; }
+summary small { font-weight: 400; color: var(--ink-2); margin-left: 6px; }
+pre { margin: 10px 0 4px; padding: 14px; background: var(--meter-bg); color: #dbe5ea; border-radius: 10px; overflow-x: auto; font: 12.5px/1.6 var(--mono); }
+.checks { margin: 0; padding-left: 20px; display: grid; gap: 10px; }
+.checks li::marker { color: var(--taxi-ink); font-weight: 700; }
+.checks strong { display: block; }
+.checks span { color: var(--ink-2); }
+footer { padding-block: 44px 0; color: var(--ink-2); font-size: 13px; max-width: 90ch; display: grid; gap: 6px; }
+footer p { margin: 0; }
+footer strong { color: var(--ink); }
+footer a { color: inherit; }
+
+@media (max-width: 980px) {
+  .stage, .loop { grid-template-columns: minmax(0, 1fr); }
+  .meter { grid-template-columns: 1fr 1fr; gap: 16px 20px; }
+  .meter > .controls, .meter > .sound-box { grid-column: 1 / -1; }
+}
+@media (max-width: 640px) {
+  .viewport { height: min(80vw, 60vh); min-height: 320px; }
+  .meter { grid-template-columns: minmax(0, 1fr); }
+  .charts { grid-template-columns: minmax(0, 1fr); }
+  .meter-clock { font-size: 72px; }
+  .views { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
+  .views button { flex: none; }
+  .top-actions button { margin-left: 0; }
+  .top-view { height: 170px; }
+}
+</style>
+</head>
+<body>
+<header class="top wrap">
+  <div class="brand"><span class="roof">TAXI</span><span>El pulso de Nueva York · Prototipo físico-digital</span></div>
+  <h1>Mientras más rápido va la ciudad, más lejos llega el taxi</h1>
+  <p class="lede">Elige una hora y un tipo de día, y arranca el taxi. Durante 5 segundos avanza a la velocidad mediana de los taxis amarillos de Nueva York a esa hora de enero. El punto donde se detiene marca esa velocidad en la regla. Después vuelve solo a la salida.</p>
+  <p class="sim-note"><span class="pill">Modelo 3D</span><span>Los datos son reales: registros de la NYC TLC, enero de 2019 a 2026. El taxi, la avenida y los controles son una simulación del prototipo físico.</span></p>
+</header>
+
+<section class="stage wrap" aria-label="Prototipo y taxímetro">
+  <div class="stage-main">
+    <div class="viewport" id="viewport">
+      <canvas id="scene" aria-label="Modelo 3D: avenida de cartón con una regla de velocidad, un taxi de juguete con servo y Arduino, una caja con perilla, interruptor y botón Arrancar, y un computador con la visualización"></canvas>
+      <p class="no-gl" id="no-gl" hidden>Este navegador no puede mostrar el modelo 3D. La regla vista desde arriba, el taxímetro, los gráficos y el sonido funcionan igual.</p>
+    </div>
+    <div class="views" role="group" aria-label="Vistas del prototipo">
+      <button type="button" id="view-general" data-view="general" aria-pressed="true">Vista general</button>
+      <button type="button" id="view-follow" data-view="follow" aria-pressed="false">Seguir al taxi</button>
+      <button type="button" id="view-ruler" data-view="ruler" aria-pressed="false">Regla</button>
+      <button type="button" id="view-start" data-view="start" aria-pressed="false">Controles</button>
+      <button type="button" id="view-screen" data-view="screen" aria-pressed="false">Pantalla</button>
+    </div>
+    <p class="hint">Arrastra para girar la vista y usa la rueda o dos dedos para acercar. En la caja de controles puedes girar la perilla, mover el interruptor y apretar Arrancar.</p>
+  </div>
+
+  <aside class="meter" aria-label="Taxímetro">
+    <div class="meter-top">
+      <div class="meter-head"><span>Taxímetro</span><span id="year-label">Enero 2026</span></div>
+      <div class="meter-clock" id="clock">08:00</div>
+      <p class="meter-when" id="when">Lunes a viernes</p>
+      <p class="phase" id="phase" data-phase="home" aria-live="polite"><i></i><span id="phase-text">Listo en la salida.</span></p>
+    </div>
+    <dl>
+      <div class="wide"><dt>Velocidad mediana</dt><dd id="kmh">14,2<small>km/h</small></dd></div>
+      <div><dt>En un minuto avanza</dt><dd id="permin">240<small>m</small></dd></div>
+      <div><dt id="trips-label">Viajes de 08:00 a 09:00</dt><dd id="trips">5.719<small>en un día</small></dd></div>
+    </dl>
+    <div class="controls">
+      <div>
+        <div class="field-label"><span>Tipo de día</span></div>
+        <div class="seg" role="group" aria-label="Tipo de día">
+          <button type="button" id="day-0" data-day="0" aria-pressed="true">Lunes a viernes</button>
+          <button type="button" id="day-1" data-day="1" aria-pressed="false">Fin de semana</button>
+        </div>
+      </div>
+      <div>
+        <label class="field-label" for="hour"><span>Hora</span><span id="hour-out">08:00</span></label>
+        <input type="range" id="hour" min="0" max="23" step="1" value="8">
+      </div>
+      <div class="row">
+        <div>
+          <label class="field-label" for="year"><span>Enero de</span></label>
+          <select id="year"></select>
+        </div>
+        <button type="button" class="btn btn-primary" id="go">Arrancar</button>
+      </div>
+      <button type="button" class="btn btn-ghost" id="story" aria-pressed="false">Recorrer el día</button>
+      <p class="busy" id="busy" hidden>Los controles se activan cuando el taxi vuelve a la salida.</p>
+      <p class="story-note">Recorrer el día hace 10 carreras en unos 2 minutos: 01, 05, 08, 11 y 13 h, de lunes a viernes y el fin de semana.</p>
+    </div>
+    <div class="sound-box">
+      <button type="button" class="btn btn-ghost" id="sound" aria-pressed="false">Activar sonido</button>
+      <div>
+        <div class="field-label"><span>Escuchar un ejemplo</span></div>
+        <div class="demo" role="group" aria-label="Escuchar un ejemplo">
+          <button type="button" id="demo-slow">Lento</button>
+          <button type="button" id="demo-fast">Rápido</button>
+        </div>
+      </div>
+      <ul class="legend" aria-label="Qué codifica el sonido">
+        <li>Suena solo mientras el taxi avanza. Usa audífonos.</li>
+        <li><b>Tono:</b> más velocidad, nota más aguda.</li>
+        <li><b>Ritmo:</b> más viajes, pulsos más seguidos.</li>
+        <li><b>Bocina:</b> tráfico lento, bajo 15 km/h.</li>
+        <li><b>Oído izquierdo:</b> lunes a viernes. <b>Derecho:</b> fin de semana.</li>
+      </ul>
+    </div>
+  </aside>
+</section>
+
+<section class="block wrap" aria-labelledby="h-top">
+  <h2 id="h-top">La regla vista desde arriba</h2>
+  <p class="sub">Cada carrera deja una banderita en la velocidad donde se detuvo el taxi. Compara las banderitas de una misma hora: la que llega más lejos corresponde al tráfico más rápido.</p>
+  <svg class="top-view" id="top" role="img" aria-label="Avenida vista desde arriba con la regla de velocidad, el taxi y las banderitas de cada carrera"></svg>
+  <div class="top-actions">
+    <span class="key"><i style="background:var(--week)"></i>Lunes a viernes</span>
+    <span class="key"><i style="background:var(--end)"></i>Fin de semana</span>
+    <span id="flag-count">Todavía no hay banderitas.</span>
+    <button type="button" id="clear">Quitar banderitas</button>
+  </div>
+</section>
+
+<section class="block wrap" aria-labelledby="h-data">
+  <h2 id="h-data">Los datos de cada hora</h2>
+  <p class="sub">La línea punteada marca la hora elegida. La línea gruesa es el tipo de día elegido. Con el taxi en la salida, puedes hacer clic en un gráfico para cambiar la hora.</p>
+  <div class="charts">
+    <figure>
+      <figcaption>Velocidad mediana de los taxis <span>· km/h · decide hasta dónde llega el taxi y el tono</span></figcaption>
+      <svg class="chart" id="chart-speed" role="img" aria-label="Velocidad mediana por hora del día, lunes a viernes y fin de semana"></svg>
+    </figure>
+    <figure>
+      <figcaption>Viajes que empiezan en cada hora <span>· en un día promedio de enero · decide el ritmo</span></figcaption>
+      <svg class="chart" id="chart-trips" role="img" aria-label="Viajes que empiezan en cada hora del día, en un día promedio, lunes a viernes y fin de semana"></svg>
+    </figure>
+  </div>
+</section>
+
+<section class="block wrap" aria-labelledby="h-loop">
+  <h2 id="h-loop">Cómo se usa</h2>
+  <div class="loop">
+    <ol class="steps">
+      <li><div><strong>Elige la hora y el tipo de día</strong><span>Gira la perilla para la hora y mueve el interruptor para lunes a viernes o fin de semana.</span></div></li>
+      <li><div><strong>Aprieta Arrancar</strong><span>El taxi avanza 5 segundos a la velocidad mediana de esa hora. La pantalla marca la hora y suena la ciudad.</span></div></li>
+      <li><div><strong>Lee dónde se detuvo</strong><span>La aguja del taxi apunta a la velocidad en la regla, y ahí queda una banderita con la hora.</span></div></li>
+      <li><div><strong>El taxi vuelve solo</strong><span>Retrocede despacio y en silencio hasta la salida. La vuelta es siempre igual: no representa datos.</span></div></li>
+    </ol>
+    <div class="table-wrap">
+      <table>
+        <caption>Qué representa cada parte</caption>
+        <thead><tr><th>Parte</th><th>Dato</th><th>Cómo se lee</th></tr></thead>
+        <tbody>
+          <tr><td>Distancia del taxi</td><td>Velocidad mediana</td><td>Más lejos, más rápido. La regla empieza en 0 km/h en la salida.</td></tr>
+          <tr><td>Banderita</td><td>Hora y tipo de día</td><td>Azul: lunes a viernes. Naranja: fin de semana. Lleva escrita la hora.</td></tr>
+          <tr><td>Tono</td><td>Velocidad mediana</td><td>Nota más aguda, tráfico más rápido.</td></tr>
+          <tr><td>Ritmo</td><td>Viajes que empiezan</td><td>Pulsos más seguidos, más viajes a esa hora.</td></tr>
+          <tr><td>Bocina</td><td>Tráfico lento</td><td>Suena bajo 15 km/h, más seguida cuanto más lento.</td></tr>
+          <tr><td>Pantalla</td><td>Velocidad y viajes del día</td><td>Dos curvas por hora con la hora elegida marcada.</td></tr>
+          <tr><td>Vuelta</td><td>Ninguno</td><td>Siempre lenta, igual y en silencio.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="block wrap" aria-labelledby="h-build">
+  <h2 id="h-build">Notas técnicas</h2>
+  <p class="sub">Información para construir y calibrar el prototipo físico.</p>
+  <div class="build">
+    <details>
+      <summary>Componentes y conexiones</summary>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Componente</th><th>Función</th><th>Conexión</th></tr></thead>
+          <tbody>
+            <tr><td>Arduino Leonardo</td><td>Lee los controles, mide los tiempos y mueve el servo</td><td>USB al computador (también lo alimenta)</td></tr>
+            <tr><td>Servo de rotación continua</td><td>Mueve los dos ejes por la fila de engranajes</td><td>Señal en D9, 5 V y GND</td></tr>
+            <tr><td>Potenciómetro (perilla)</td><td>Hora, en 24 posiciones</td><td>A0</td></tr>
+            <tr><td>Interruptor</td><td>Tipo de día</td><td>D2 a GND</td></tr>
+            <tr><td>Botón Arrancar</td><td>Inicia la carrera</td><td>D3 a GND</td></tr>
+            <tr><td>Microinterruptor de tope</td><td>Detecta el taxi en la salida</td><td>D4 a GND</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+    <details>
+      <summary>Ciclo y mensajes entre el Arduino y el navegador</summary>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Mensaje</th><th>Sentido</th><th>Significado</th></tr></thead>
+          <tbody>
+            <tr><td><code>H08 S</code></td><td>Arduino → navegador</td><td>Cambió la hora o el tipo de día (S: lunes a viernes, F: fin de semana).</td></tr>
+            <tr><td><code>SALIR</code></td><td>Arduino → navegador</td><td>Se apretó Arrancar con el taxi en la salida.</td></tr>
+            <tr><td><code>V14.2</code></td><td>Navegador → Arduino</td><td>Velocidad de esa hora en km/h. El Arduino arranca la ida.</td></tr>
+            <tr><td><code>IDA</code> · <code>PAUSA</code> · <code>VUELTA</code></td><td>Arduino → navegador</td><td>Fases del ciclo: 5 s de ida, 3 s de pausa y vuelta hasta el tope.</td></tr>
+            <tr><td><code>SALIDA</code> · <code>SIN_TOPE</code></td><td>Arduino → navegador</td><td>El taxi llegó al tope, o no llegó en 15 s y el servo se detuvo.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Registro de la simulación:</p>
+      <ol class="log" id="log" aria-live="off"></ol>
+    </details>
+    <details>
+      <summary>Programa del Arduino <small>C++ · biblioteca Servo</small></summary>
+<pre><code>#include &lt;Servo.h&gt;
+
+const int PIN_SERVO = 9;
+const int PIN_PERILLA = A0;       // potenciómetro de la perilla
+const int PIN_DIA = 2;            // interruptor a GND: abierto = lunes a viernes
+const int PIN_ARRANCAR = 3;       // botón Arrancar a GND
+const int PIN_TOPE = 4;           // microinterruptor a GND: apretado = taxi en la salida
+const int PARADO_US = 1500;       // calibrar: pulso en que el servo no gira
+const int VUELTA_US = 1420;       // calibrar: retroceso lento y siempre igual
+const unsigned long IDA_MS = 5000, PAUSA_MS = 3000, VUELTA_MAX_MS = 15000;
+
+enum Estado { ESPERA, IDA, PAUSA, VUELTA };
+Estado estado = ESPERA;
+Servo rueda;
+unsigned long desde = 0;
+int horaAnterior = -1, diaAnterior = -1;
+bool botonAntes = false;
+
+void cambiar(Estado nuevo, const char *aviso) {
+  estado = nuevo;
+  desde = millis();
+  Serial.println(aviso);
+}
+
+void setup() {
+  Serial.begin(115200);           // en el Leonardo, Serial usa el mismo cable USB
+  Serial.setTimeout(50);
+  pinMode(PIN_DIA, INPUT_PULLUP);
+  pinMode(PIN_ARRANCAR, INPUT_PULLUP);
+  pinMode(PIN_TOPE, INPUT_PULLUP);
+  rueda.attach(PIN_SERVO);
+  rueda.writeMicroseconds(PARADO_US);
+}
+
+void loop() {
+  unsigned long t = millis() - desde;
+  bool enSalida = digitalRead(PIN_TOPE) == LOW;
+
+  if (estado == ESPERA) {
+    int hora = map(analogRead(PIN_PERILLA), 0, 1024, 0, 24);   // 0 a 23
+    int dia = digitalRead(PIN_DIA) == HIGH ? 0 : 1;            // 0 = S, 1 = F
+    if (hora != horaAnterior || dia != diaAnterior) {
+      Serial.print('H');
+      if (hora &lt; 10) Serial.print('0');
+      Serial.print(hora);
+      Serial.println(dia == 0 ? " S" : " F");                  // ejemplo: H08 S
+      horaAnterior = hora;
+      diaAnterior = dia;
+    }
+    bool boton = digitalRead(PIN_ARRANCAR) == LOW;
+    if (boton &amp;&amp; !botonAntes &amp;&amp; enSalida) Serial.println("SALIR");
+    botonAntes = boton;
+  }
+
+  if (Serial.available()) {
+    String linea = Serial.readStringUntil('\n');             // ejemplo: V14.2
+    if (estado == ESPERA &amp;&amp; enSalida &amp;&amp; linea.startsWith("V")) {
+      float kmh = constrain(linea.substring(1).toFloat(), 10, 28);
+      rueda.writeMicroseconds(1560 + (kmh - 10) / 18 * 140);  // calibrar con la regla
+      cambiar(IDA, "IDA");
+    }
+  }
+
+  if (estado == IDA &amp;&amp; t &gt;= IDA_MS) {
+    rueda.writeMicroseconds(PARADO_US);
+    cambiar(PAUSA, "PAUSA");
+  } else if (estado == PAUSA &amp;&amp; t &gt;= PAUSA_MS) {
+    rueda.writeMicroseconds(VUELTA_US);
+    cambiar(VUELTA, "VUELTA");
+  } else if (estado == VUELTA &amp;&amp; (enSalida || t &gt;= VUELTA_MAX_MS)) {
+    rueda.writeMicroseconds(PARADO_US);
+    cambiar(ESPERA, enSalida ? "SALIDA" : "SIN_TOPE");
+  }
+}</code></pre>
+    </details>
+    <details>
+      <summary>Programa del navegador <small>Web Serial · Chrome o Edge</small></summary>
+<pre><code>const port = await navigator.serial.requestPort();   // necesita un clic
+await port.open({ baudRate: 115200 });
+const writer = port.writable.getWriter();
+// Por cada línea que llega del Arduino:
+//   "H08 S"  → cambiar la hora y el tipo de día en la pantalla
+//   "SALIR"  → responder con la velocidad de esa hora
+//   "IDA"    → empezar el sonido   ·   "PAUSA" → detenerlo
+//   "SALIDA" → taxi listo para la siguiente carrera
+await writer.write(new TextEncoder().encode(`V${kmh.toFixed(1)}\n`));</code></pre>
+    </details>
+    <details>
+      <summary>Construcción y calibración</summary>
+      <ol class="checks">
+        <li><strong>Servo de rotación continua</strong><span>Para volver, el servo gira al revés con un pulso bajo 1.500 µs. Un servo de 180° no puede hacerlo.</span></li>
+        <li><strong>Regla medida con carreras reales</strong><span>Correr el taxi 3 veces con cada velocidad, de 10 a 28 km/h, y marcar dónde se detiene la aguja. El giro del servo no cambia en línea recta con el pulso.</span></li>
+        <li><strong>Tope en la salida</strong><span>El servo no gira igual hacia adelante que hacia atrás. El microinterruptor corrige esa diferencia en cada vuelta.</span></li>
+        <li><strong>Avenida</strong><span>Recta, de unos 24 cm de ancho, con bordes de cartón. El taxi mide unos 18 cm de ancho y no tiene dirección. El largo depende de la velocidad máxima del servo: este modelo supone 24 cm/s, es decir, 120 cm en 5 s.</span></li>
+        <li><strong>Engranajes</strong><span>Entre los dos ejes tiene que haber una cantidad impar de engranajes. Con una cantidad par, los ejes giran en sentidos opuestos y el taxi se traba.</span></li>
+        <li><strong>Cable USB</strong><span>De unos 2 m, colgado desde un punto alto sobre la avenida para que no frene al taxi.</span></li>
+        <li><strong>Alimentación</strong><span>Si la placa se reinicia cuando el servo arranca o cambia de sentido, usar una fuente de 5 V aparte, con GND común.</span></li>
+      </ol>
+    </details>
+  </div>
+</section>
+
+<footer class="wrap">
+  <p><strong>El pulso de Nueva York</strong> · Grupo 16 · IIC2026 Visualización de Información · Vicente Reñasco, David Parra y Mariano De Sarratea.</p>
+  <p>Datos: NYC Taxi &amp; Limousine Commission, viajes de taxis amarillos, enero de 2019 a 2026. Velocidad: mediana de toda la ciudad por hora de salida (distancia / duración, viajes de 1 minuto a 3 horas). Viajes: viajes que empiezan en cada hora, en un día promedio de cada tipo. Procesamiento de los datos: <a href="https://github.com/V1TSO/Visualizacion_de_Informacion_Grupo_16" target="_blank" rel="noopener">repositorio del proyecto</a>.</p>
+</footer>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+// Three.js se carga aparte: si falla, la regla, el taxímetro, los gráficos y el sonido siguen funcionando.
+let THREE, OrbitControls;
+
+// Datos reales de public/data/years.json: s = velocidad mediana (km/h), t = viajes que empiezan por hora (promedio por día); [lun–vie, sáb–dom].
+const DATA = {"2019":{"s":[[23.2,23.5,24.0,24.9,27.9,26.9,22.0,17.0,13.6,12.7,13.0,13.0,13.5,14.2,14.0,13.9,14.7,14.3,14.6,16.0,17.7,18.9,19.6,20.9],[19.1,20.4,21.5,23.0,25.4,28.8,27.5,25.3,22.5,20.7,19.1,17.5,16.9,16.4,16.2,15.9,15.7,15.5,15.7,16.3,17.5,18.1,18.7,19.2]],"t":[[4931,3111,2074,1523,1495,2637,6761,11686,13914,12714,11692,11822,12496,12599,13837,14438,13198,15169,17085,15762,14240,13813,12050,8817],[11264,9322,7409,5160,3184,1641,2398,3728,5760,8260,10622,11936,13145,13219,13197,13846,13470,13680,13934,12835,10846,10448,10500,9133]],"d":[23,8]},"2020":{"s":[[23.2,23.2,23.6,24.9,27.8,27.9,22.7,17.4,14.0,13.2,13.5,13.7,14.2,14.7,14.3,14.2,14.8,14.3,14.7,16.1,17.7,18.6,19.5,20.8],[19.9,20.7,21.7,23.2,25.4,30.5,28.7,25.8,23.0,21.0,19.5,17.8,16.8,15.8,15.8,15.8,15.7,15.5,15.6,16.2,17.9,18.7,19.1,19.9]],"t":[[4126,2600,1782,1273,1218,1975,4760,9267,11432,10728,9885,10128,10894,11046,11992,12320,11612,13316,14838,13382,12046,12056,10451,7309],[9162,7617,5888,4069,2378,1239,1750,2889,4599,6925,8886,9880,11202,11356,11258,11348,11110,11444,11662,10654,8976,8976,8683,7757]],"d":[23,8]},"2021":{"s":[[28.9,28.1,28.0,27.8,29.2,28.4,24.2,20.9,17.9,17.5,17.6,17.1,17.3,17.2,16.7,16.9,17.6,18.3,19.7,21.4,22.8,24.0,25.0,28.0],[27.3,28.2,28.2,27.4,29.4,32.7,28.6,27.0,25.0,23.8,22.7,21.3,20.4,19.8,19.2,19.1,19.3,19.8,20.6,21.7,22.8,24.0,25.4,27.3]],"t":[[323,206,124,77,103,302,978,1869,2846,2903,3043,3174,3395,3562,3855,3872,3616,3651,3360,2463,1613,1221,980,585],[528,353,189,108,89,154,371,596,840,1289,1771,2172,2585,2795,3003,3044,2954,2666,2292,1828,1398,1151,1031,668]],"d":[21,10]},"2022":{"s":[[26.6,26.8,26.8,27.1,28.6,27.5,23.7,18.9,15.6,15.5,15.3,15.1,15.3,15.6,15.2,15.2,16.0,16.4,17.4,18.8,20.0,21.0,21.9,23.4],[21.7,22.2,22.8,23.9,25.5,28.5,29.2,26.6,24.7,22.6,21.2,19.7,18.9,18.3,18.0,17.7,17.6,17.5,17.7,18.2,19.2,20.2,21.1,22.6]],"t":[[1257,649,374,243,235,489,1416,3056,4177,4194,4271,4419,4721,4887,5511,5943,5644,6086,6205,5182,3943,3651,3450,2506],[3300,2828,2108,1398,772,392,592,898,1269,2001,2869,3526,4137,4333,4585,4746,4804,4680,4557,4101,3377,3141,3080,2652]],"d":[21,10]},"2023":{"s":[[25.6,25.9,25.4,26.9,29.8,27.9,22.9,18.1,14.7,14.3,14.1,13.7,14.1,14.3,14.1,13.9,14.6,14.5,15.0,16.9,18.4,19.4,20.1,21.8],[19.4,20.3,21.7,22.8,24.7,29.7,30.3,27.8,24.1,21.7,20.2,18.5,17.6,16.7,16.2,16.1,15.7,15.5,15.7,16.2,17.5,18.6,19.1,20.0]],"t":[[1642,820,449,296,302,592,1659,3415,4527,4738,4827,4995,5399,5683,6181,6398,6309,6980,7328,6421,5545,5389,4780,3467],[5299,4561,3522,2281,1216,527,755,1191,1771,2778,3929,4678,5434,5687,5854,5905,6076,5915,5784,5428,4597,4497,4457,4063]],"d":[22,9]},"2024":{"s":[[22.1,21.4,21.5,22.8,25.9,25.7,21.8,17.6,14.5,13.8,13.5,12.9,13.2,13.5,13.3,13.4,13.9,13.7,14.4,15.8,17.1,17.9,18.5,19.8],[18.1,18.7,19.4,21.0,23.3,30.5,27.3,25.1,22.2,20.4,18.8,17.2,16.1,15.5,15.2,14.9,14.8,14.5,14.6,15.2,16.6,17.3,17.7,18.5]],"t":[[1709,977,640,472,406,665,1550,3238,4438,4583,4637,4858,5179,5349,5904,6152,6092,6824,7140,6081,5344,5362,4608,3235],[4927,3858,2823,1724,911,419,699,1106,1831,2874,3950,4772,5595,5770,5797,5881,6160,6063,5979,5443,4568,4624,4596,4304]],"d":[23,8]},"2025":{"s":[[21.8,21.3,21.4,22.5,25.9,25.0,21.4,17.2,14.4,13.7,13.2,12.8,13.1,13.3,13.2,13.3,14.0,13.8,14.3,15.6,16.9,17.4,18.0,19.5],[18.4,19.1,19.9,21.3,23.3,29.7,27.5,25.6,22.0,20.1,18.6,17.0,16.2,15.4,15.2,15.2,14.8,14.7,15.1,15.3,16.5,17.2,17.4,18.3]],"t":[[1864,1087,715,503,470,792,1870,4007,5440,5114,4957,5163,5584,5853,6463,6943,7009,8581,9176,7355,6603,7039,5946,4032],[6286,4914,3420,2105,1142,533,852,1263,1971,3106,4235,5110,5814,6370,6624,6668,6903,6943,7032,6420,5329,5453,5625,5463]],"d":[23,8]},"2026":{"s":[[21.6,21.5,22.1,23.3,25.2,24.8,21.1,16.9,14.2,13.4,13.0,12.5,12.7,12.9,12.8,12.5,13.0,12.9,13.5,14.6,16.0,16.7,17.5,19.2],[18.3,19.3,20.3,21.7,23.5,27.4,26.7,24.4,21.3,19.5,17.9,16.4,15.4,14.7,14.8,14.6,14.3,13.9,14.0,14.5,15.8,16.6,17.0,18.2]],"t":[[2462,1500,974,730,695,1159,2409,4479,5719,5667,5443,5624,6014,6182,6828,7359,7499,8533,9012,7812,7227,7328,6301,4630],[6395,4966,3619,2502,1478,814,1176,1634,2461,3548,4599,5304,6092,6593,6323,6595,6943,7115,7442,6932,5959,5677,6222,5621]],"d":[22,9]}};
+const YEARS = Object.keys(DATA).sort();
+const DAY_NAME = ['Lunes a viernes', 'Sábado y domingo'];
+const DAY_SHORT = ['Lun–vie', 'Sáb–dom'];
+const NOTES = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33, 659.25, 783.99, 880.0];
+const STORY = [[1, 1], [1, 0], [5, 1], [5, 0], [8, 0], [8, 1], [11, 0], [11, 1], [13, 1], [13, 0]]; // [hora, día] de las escenas de la página
+const RUN_S = 5, PAUSE_S = 3, BACK_CM_S = 16, WHEEL_R = 2.6;
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const fmt = (n, d = 0) => n.toLocaleString('es-CL', { minimumFractionDigits: d, maximumFractionDigits: d });
+const hh = h => String(h).padStart(2, '0');
+const noteIndex = kmh => clamp(Math.round((kmh - 10) / 18 * 9), 0, 9);
+const servoUs = kmh => Math.round(1560 + (clamp(kmh, 10, 28) - 10) / 18 * 140);
+const rideSpeed = kmh => clamp(kmh, 0, 28) / 28 * 24;       // cm/s en la maqueta (supuesto: 24 cm/s a 28 km/h); la regla empieza en 0
+const distFor = kmh => rideSpeed(kmh) * RUN_S;               // cm que avanza en la ida
+const nightness = hour => { const t = Math.min(1, Math.max(0, (((1 + Math.cos(2 * Math.PI * (hour - 2) / 24)) / 2) ** 2 - 0.3) / 0.6)); return t * t * (3 - 2 * t); };
+
+const state = { year: '2026', day: 0, hour: 8 };
+const run = { phase: 'home', t: 0, z: 0, v: 0, kmh: 0, day: 0, hour: 8 };
+let queue = [], storyTotal = 0;
+const flags = new Map();   // clave año-día-hora → { day, hour, z }
+const current = () => { const y = DATA[state.year]; return { kmh: y.s[state.day][state.hour] ?? 0, trips: y.t[state.day][state.hour] ?? 0 }; };
+const $ = id => document.getElementById(id);
+let sim = null;
+
+/* ---------- Taxímetro y controles ---------- */
+const yearSel = $('year');
+YEARS.forEach(y => yearSel.add(new Option(y, y)));
+yearSel.value = state.year;
+
+function refreshMeter() {
+  const { kmh, trips } = current();
+  $('clock').textContent = `${hh(state.hour)}:00`;
+  $('hour-out').textContent = `${hh(state.hour)}:00`;
+  $('hour').value = state.hour;
+  $('year-label').textContent = `Enero ${state.year}`;
+  const late = state.day === 1 && state.hour <= 4;
+  $('when').innerHTML = DAY_NAME[state.day] + (late ? '<small>De madrugada: son las noches de viernes y sábado</small>' : '');
+  $('kmh').innerHTML = `${fmt(kmh, 1)}<small>km/h</small>`;
+  $('permin').innerHTML = `${fmt(Math.round(kmh * 1000 / 60 / 10) * 10)}<small>m</small>`;
+  $('trips-label').textContent = `Viajes de ${hh(state.hour)}:00 a ${hh((state.hour + 1) % 24)}:00`;
+  $('trips').innerHTML = `${fmt(trips)}<small>en un día</small>`;
+  [0, 1].forEach(d => $('day-' + d).setAttribute('aria-pressed', String(d === state.day)));
+}
+function lockControls() {
+  const busy = run.phase !== 'home';
+  ['hour', 'day-0', 'day-1', 'year', 'go', 'clear'].forEach(id => { $(id).disabled = busy; });
+  $('busy').hidden = !busy;
+}
+const pace = kmh => kmh < 16 ? 'lento' : kmh < 22 ? 'intermedio' : 'rápido';
+let lastPhaseText = '';
+function refreshPhase() {
+  const p = run.phase, lap = storyTotal ? `Carrera ${storyTotal - queue.length} de ${storyTotal} · ` : '';
+  let text;
+  if (p === 'home') text = queue.length ? 'En la salida. Sigue la próxima carrera.' : 'Listo en la salida. Aprieta Arrancar.';
+  else if (p === 'ida') text = `${lap}Avanzando: ${fmt(Math.min(run.t, RUN_S), 1)} s de ${RUN_S}`;
+  else if (p === 'pausa') text = `${lap}Se detuvo en ${fmt(run.kmh, 1)} km/h: a esta hora el tráfico es ${pace(run.kmh)}.`;
+  else text = `${lap}Vuelve a la salida. La vuelta no representa datos.`;
+  if (text === lastPhaseText) return;
+  lastPhaseText = text;
+  $('phase-text').textContent = text;
+  $('phase').dataset.phase = p;
+}
+
+function changed(kind) {
+  refreshMeter();
+  drawCharts();
+  sim?.drawScreen();
+  if (kind === 'input') addLog('from-arduino', `Arduino → navegador   H${hh(state.hour)} ${state.day === 0 ? 'S' : 'F'}`);
+}
+function setHour(h) { if (run.phase !== 'home') return; h = ((h % 24) + 24) % 24; if (h === state.hour) return; state.hour = h; changed('input'); }
+function setDay(d) { if (run.phase !== 'home' || d === state.day) return; state.day = d; changed('input'); }
+function setYear(y) { if (run.phase !== 'home') return; state.year = y; changed('year'); drawTop(); refreshDemos(); sim?.drawFlags(); }
+
+$('hour').addEventListener('input', e => setHour(+e.target.value));
+$('day-0').addEventListener('click', () => setDay(0));
+$('day-1').addEventListener('click', () => setDay(1));
+yearSel.addEventListener('change', e => setYear(e.target.value));
+$('go').addEventListener('click', () => startRun());
+$('story').addEventListener('click', toggleStory);
+$('sound').addEventListener('click', toggleSound);
+$('clear').addEventListener('click', () => { for (const k of [...flags.keys()]) if (k.startsWith(state.year + '-')) flags.delete(k); drawTop(); sim?.drawFlags(); });
+
+/* ---------- El ciclo: ida, pausa, vuelta ---------- */
+const log = [];
+function addLog(cls, text) {
+  const t = `${hh(state.hour)}:00`;
+  log.push({ cls, text: `${t}  ${text}` });
+  while (log.length > 8) log.shift();
+  $('log').innerHTML = log.map(l => `<li class="${l.cls}">${l.text}</li>`).join('');
+}
+function startRun() {
+  if (run.phase !== 'home') return;
+  const { kmh } = current();
+  Object.assign(run, { phase: 'ida', t: 0, v: rideSpeed(kmh), kmh, day: state.day, hour: state.hour });
+  addLog('from-arduino', 'Arduino → navegador   SALIR');
+  addLog('to-arduino', `navegador → Arduino   V${kmh.toFixed(1)}   (servo ${servoUs(kmh)} µs)`);
+  addLog('from-arduino', 'Arduino → navegador   IDA');
+  lockControls(); refreshPhase(); sim?.drawScreen();
+}
+function toggleStory() {
+  if ($('story').getAttribute('aria-pressed') === 'true') { queue = []; storyTotal = 0; setStoryButton(false); refreshPhase(); return; }
+  queue = STORY.map(x => x.slice()); storyTotal = queue.length;
+  setStoryButton(true);
+  nextInQueue();
+}
+function setStoryButton(on) { $('story').setAttribute('aria-pressed', String(on)); $('story').textContent = on ? 'Detener el recorrido' : 'Recorrer el día'; }
+function nextInQueue() {
+  if (run.phase !== 'home') return;
+  if (!queue.length) { storyTotal = 0; setStoryButton(false); refreshPhase(); return; }
+  const [h, d] = queue[0];
+  setDay(d); setHour(h);
+  queue.shift();
+  startRun();
+}
+function tick(dt) {
+  if (run.phase === 'ida') {
+    run.t += dt;
+    run.z = run.v * Math.min(run.t, RUN_S);
+    if (run.t >= RUN_S) {
+      run.z = distFor(run.kmh); run.v = 0;
+      run.phase = 'pausa'; run.t = 0;
+      flags.set(`${state.year}-${run.day}-${run.hour}`, { day: run.day, hour: run.hour, z: run.z });
+      addLog('from-arduino', 'Arduino → navegador   PAUSA');
+      drawTop(); sim?.drawFlags(); sim?.drawScreen();
+    }
+  } else if (run.phase === 'pausa') {
+    run.t += dt;
+    if (run.t >= PAUSE_S) { run.phase = 'vuelta'; run.t = 0; run.v = -BACK_CM_S; addLog('from-arduino', 'Arduino → navegador   VUELTA'); sim?.drawScreen(); }
+  } else if (run.phase === 'vuelta') {
+    run.t += dt;
+    run.z = Math.max(0, run.z - BACK_CM_S * dt);
+    if (run.z <= 0) {
+      run.phase = 'home'; run.v = 0; run.t = 0;
+      addLog('from-arduino', 'Arduino → navegador   SALIDA');
+      lockControls(); sim?.drawScreen();
+      if (queue.length) setTimeout(nextInQueue, 700); else { storyTotal = 0; setStoryButton(false); }
+    }
+  }
+  refreshPhase();
+  moveTopCar();
+}
+
+/* ---------- Regla vista desde arriba ---------- */
+let topGeom = null;
+function drawTop() {
+  const svg = $('top'), W = Math.max(300, svg.clientWidth || 900), H = svg.clientHeight || 170;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  const z0 = -12, z1 = 133, X = z => 10 + (z - z0) / (z1 - z0) * (W - 20);
+  const roadT = 26, roadB = 62, rulerB = 88, rowA = 112, rowB = 146, step = W > 620 ? 2 : 4;
+  let s = `<text class="title" x="${X(-10.75)}" y="14">Velocidad mediana (km/h) · más lejos, más rápido</text>`;
+  s += `<rect class="road" x="${X(-10.75)}" y="${roadT}" width="${X(131.25) - X(-10.75)}" height="${roadB - roadT}" rx="3"/>`;
+  s += `<rect class="strip" x="${X(-10.75)}" y="${roadB}" width="${X(131.25) - X(-10.75)}" height="${rulerB - roadB}"/>`;
+  s += `<line class="wall" x1="${X(-10.75)}" x2="${X(-10.75)}" y1="${roadT}" y2="${rulerB}"/>`;
+  for (let k = 0; k <= 28; k++) {
+    const x = X(distFor(k)), big = k % step === 0;
+    s += `<line class="tick" x1="${x}" x2="${x}" y1="${roadB}" y2="${roadB + (big ? 11 : 6)}"/>`;
+    if (big) s += `<text class="tick-label" x="${x}" y="${rulerB - 4}" text-anchor="middle">${k}</text>`;
+  }
+  const mine = [...flags.entries()].filter(([k]) => k.startsWith(state.year + '-')).map(([, f]) => f).sort((a, b) => a.z - b.z);
+  mine.forEach(f => {
+    const x = X(f.z), y = f.day === 0 ? rowA : rowB, c = f.day === 0 ? 'var(--week)' : 'var(--end)';
+    s += `<line x1="${x}" x2="${x}" y1="${rulerB}" y2="${y + 10}" stroke="${c}" stroke-width="1.5"/>`;
+    s += `<path d="M${x},${y - 10}L${x + 22},${y - 3}L${x},${y + 4}Z" fill="${c}"/><text class="flag-label" x="${x + 2}" y="${y - 0.5}">${hh(f.hour)}</text>`;
+  });
+  if (!mine.length) s += `<text x="${X(-10.75)}" y="${(rowA + rowB) / 2}">Aquí aparecen las banderitas de cada carrera.</text>`;
+  s += `<g id="top-car"><rect class="car" x="0" y="${roadT + 6}" width="${X(9.6) - X(-9.6)}" height="${roadB - roadT - 12}" rx="3"/><line class="needle" x1="0" x2="0" y1="${roadB - 6}" y2="${roadB + 13}"/></g>`;
+  svg.innerHTML = s;
+  topGeom = { X, w: X(9.6) - X(-9.6) };
+  $('flag-count').textContent = mine.length ? `${mine.length} ${mine.length === 1 ? 'banderita' : 'banderitas'} en enero de ${state.year}.` : 'Todavía no hay banderitas.';
+  moveTopCar();
+}
+function moveTopCar() {
+  if (!topGeom) return;
+  const g = $('top-car'); if (!g) return;
+  const x = topGeom.X(run.z);
+  g.firstChild.setAttribute('x', x - topGeom.w / 2);
+  g.lastChild.setAttribute('x1', x); g.lastChild.setAttribute('x2', x);
+}
+new ResizeObserver(drawTop).observe($('top'));
+
+/* ---------- Gráficos ---------- */
+function niceStep(x) { const p = 10 ** Math.floor(Math.log10(x)); for (const m of [1, 2, 2.5, 5, 10]) if (m * p >= x) return m * p; return 10 * p; }
+function drawChart(svg, kind) {
+  const W = Math.max(280, svg.clientWidth || 600), H = 220, L = 46, R = 70, T = 16, B = 28;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  const y = DATA[state.year], series = kind === 'speed' ? y.s : y.t;
+  const all = [...series[0], ...series[1]].filter(v => v != null);
+  let lo, hi, step;
+  if (kind === 'speed') { step = 5; lo = Math.floor(Math.min(...all) / step) * step; hi = Math.ceil(Math.max(...all) / step) * step; }
+  else { step = niceStep(Math.max(...all) / 4); lo = 0; hi = Math.ceil(Math.max(...all) / step) * step; }
+  const X = h => L + h * (W - L - R) / 23, Y = v => T + (hi - v) / (hi - lo) * (H - T - B);
+  const color = d => d === 0 ? 'var(--week)' : 'var(--end)';
+  let s = '';
+  for (let v = lo; v <= hi + 1e-9; v += step) s += `<line class="grid" x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${L - 8}" y="${Y(v) + 4}" text-anchor="end">${fmt(v)}</text>`;
+  for (let h = 0; h < 24; h += 3) s += `<text x="${X(h)}" y="${H - 8}" text-anchor="middle">${hh(h)}</text>`;
+  s += `<text x="${X(23) + 8}" y="${H - 8}">hora</text>`;
+  const path = d => series[d].map((v, h) => `${h ? 'L' : 'M'}${X(h).toFixed(1)},${Y(v ?? lo).toFixed(1)}`).join('');
+  const other = 1 - state.day;
+  if (kind === 'trips') s += `<path d="${path(state.day)}L${X(23)},${Y(0)}L${X(0)},${Y(0)}Z" fill="${color(state.day)}" fill-opacity=".12"/>`;
+  s += `<path d="${path(other)}" fill="none" stroke="${color(other)}" stroke-width="1.6" stroke-opacity=".55"/>`;
+  s += `<path d="${path(state.day)}" fill="none" stroke="${color(state.day)}" stroke-width="3" stroke-linejoin="round"/>`;
+  let ya = Y(series[0][23]), yb = Y(series[1][23]);
+  if (Math.abs(ya - yb) < 15) { const m = (ya + yb) / 2, sgn = ya <= yb ? -1 : 1; ya = m + sgn * 7.5; yb = m - sgn * 7.5; }
+  s += `<text class="lab" x="${X(23) + 8}" y="${ya + 4}" style="fill:${color(0)}">${DAY_SHORT[0]}</text><text class="lab" x="${X(23) + 8}" y="${yb + 4}" style="fill:${color(1)}">${DAY_SHORT[1]}</text>`;
+  const v = series[state.day][state.hour], cx = X(state.hour), cy = Y(v);
+  s += `<line class="now" x1="${cx}" x2="${cx}" y1="${T - 4}" y2="${H - B}"/>`;
+  s += `<circle cx="${cx}" cy="${cy}" r="5.5" fill="${color(state.day)}" stroke="var(--paper)" stroke-width="2"/>`;
+  const label = kind === 'speed' ? `${fmt(v, 1)} km/h` : fmt(v), right = state.hour < 17;
+  s += `<text class="val" x="${cx + (right ? 9 : -9)}" y="${Math.max(T + 10, cy - 10)}" text-anchor="${right ? 'start' : 'end'}">${label}</text>`;
+  svg.innerHTML = s;
+  svg._x = { L, R, W };
+}
+function drawCharts() { drawChart($('chart-speed'), 'speed'); drawChart($('chart-trips'), 'trips'); }
+['chart-speed', 'chart-trips'].forEach(id => {
+  const svg = $(id);
+  const pick = e => { const r = svg.getBoundingClientRect(), g = svg._x; if (!g) return; const x = (e.clientX - r.left) / r.width * g.W; setHour(clamp(Math.round((x - g.L) / ((g.W - g.L - g.R) / 23)), 0, 23)); };
+  svg.addEventListener('pointerdown', e => { pick(e); svg.setPointerCapture(e.pointerId); });
+  svg.addEventListener('pointermove', e => { if (e.buttons) pick(e); });
+});
+new ResizeObserver(drawCharts).observe($('chart-speed'));
+
+/* ---------- Sonido: solo durante la ida, con las mismas reglas que la visualización ---------- */
+const sound = { ctx: null, on: false, timer: 0, nextPulse: 0, nextHorn: 0, demo: null };
+function ensureAudio() {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) { $('sound').textContent = 'Sin sonido en este navegador'; return false; }
+  if (!sound.ctx) { sound.ctx = new AC(); sound.master = sound.ctx.createGain(); sound.master.gain.value = 0.9; sound.master.connect(sound.ctx.destination); sound.timer = setInterval(schedule, 40); }
+  sound.ctx.resume();
+  return true;
+}
+function toggleSound() {
+  if (!ensureAudio()) return;
+  sound.on = !sound.on;
+  $('sound').setAttribute('aria-pressed', String(sound.on));
+  $('sound').textContent = sound.on ? 'Silenciar' : 'Activar sonido';
+}
+// Ejemplos: la hora más lenta y la más rápida del año elegido, 2,5 s cada una.
+function extremes() {
+  const y = DATA[state.year]; let lo = null, hi = null;
+  [0, 1].forEach(d => y.s[d].forEach((v, h) => { if (v == null) return; if (!lo || v < lo.kmh) lo = { kmh: v, day: d, hour: h }; if (!hi || v > hi.kmh) hi = { kmh: v, day: d, hour: h }; }));
+  return { lo, hi };
+}
+function refreshDemos() {
+  const { lo, hi } = extremes();
+  $('demo-slow').textContent = `Lento · ${fmt(lo.kmh, 1)} km/h`; $('demo-slow').title = `${DAY_NAME[lo.day]}, ${hh(lo.hour)}:00`;
+  $('demo-fast').textContent = `Rápido · ${fmt(hi.kmh, 1)} km/h`; $('demo-fast').title = `${DAY_NAME[hi.day]}, ${hh(hi.hour)}:00`;
+}
+function playDemo(which) {
+  if (!ensureAudio()) return;
+  const x = extremes()[which];
+  sound.demo = { ...x, trips: DATA[state.year].t[x.day][x.hour], until: sound.ctx.currentTime + 2.5 };
+  sound.nextPulse = sound.ctx.currentTime + 0.02; sound.nextHorn = sound.ctx.currentTime + 0.05;
+}
+$('demo-slow').addEventListener('click', () => playDemo('lo'));
+$('demo-fast').addEventListener('click', () => playDemo('hi'));
+function voiceOut(pan) { if (!sound.ctx.createStereoPanner) return sound.master; const p = sound.ctx.createStereoPanner(); p.pan.value = pan; p.connect(sound.master); return p; }
+function pulse(t, freq, type, pan) {
+  const c = sound.ctx, o = c.createOscillator(), g = c.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.3, t + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.17);
+  o.connect(g); g.connect(voiceOut(pan)); o.start(t); o.stop(t + 0.2);
+}
+function horn(t, pan) {
+  const c = sound.ctx, g = c.createGain(), f = c.createBiquadFilter();
+  f.type = 'lowpass'; f.frequency.value = 1800;
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.06, t + 0.01); g.gain.setValueAtTime(0.06, t + 0.13); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+  [-15, 15].forEach(det => { const o = c.createOscillator(); o.type = 'square'; o.frequency.value = 349.23; o.detune.value = det; o.connect(f); o.start(t); o.stop(t + 0.22); });
+  f.connect(g); g.connect(voiceOut(pan));
+}
+function schedule() {
+  const c = sound.ctx, now = c.currentTime, y = DATA[state.year];
+  let src = null;
+  if (sound.demo && now < sound.demo.until) src = { ...sound.demo, end: sound.demo.until };
+  else if (sound.on && run.phase === 'ida') src = { kmh: run.kmh, day: run.day, trips: y.t[run.day][run.hour] ?? 0, end: now + (RUN_S - run.t) };
+  if (!src) { sound.demo = null; sound.nextPulse = now + 0.02; sound.nextHorn = now + 0.3; return; }
+  const top = Math.max(...y.t[0], ...y.t[1]), rate = 0.5 + 4.5 * src.trips / top;
+  const pan = src.day === 0 ? -0.8 : 0.8, type = src.day === 0 ? 'sine' : 'triangle';
+  if (sound.nextPulse < now - 0.2) sound.nextPulse = now + 0.02;
+  while (sound.nextPulse < Math.min(now + 0.15, src.end)) { pulse(sound.nextPulse, NOTES[noteIndex(src.kmh)], type, pan); sound.nextPulse += 1 / rate; }
+  if (src.kmh < 15) {
+    if (sound.nextHorn < now - 0.2) sound.nextHorn = now + 0.05;
+    const every = 1.2 + 0.6 * Math.max(0, src.kmh - 10);
+    while (sound.nextHorn < Math.min(now + 0.15, src.end)) { horn(sound.nextHorn, pan); sound.nextHorn += every; }
+  }
+}
+document.addEventListener('visibilitychange', () => { if (sound.ctx && sound.on) document.hidden ? sound.ctx.suspend() : sound.ctx.resume(); });
+
+/* ---------- Reloj principal (funciona con o sin 3D) ---------- */
+let last = performance.now();
+function loop(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  tick(dt);
+  sim?.frame(dt, now);
+  requestAnimationFrame(loop);
+}
+
+/* ---------- Modelo 3D ---------- */
+function canvasTexture(w, h, draw) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  return t;
+}
+function gearGeometry(r, teeth, depth) {
+  const shape = new THREE.Shape(), step = Math.PI * 2 / teeth, rr = r - 0.15, rt = r + 0.15;
+  for (let i = 0; i < teeth; i++) {
+    const a = i * step;
+    [[rr, 0], [rr, 0.15], [rt, 0.32], [rt, 0.58], [rr, 0.75]].forEach(([rad, f], j) => { const x = rad * Math.cos(a + f * step), y = rad * Math.sin(a + f * step); i === 0 && j === 0 ? shape.moveTo(x, y) : shape.lineTo(x, y); });
+  }
+  shape.closePath();
+  for (let k = 0; k < 4; k++) { const h = new THREE.Path(), a = k * Math.PI / 2 + Math.PI / 4; h.absarc(Math.cos(a) * r * 0.52, Math.sin(a) * r * 0.52, r * 0.17, 0, Math.PI * 2, true); shape.holes.push(h); }
+  const axle = new THREE.Path(); axle.absarc(0, 0, 0.2, 0, Math.PI * 2, true); shape.holes.push(axle);
+  const g = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false, curveSegments: 6 });
+  g.translate(0, 0, -depth / 2); g.rotateY(Math.PI / 2);
+  return g;
+}
+
+function buildScene(canvas, host) {
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(34, 1, 0.5, 800);
+  const controls = new OrbitControls(camera, canvas);
+  controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.48; controls.minDistance = 8; controls.maxDistance = 320;
+
+  const hemi = new THREE.HemisphereLight(0xffffff, 0xb89d78, 1.0); scene.add(hemi);
+  const sun = new THREE.DirectionalLight(0xfff3df, 2.4); sun.position.set(30, 90, 60); sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  Object.assign(sun.shadow.camera, { left: -100, right: 100, top: 70, bottom: -70, near: 1, far: 260 });
+  sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.04; scene.add(sun);
+  const fill = new THREE.DirectionalLight(0xcfe0ff, 0.55); fill.position.set(-60, 30, -30); scene.add(fill);
+
+  const M = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.42, metalness: 0, ...o });
+  const add = (parent, geo, mat, x = 0, y = 0, z = 0) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true; parent.add(m); return m; };
+  const fiber = (g, w, h, n, a) => { for (let i = 0; i < n; i++) { g.fillStyle = `rgba(110,75,40,${Math.random() * a})`; g.fillRect(Math.random() * w, Math.random() * h, 3 + Math.random() * 4, 1); } };
+
+  /* Mesa */
+  const wood = canvasTexture(1024, 1024, (g, w, h) => {
+    g.fillStyle = '#e2cba6'; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 260; i++) {
+      const y0 = Math.random() * h, amp = 6 + Math.random() * 18, ph = Math.random() * 6;
+      g.strokeStyle = `rgba(${150 + Math.random() * 30},${105 + Math.random() * 25},${60 + Math.random() * 20},${0.05 + Math.random() * 0.12})`;
+      g.lineWidth = 0.6 + Math.random() * 2.2; g.beginPath();
+      for (let x = 0; x <= w; x += 16) g.lineTo(x, y0 + Math.sin(x / 140 + ph) * amp + Math.sin(x / 37 + ph) * 2);
+      g.stroke();
+    }
+  });
+  wood.wrapS = wood.wrapT = THREE.RepeatWrapping; wood.repeat.set(3, 2);
+  const table = add(scene, new THREE.PlaneGeometry(360, 240), M(0xffffff, { map: wood, roughness: 0.75 })); table.rotation.x = -Math.PI / 2; table.castShadow = false;
+
+  /* Avenida de cartón: en su sistema local, el auto avanza por +z (en el mundo, hacia la derecha) */
+  const track = new THREE.Group(); track.rotation.y = Math.PI / 2; track.position.set(-61, 0, 0); scene.add(track);
+  const Z0 = -10.75, Z1 = 131.25, PX = 16;
+  const base = canvasTexture(34 * PX, (Z1 - Z0) * PX, (g, w, h) => {
+    const X = x => (x + 17) * PX, Y = z => (z - Z0) * PX;
+    g.fillStyle = '#cfa874'; g.fillRect(0, 0, w, h); fiber(g, w, h, 5000, 0.08);
+    g.fillStyle = '#4d5359'; g.fillRect(X(-12), 0, X(12) - X(-12), h);
+    for (let i = 0; i < 2500; i++) { g.fillStyle = `rgba(255,255,255,${Math.random() * 0.05})`; g.fillRect(X(-12) + Math.random() * (X(12) - X(-12)), Math.random() * h, 3, 2); }
+    g.fillStyle = '#f6bd16'; for (let z = 14; z < Z1 - 4; z += 12) g.fillRect(X(-0.35), Y(z), 0.7 * PX, 6 * PX);
+    g.fillStyle = '#f4f1ea'; g.fillRect(X(-12), Y(-9.9), X(12) - X(-12), 0.6 * PX);
+    g.strokeStyle = '#2a1d10'; g.fillStyle = '#2a1d10'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    for (let k = 0; k <= 28; k++) {
+      const y = Y(distFor(k)), big = k % 2 === 0;
+      g.lineWidth = big ? 5 : 3; g.beginPath(); g.moveTo(X(-12.4), y); g.lineTo(X(big ? -14.2 : -13.3), y); g.stroke();
+      if (big) { g.save(); g.translate(X(-15.6), y); g.rotate(Math.PI / 2); g.font = '700 30px "Barlow Condensed", "Arial Narrow", sans-serif'; g.fillText(String(k), 0, 0); g.restore(); }
+    }
+    g.save(); g.translate(X(14.6), Y(60)); g.rotate(Math.PI / 2); g.font = '700 34px "Barlow Condensed", "Arial Narrow", sans-serif'; g.fillText('VELOCIDAD MEDIANA DEL TAXI (KM/H) · MÁS LEJOS, MÁS RÁPIDO', 0, 0); g.restore();
+    g.save(); g.translate(X(0), Y(-5.5)); g.rotate(Math.PI / 2); g.fillStyle = '#f4f1ea'; g.font = '700 40px "Barlow Condensed", "Arial Narrow", sans-serif'; g.fillText('SALIDA', 0, 0); g.restore();
+  });
+  const kraft = M(0xcfa874, { roughness: 0.9 });
+  add(track, new THREE.BoxGeometry(34, 0.4, Z1 - Z0), [kraft, kraft, M(0xffffff, { map: base, roughness: 0.9 }), kraft, kraft, kraft], 0, 0.2, (Z0 + Z1) / 2);
+  [-12.2, 12.2].forEach(x => add(track, new THREE.BoxGeometry(0.4, 2.5, Z1 - Z0), kraft, x, 1.65, (Z0 + Z1) / 2));
+  add(track, new THREE.BoxGeometry(34, 8, 0.5), kraft, 0, 4.4, Z0 - 0.25);
+  // Tope: microinterruptor en la pared de la salida
+  add(track, new THREE.BoxGeometry(2.0, 1.2, 0.9), M(0x1d1f22), 0, 3.0, Z0 + 0.45);
+  const tope = new THREE.Group(); tope.position.set(0, 3.0, Z0 + 0.9); track.add(tope);
+  add(tope, new THREE.BoxGeometry(1.6, 0.12, 2.2), M(0xc9ccd0, { metalness: 0.8, roughness: 0.3 }), 0, 0, 1.0);
+
+  // Edificios de cartón al fondo: contexto, no datos
+  const windows = canvasTexture(128, 256, (g, w, h) => { g.fillStyle = '#d8b884'; g.fillRect(0, 0, w, h); fiber(g, w, h, 300, 0.1); g.fillStyle = 'rgba(60,40,20,.55)'; for (let y = 14; y < h - 10; y += 22) for (let x = 12; x < w - 10; x += 26) g.fillRect(x, y, 14, 12); });
+  windows.wrapS = windows.wrapT = THREE.RepeatWrapping;
+  [[-40, 12, 13], [-26, 10, 19], [-12, 13, 11], [12, 12, 16], [26, 10, 21], [40, 13, 12], [54, 11, 18], [68, 10, 14]].forEach(([x, wdt, hgt], i) => {
+    const tex = windows.clone(); tex.needsUpdate = true; tex.repeat.set(wdt / 12, hgt / 24);
+    const mat = M(0xffffff, { map: tex, roughness: 0.9 });
+    add(scene, new THREE.BoxGeometry(wdt, hgt, 10), [mat, mat, kraft, kraft, mat, mat], x, hgt / 2, -27 - (i % 2) * 4);
+  });
+
+  /* Taxi: chasis, servo, engranajes y Arduino Leonardo */
+  const car = new THREE.Group(); car.position.y = 0.4; track.add(car);
+  const AY = WHEEL_R, red = M(0xd3212d, { roughness: 0.35 }), black = M(0x141414, { roughness: 0.5 });
+  const axles = [-7, 7].map(z => { const a = add(car, new THREE.CylinderGeometry(0.22, 0.22, 18.4, 16), red, 0, AY, z); a.rotation.z = Math.PI / 2; return a; });
+  const wheels = [];
+  [-7, 7].forEach(z => [-8.8, 8.8].forEach(x => {
+    const w = new THREE.Group(); w.position.set(x, AY, z); car.add(w);
+    add(w, new THREE.TorusGeometry(2.32, 0.28, 14, 56), red).rotation.y = Math.PI / 2;
+    add(w, new THREE.CylinderGeometry(0.75, 0.75, 1.2, 24), red).rotation.z = Math.PI / 2;
+    for (let k = 0; k < 3; k++) { const arm = new THREE.Group(); arm.rotation.x = k * Math.PI * 2 / 3; w.add(arm); add(arm, new THREE.BoxGeometry(0.32, 1.6, 0.4), red, 0, 1.35, 0); }
+    wheels.push(w);
+  }));
+  const clear = new THREE.MeshPhysicalMaterial({ color: 0xe4eef2, roughness: 0.08, metalness: 0, transparent: true, opacity: 0.42, clearcoat: 1, depthWrite: false });
+  const beam = add(car, new THREE.BoxGeometry(0.95, 0.95, 16.8), clear, -6.3, AY, 0); beam.castShadow = false;
+  for (let i = 0; i < 17; i++) add(car, new THREE.BoxGeometry(1.02, 1.02, 0.14), clear, -6.3, AY, -8 + i).castShadow = false;
+  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(beam.geometry), new THREE.LineBasicMaterial({ color: 0x9fb4bf, transparent: true, opacity: 0.7 })); edges.position.copy(beam.position); car.add(edges);
+  const holes = canvasTexture(512, 32, (g, w, h) => { g.fillStyle = '#f2c511'; g.fillRect(0, 0, w, h); g.fillStyle = '#b48d07'; for (let i = 0; i < 16; i++) { g.beginPath(); g.arc(16 + i * 32, h / 2, 7, 0, Math.PI * 2); g.fill(); } });
+  const yellow = M(0xf2c511, { roughness: 0.38 }), yellowHoles = M(0xffffff, { map: holes, roughness: 0.38 });
+  [4.55, 6.25].forEach(x => add(car, new THREE.BoxGeometry(0.45, 0.85, 16.8), [yellowHoles, yellowHoles, yellow, yellow, yellow, yellow], x, AY, 0));
+  const GEARS = 7, TEETH = 14, GR = 14 / (GEARS - 1) / 2, gearGeo = gearGeometry(GR, TEETH, 0.42), gearMat = M(0x1c1d1f, { roughness: 0.55 });
+  const gears = []; for (let i = 0; i < GEARS; i++) gears.push(add(car, gearGeo, gearMat, 5.4, AY, -7 + i * 2 * GR));
+  const idlers = [[2, 0x80868d], [4, 0x2a9d4b]].map(([i, c]) => { const r = add(car, new THREE.CylinderGeometry(0.17, 0.17, 4.2, 10), M(c), 7.0, AY, gears[i].position.z); r.rotation.z = Math.PI / 2; return r; });
+  const frameShape = new THREE.Shape(); frameShape.moveTo(-3.1, -3.1); frameShape.lineTo(3.1, -3.1); frameShape.lineTo(3.1, 3.1); frameShape.lineTo(-3.1, 3.1); frameShape.closePath();
+  const win = new THREE.Path(); win.moveTo(-1.7, -1.7); win.lineTo(-1.7, 1.7); win.lineTo(1.7, 1.7); win.lineTo(1.7, -1.7); win.closePath(); frameShape.holes.push(win);
+  [-2.4, -1.2, 0, 1.2, 2.4].forEach(p => [[p, -2.4], [p, 2.4], [-2.4, p], [2.4, p]].forEach(([x, y]) => { if (Math.abs(x) === 2.4 && Math.abs(y) === 2.4 && p !== x && p !== y) return; const h = new THREE.Path(); h.absarc(x, y, 0.24, 0, Math.PI * 2, true); frameShape.holes.push(h); }));
+  const frameGeo = new THREE.ExtrudeGeometry(frameShape, { depth: 0.45, bevelEnabled: false, curveSegments: 10 }); frameGeo.rotateX(-Math.PI / 2);
+  add(car, frameGeo, M(0x8ea2e4, { roughness: 0.5 }), -2.5, AY - 0.25, 0.3);
+  const servo = new THREE.Group(); servo.position.set(-2.5, AY + 0.25, -0.55); car.add(servo);
+  add(servo, new THREE.BoxGeometry(2.25, 1.22, 2.3), black); add(servo, new THREE.BoxGeometry(0.22, 1.22, 3.3), black, 0.75, 0, 0);
+  const coupler = add(car, new THREE.CylinderGeometry(0.42, 0.42, 1.3, 20), M(0x5b8fd6), -0.55, AY + 0.25, 0); coupler.rotation.z = Math.PI / 2;
+  const drive = add(car, new THREE.CylinderGeometry(0.16, 0.16, 7.4, 12), M(0x2a9d4b), 3.1, AY, 0); drive.rotation.z = Math.PI / 2;
+  // Leonardo encima del marco (sin LEDs agregados)
+  const ard = new THREE.Group(); ard.position.set(-3.3, AY + 1.45, -0.9); ard.rotation.y = Math.PI / 2; car.add(ard);
+  const silk = canvasTexture(686, 533, (g, w, h) => {
+    g.fillStyle = '#1f6fb0'; g.fillRect(0, 0, w, h); g.strokeStyle = 'rgba(255,255,255,.55)'; g.lineWidth = 3; g.strokeRect(70, 60, w - 140, h - 120);
+    g.fillStyle = '#f4f7fa'; g.beginPath(); g.roundRect(150, 300, 250, 62, 31); g.fill();
+    g.fillStyle = '#1f6fb0'; g.font = '700 38px Arial'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('LEONARDO', 275, 333);
+  });
+  const blue = M(0x1f6fb0, { roughness: 0.5 });
+  add(ard, new THREE.BoxGeometry(6.86, 0.16, 5.33), [blue, blue, M(0xffffff, { map: silk, roughness: 0.5 }), blue, blue, blue]);
+  [[-2.9, -2.1], [2.9, -2.1], [-2.9, 2.1], [2.9, 2.1]].forEach(([x, z]) => add(ard, new THREE.CylinderGeometry(0.14, 0.14, 1.2, 8), M(0xb9c2c8), x, -0.68, z));
+  add(ard, new THREE.BoxGeometry(0.8, 0.32, 0.7), M(0xc9ccd0, { metalness: 0.85, roughness: 0.3 }), -3.25, 0.24, 0.9);
+  add(ard, new THREE.BoxGeometry(1.4, 1.1, 0.9), black, -2.9, 0.63, -1.75);
+  add(ard, new THREE.BoxGeometry(5.0, 0.85, 0.25), black, 0.8, 0.5, 2.45);
+  add(ard, new THREE.BoxGeometry(4.6, 0.85, 0.25), black, 1.0, 0.5, -2.45);
+  // Letrero TAXI de cartón sobre el auto
+  add(car, new THREE.CylinderGeometry(0.12, 0.12, 3.2, 8), M(0x9b7a52), 1.2, AY + 1.8, 4.2);
+  const sign = canvasTexture(256, 100, (g, w, h) => { g.fillStyle = '#f6bd16'; g.fillRect(0, 0, w, h); g.fillStyle = '#152433'; g.font = '700 74px "Barlow Condensed", "Arial Narrow", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('TAXI', w / 2, h / 2 + 4); });
+  const signMat = M(0xffffff, { map: sign, roughness: 0.7 }), signEdge = M(0xf6bd16, { roughness: 0.7 });
+  const signBox = add(car, new THREE.BoxGeometry(0.4, 1.7, 4.4), [signMat, signMat, signEdge, signEdge, signEdge, signEdge], 1.2, AY + 3.9, 4.2);
+  signBox.material[1] = signMat;
+  // Aguja de cartón: lee la regla desde el centro del auto
+  add(car, new THREE.BoxGeometry(8.2, 0.18, 0.9), kraft, -10.6, AY + 0.9, 0);
+  const tipShape = new THREE.Shape(); tipShape.moveTo(0, -0.9); tipShape.lineTo(0, 0.9); tipShape.lineTo(-1.6, 0); tipShape.closePath();
+  const tipGeo = new THREE.ExtrudeGeometry(tipShape, { depth: 0.2, bevelEnabled: false }); tipGeo.rotateX(Math.PI / 2);
+  add(car, tipGeo, M(0xd3212d), -14.7, AY + 1.0, 0);
+
+  /* Caja de controles: perilla, interruptor y botón Arrancar */
+  const box = new THREE.Group(); box.position.set(-58, 0, 33); box.rotation.y = 0.12; scene.add(box);
+  const face = canvasTexture(1300, 700, (g, w, h) => {
+    g.fillStyle = '#c99d68'; g.fillRect(0, 0, w, h); fiber(g, w, h, 1800, 0.08);
+    const cx = 300, cy = 370; g.strokeStyle = '#2a1d10'; g.fillStyle = '#2a1d10'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    for (let k = 0; k < 24; k++) {
+      const a = k / 24 * Math.PI * 2, big = k % 6 === 0, r0 = big ? 168 : 178, r1 = 198;
+      g.lineWidth = big ? 6 : 3; g.beginPath(); g.moveTo(cx + Math.sin(a) * r0, cy - Math.cos(a) * r0); g.lineTo(cx + Math.sin(a) * r1, cy - Math.cos(a) * r1); g.stroke();
+      if (big) { g.font = '700 40px "Barlow Condensed", "Arial Narrow", sans-serif'; g.fillText(hh(k), cx + Math.sin(a) * 234, cy - Math.cos(a) * 234); }
+    }
+    g.font = '700 36px "Barlow Condensed", "Arial Narrow", sans-serif';
+    g.fillText('HORA', 300, 40); g.fillText('LUN–VIE', 720, 150); g.fillText('SÁB–DOM', 720, 590); g.fillText('ARRANCAR', 1060, 590);
+  });
+  add(box, new THREE.BoxGeometry(13, 2.2, 7), [kraft, kraft, M(0xffffff, { map: face, roughness: 0.9 }), kraft, kraft, kraft], 0, 1.1, 0);
+  const knob = new THREE.Group(); knob.position.set(-3.5, 2.2, 0.2); box.add(knob);
+  const knobBody = add(knob, new THREE.CylinderGeometry(1.25, 1.35, 1.1, 40), M(0x262b31, { roughness: 0.4 }), 0, 0.55, 0);
+  const notch = add(knob, new THREE.BoxGeometry(0.22, 0.08, 1.0), M(0xf6bd16), 0, 1.12, -0.7);
+  const sw = new THREE.Group(); sw.position.set(0.7, 2.2, 0.2); box.add(sw);
+  const swBase = add(sw, new THREE.BoxGeometry(1.5, 0.45, 2.2), M(0x262b31), 0, 0.22, 0);
+  const lever = new THREE.Group(); lever.position.y = 0.4; sw.add(lever);
+  const metal = M(0xd8dcdf, { metalness: 0.7, roughness: 0.3 });
+  const leverParts = [add(lever, new THREE.CylinderGeometry(0.16, 0.2, 1.4, 12), metal, 0, 0.7, 0), add(lever, new THREE.SphereGeometry(0.28, 16, 12), metal, 0, 1.42, 0)];
+  const goBtn = new THREE.Group(); goBtn.position.set(4.0, 2.2, -0.4); box.add(goBtn);
+  const goParts = [add(goBtn, new THREE.CylinderGeometry(1.3, 1.3, 0.4, 32), M(0x262b31), 0, 0.2, 0)];
+  const goCap = add(goBtn, new THREE.CylinderGeometry(1.0, 1.0, 0.6, 32), M(0xf6bd16, { roughness: 0.35 }), 0, 0.6, 0); goParts.push(goCap);
+
+  /* Computador con la visualización y poste para colgar el cable */
+  const lap = new THREE.Group(); lap.position.set(-56, 0, -44); lap.rotation.y = 0.28; scene.add(lap);
+  const alu = M(0x4a5059, { metalness: 0.5, roughness: 0.35 });
+  add(lap, new THREE.BoxGeometry(26, 0.9, 17.5), alu, 0, 0.45, 0);
+  add(lap, new THREE.PlaneGeometry(22, 8.5), M(0x22262b, { roughness: 0.8 }), 0, 0.91, -2.2).rotation.x = -Math.PI / 2;
+  const hinge = new THREE.Group(); hinge.position.set(0, 0.9, -8.6); hinge.rotation.x = -0.22; lap.add(hinge);
+  add(hinge, new THREE.BoxGeometry(26, 17, 0.5), alu, 0, 8.5, 0);
+  const screenCanvas = document.createElement('canvas'); screenCanvas.width = 1024; screenCanvas.height = 640;
+  const screenTex = new THREE.CanvasTexture(screenCanvas); screenTex.colorSpace = THREE.SRGBColorSpace; screenTex.anisotropy = 8;
+  const display = new THREE.Mesh(new THREE.PlaneGeometry(24.4, 15.25), new THREE.MeshBasicMaterial({ map: screenTex, toneMapped: false })); display.position.set(0, 8.6, 0.26); hinge.add(display);
+  const pole = M(0x9b7a52, { roughness: 0.8 });
+  add(scene, new THREE.CylinderGeometry(0.4, 0.4, 50, 12), pole, 0, 25, -21);
+  add(scene, new THREE.BoxGeometry(0.8, 0.8, 22), pole, 0, 50, -10);
+  add(scene, new THREE.CylinderGeometry(4, 4, 0.8, 24), pole, 0, 0.4, -21);
+  const hook = new THREE.Vector3(0, 49.3, 0.5);
+
+  /* Cables */
+  scene.updateMatrixWorld(true);
+  const W = (obj, x, y, z) => obj.localToWorld(new THREE.Vector3(x, y, z));
+  const cableMat = M(0x1d1f22, { roughness: 0.6 });
+  const tube = (pts, r, mat) => new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 100, r, 8, false), mat);
+  scene.add(tube([hook, new THREE.Vector3(0, 50.8, -6), new THREE.Vector3(0, 50.8, -18), new THREE.Vector3(0.9, 46, -21), new THREE.Vector3(0.9, 3, -21), new THREE.Vector3(-20, 0.25, -36), new THREE.Vector3(-38, 0.25, -40), W(lap, 13.6, 0.45, -2)], 0.1, cableMat));
+  const boxBack = W(box, -2, 0.6, -3.5);
+  [[0xd3212d, -0.15], [0x2a9d4b, 0.15]].forEach(([c, o]) => scene.add(tube([boxBack, W(box, -2, 0.25, -6), new THREE.Vector3(-58, 0.1, 22 + o), new THREE.Vector3(-50, 0.1, 10 + o), new THREE.Vector3(-30, 0.1, 0 + o), new THREE.Vector3(-6, 0.1, -10 + o), new THREE.Vector3(-1, 0.25, -19), new THREE.Vector3(-0.9 + o, 3, -21), new THREE.Vector3(-0.9 + o, 46, -21), new THREE.Vector3(o, 50.6, -15), hook], 0.07, M(c))));
+  // Servo al Leonardo, sobre el auto
+  const servoPath = [new THREE.Vector3(-3.7, AY + 0.25, -0.9), new THREE.Vector3(-4.6, AY + 0.1, 1.2), new THREE.Vector3(-7.6, AY - 0.2, 2.6), new THREE.Vector3(-8.4, AY + 1.0, 3.6), new THREE.Vector3(-7.4, AY + 2.2, 3.4)];
+  [[0x5a3a22, -0.12], [0xd3212d, 0], [0xf08a24, 0.12]].forEach(([c, o]) => car.add(tube(servoPath.map(p => p.clone().add(new THREE.Vector3(0, o, 0))), 0.07, M(c))));
+  // Cable que cuelga del poste al auto: se rehace cuando el auto se mueve
+  const hanging = new THREE.Mesh(new THREE.BufferGeometry(), cableMat); hanging.castShadow = true; scene.add(hanging);
+  let hangZ = null;
+  function updateHanging() {
+    if (hangZ === run.z) return; hangZ = run.z;
+    car.updateMatrixWorld(true);
+    const a = W(ard, -3.7, 0.24, 0.9), up = a.clone().add(new THREE.Vector3(0, 9, -2));
+    const mid = up.clone().lerp(hook, 0.5).add(new THREE.Vector3(0, -5, 0));
+    hanging.geometry.dispose();
+    hanging.geometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3([a, up, mid, hook]), 60, 0.1, 8, false);
+  }
+
+  /* Banderitas en la regla */
+  const flagGroup = new THREE.Group(); track.add(flagGroup);
+  function drawFlags() {
+    flagGroup.children.forEach(o => o.traverse(n => { n.geometry?.dispose(); if (n.material?.map) n.material.map.dispose(); }));
+    flagGroup.clear();
+    for (const [k, f] of flags) {
+      if (!k.startsWith(state.year + '-')) continue;
+      const x = f.day === 0 ? -13.6 : -16.2, color = f.day === 0 ? 0x245978 : 0xb65d23, g = new THREE.Group();
+      g.position.set(x, 0.4, f.z); flagGroup.add(g);
+      add(g, new THREE.CylinderGeometry(0.1, 0.1, 7, 8), M(0xe7d3b3), 0, 3.5, 0);
+      const tex = canvasTexture(128, 80, (c, w, h) => { c.fillStyle = f.day === 0 ? '#245978' : '#b65d23'; c.fillRect(0, 0, w, h); c.fillStyle = '#fff'; c.font = '700 58px "Barlow Condensed", "Arial Narrow", sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(hh(f.hour), w / 2, h / 2 + 3); });
+      const cloth = add(g, new THREE.PlaneGeometry(3.4, 2.1), new THREE.MeshStandardMaterial({ map: tex, side: THREE.DoubleSide, roughness: 0.8, color }), 0, 5.9, 1.75);
+      cloth.rotation.y = -Math.PI / 2; cloth.material.color.set(0xffffff);
+    }
+  }
+
+  /* Pantalla del computador */
+  function drawScreen() {
+    const g = screenCanvas.getContext('2d'), w = screenCanvas.width, h = screenCanvas.height;
+    const y = DATA[state.year], { kmh, trips } = current();
+    g.fillStyle = '#152433'; g.fillRect(0, 0, w, h); g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+    g.fillStyle = '#c9d6dd'; g.font = '600 30px "Barlow Condensed", "Arial Narrow", sans-serif'; g.fillText('EL PULSO DE NUEVA YORK · ENERO ' + state.year, 48, 62);
+    g.fillStyle = '#f6bd16'; g.font = '700 150px "Barlow Condensed", "Arial Narrow", sans-serif'; g.fillText(`${hh(state.hour)}:00`, 44, 210);
+    g.fillStyle = '#ffffff'; g.font = '600 64px "Barlow Condensed", "Arial Narrow", sans-serif'; g.fillText(`${fmt(kmh, 1)} km/h`, 470, 140);
+    g.fillStyle = '#c9d6dd'; g.font = '500 30px "DM Sans", Arial, sans-serif'; g.fillText(`${fmt(trips)} viajes al día`, 474, 186);
+    const label = { home: 'En la salida', ida: 'Ida', pausa: 'Pausa: lee la regla', vuelta: 'Volviendo a la salida' }[run.phase];
+    g.fillStyle = state.day === 0 ? '#8fb3c9' : '#e8a36b'; g.fillText(`${DAY_NAME[state.day]} · ${label}`, 474, 228);
+    const L = 60, R = w - 50, T = 280, B = h - 70, all = [...y.s[0], ...y.s[1]], lo = Math.floor(Math.min(...all) / 5) * 5, hi = Math.ceil(Math.max(...all) / 5) * 5;
+    const X = k => L + k * (R - L) / 23, Y = v => B - (v - lo) / (hi - lo) * (B - T);
+    g.strokeStyle = '#2b4152'; g.lineWidth = 2; for (let v = lo; v <= hi; v += 5) { g.beginPath(); g.moveTo(L, Y(v)); g.lineTo(R, Y(v)); g.stroke(); }
+    g.fillStyle = '#8aa1ae'; g.font = '500 22px "DM Sans", Arial, sans-serif'; g.textAlign = 'center'; for (let k = 0; k < 24; k += 3) g.fillText(hh(k), X(k), h - 34);
+    [1 - state.day, state.day].forEach(d => { g.strokeStyle = d === 0 ? '#8fb3c9' : '#e8a36b'; g.lineWidth = d === state.day ? 7 : 3; g.globalAlpha = d === state.day ? 1 : 0.5; g.beginPath(); y.s[d].forEach((v, k) => k ? g.lineTo(X(k), Y(v)) : g.moveTo(X(k), Y(v))); g.stroke(); });
+    g.globalAlpha = 1; g.strokeStyle = '#f6bd16'; g.setLineDash([8, 8]); g.lineWidth = 3; g.beginPath(); g.moveTo(X(state.hour), T - 10); g.lineTo(X(state.hour), B); g.stroke(); g.setLineDash([]);
+    g.fillStyle = '#f6bd16'; g.beginPath(); g.arc(X(state.hour), Y(kmh), 12, 0, Math.PI * 2); g.fill();
+    screenTex.needsUpdate = true;
+  }
+  drawScreen(); drawFlags();
+  document.fonts?.ready.then(() => { drawScreen(); });
+
+  /* Vistas */
+  const V = (p, t) => ({ p: new THREE.Vector3(...p), t: new THREE.Vector3(...t) });
+  const VIEWS = {
+    general: V([-1, 84, 166], [-1, 2, -7]),
+    start: V([-38, 30, 58], [-60, 3, 16]),
+    ruler: V([2, 34, 72], [2, 1, 12]),
+    screen: V([-46, 18, -16], [-56, 9, -48]),
+  };
+  const FOLLOW = new THREE.Vector3(18, 22, 34);
+  let tween = null, viewName = 'general';
+  const fit = () => { const a = camera.aspect; return a < 0.9 ? 1.65 : a < 1.25 ? 1.3 : 1; };
+  const carWorld = () => { car.updateMatrixWorld(true); return car.localToWorld(new THREE.Vector3(0, AY, 0)); };
+  const placed = name => {
+    if (name === 'follow') { const t = carWorld(); return { p: t.clone().add(FOLLOW), t }; }
+    const v = VIEWS[name], k = name === 'general' ? fit() : 1;
+    return { p: v.t.clone().add(v.p.clone().sub(v.t).multiplyScalar(k)), t: v.t.clone() };
+  };
+  function goTo(name) {
+    viewName = name;
+    document.querySelectorAll('.views button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === name)));
+    const to = placed(name);
+    if (reduced) { camera.position.copy(to.p); controls.target.copy(to.t); tween = null; return; }
+    tween = { fp: camera.position.clone(), ft: controls.target.clone(), tp: to.p, tt: to.t, k: 0 };
+  }
+  document.querySelectorAll('.views button').forEach(b => b.addEventListener('click', () => goTo(b.dataset.view)));
+  controls.addEventListener('start', () => { tween = null; if (viewName === 'follow') { viewName = 'free'; document.querySelectorAll('.views button').forEach(b => b.setAttribute('aria-pressed', 'false')); } });
+
+  function resize() { const r = host.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); camera.aspect = r.width / Math.max(1, r.height); camera.updateProjectionMatrix(); }
+  resize();
+  { const s = placed('general'); camera.position.copy(s.p); controls.target.copy(s.t); controls.update(); }
+  new ResizeObserver(() => { resize(); if (viewName === 'general' && !tween) { const s = placed('general'); camera.position.copy(s.p); controls.target.copy(s.t); } }).observe(host);
+
+  /* Perilla, interruptor y botón Arrancar en 3D */
+  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+  const knobParts = [knobBody, notch], switchParts = [swBase, ...leverParts];
+  const hit = e => {
+    const r = canvas.getBoundingClientRect();
+    ndc.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
+    ray.setFromCamera(ndc, camera);
+    const o = ray.intersectObjects([...knobParts, ...switchParts, ...goParts], false)[0]?.object;
+    return !o ? null : knobParts.includes(o) ? 'knob' : switchParts.includes(o) ? 'switch' : 'go';
+  };
+  let drag = null, press = 0;
+  canvas.addEventListener('pointerdown', e => {
+    const what = hit(e); if (!what) return;
+    e.stopImmediatePropagation();
+    if (what === 'switch') { setDay(1 - state.day); return; }
+    if (what === 'go') { press = 1; startRun(); return; }
+    if (run.phase !== 'home') return;
+    drag = { x: e.clientX, y: e.clientY, hour: state.hour }; controls.enabled = false; canvas.setPointerCapture(e.pointerId); canvas.style.cursor = 'grabbing';
+  }, { capture: true });
+  canvas.addEventListener('pointermove', e => {
+    if (drag) { setHour(drag.hour + Math.round(((e.clientX - drag.x) - (e.clientY - drag.y)) / 14)); return; }
+    if (e.buttons) return;
+    const what = hit(e); canvas.style.cursor = what === 'knob' ? 'grab' : what ? 'pointer' : '';
+  });
+  const endDrag = () => { if (!drag) return; drag = null; controls.enabled = true; canvas.style.cursor = ''; };
+  canvas.addEventListener('pointerup', endDrag); canvas.addEventListener('pointercancel', endDrag);
+
+  /* Animación */
+  const baseBg = new THREE.Color(), nightBg = new THREE.Color(0x0b141c);
+  const readBg = () => baseBg.set(getComputedStyle(document.documentElement).getPropertyValue('--scene').trim() || '#e3e9e8');
+  readBg();
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readBg);
+  new MutationObserver(readBg).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  scene.background = baseBg.clone(); scene.fog = new THREE.Fog(baseBg.clone(), 220, 460);
+  let angle = 0, knobAngle = -state.hour / 24 * Math.PI * 2, leverAngle = -0.5, lightHour = state.hour, visible = true;
+  new IntersectionObserver(([en]) => { visible = en.isIntersecting; }).observe(host);
+  const step = Math.PI * 2 / TEETH;
+
+  function frame(dt) {
+    car.position.z = run.z;
+    angle += run.v / WHEEL_R * dt;
+    wheels.forEach(x => { x.rotation.x = angle; }); axles.forEach(x => { x.rotation.x = angle; });
+    gears.forEach((g, i) => { g.rotation.x = i % 2 ? -angle + 0.6 * step : angle; });
+    idlers.forEach(r => { r.rotation.x = -angle; }); coupler.rotation.x = -angle; drive.rotation.x = -angle;
+    tope.rotation.x = run.z < 0.6 ? 0.25 : 0;
+    updateHanging();
+    let dk = -state.hour / 24 * Math.PI * 2 - knobAngle; dk = Math.atan2(Math.sin(dk), Math.cos(dk));
+    knobAngle += dk * (1 - Math.exp(-dt / 0.08)); knob.rotation.y = knobAngle;
+    leverAngle += ((state.day === 0 ? -0.5 : 0.5) - leverAngle) * (1 - Math.exp(-dt / 0.06)); lever.rotation.x = leverAngle;
+    press = Math.max(0, press - dt * 4); goCap.position.y = 0.6 - press * 0.3;
+    let dh = state.hour - lightHour; if (dh < -12) dh += 24; if (dh > 12) dh -= 24;
+    lightHour = (lightHour + dh * (1 - Math.exp(-dt / 0.5)) + 24) % 24;
+    const n = nightness(lightHour);
+    hemi.intensity = 1.0 - 0.55 * n; sun.intensity = 2.4 - 1.55 * n; fill.intensity = 0.55 + 0.25 * n;
+    scene.background.copy(baseBg).lerp(nightBg, 0.5 * n); scene.fog.color.copy(scene.background);
+    if (viewName === 'follow' && !tween) { const t = carWorld(); controls.target.lerp(t, 1 - Math.exp(-dt / 0.25)); camera.position.lerp(t.clone().add(FOLLOW), 1 - Math.exp(-dt / 0.25)); }
+    if (tween) {
+      if (viewName === 'follow') { const to = placed('follow'); tween.tp = to.p; tween.tt = to.t; }
+      tween.k = Math.min(1, tween.k + dt / 0.9);
+      const e = tween.k < 0.5 ? 4 * tween.k ** 3 : 1 - (-2 * tween.k + 2) ** 3 / 2;
+      camera.position.lerpVectors(tween.fp, tween.tp, e); controls.target.lerpVectors(tween.ft, tween.tt, e);
+      if (tween.k === 1) tween = null;
+    }
+    controls.update();
+    if (visible) renderer.render(scene, camera);
+  }
+  return { frame, drawScreen, drawFlags };
+}
+
+async function start3D() {
+  try {
+    const [core, orbit] = await Promise.all([import('three'), import('three/addons/controls/OrbitControls.js')]);
+    THREE = core; OrbitControls = orbit.OrbitControls;
+    sim = buildScene($('scene'), $('viewport'));
+  } catch (err) {
+    console.warn(err);
+    $('no-gl').hidden = false; $('scene').hidden = true;
+    document.querySelector('.views').hidden = true; document.querySelector('.hint').hidden = true;
+  }
+}
+
+refreshMeter();
+drawCharts();
+drawTop();
+refreshDemos();
+lockControls();
+addLog('from-arduino', 'Arduino → navegador   SALIDA');
+requestAnimationFrame(loop);
+start3D();
+</script>
+</body>
+</html>

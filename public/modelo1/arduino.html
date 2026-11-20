@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#152433">
+<meta name="description" content="Página del celular que lleva enchufado el Arduino de la maqueta: lee los controles, mueve el servo y avisa al computador.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23f6bd16'/%3E%3C/svg%3E">
+<title>Celular de la maqueta · El pulso de Nueva York</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap">
+<style>
+/* Misma paleta que index.html. Pensada para un celular apoyado junto a la maqueta, en vertical. */
+:root {
+  --paper: #f4f6f5; --surface: #ffffff; --ink: #173c50; --ink-2: #4c6573; --line: #d5dee1;
+  --taxi: #f6bd16; --taxi-ink: #8a6a00; --week: #245978; --end: #b65d23; --ok: #2f7d4f; --bad: #b3261e;
+  --meter-bg: #152433; --meter-fg: #c9d6dd; --meter-strong: #ffffff; --meter-line: #34495a;
+  --display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --body: 'DM Sans', Arial, sans-serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0e1923; --surface: #152433; --ink: #e6edf0; --ink-2: #a3b6c1; --line: #2a3f50;
+    --taxi-ink: #f6bd16; --week: #8fb3c9; --end: #e8a36b; --ok: #7cc79a; --bad: #f2a29c;
+    --meter-bg: #0a131b; --meter-line: #2a3f50; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0e1923; --surface: #152433; --ink: #e6edf0; --ink-2: #a3b6c1; --line: #2a3f50;
+  --taxi-ink: #f6bd16; --week: #8fb3c9; --end: #e8a36b; --ok: #7cc79a; --bad: #f2a29c;
+  --meter-bg: #0a131b; --meter-line: #2a3f50; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+[hidden] { display: none !important; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink); font: 15px/1.5 var(--body);
+  padding: 20px max(16px, env(safe-area-inset-right, 0px)) 40px max(16px, env(safe-area-inset-left, 0px));
+}
+.wrap { max-width: 560px; margin-inline: auto; display: grid; gap: 14px; }
+:focus-visible { outline: 2px solid var(--taxi); outline-offset: 2px; }
+button, input { font: inherit; color: inherit; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+.brand { display: flex; align-items: center; gap: 10px; font: 600 14px var(--display); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); }
+.roof { display: inline-grid; place-items: center; width: 46px; height: 24px; border-radius: 12px 12px 4px 4px; background: var(--taxi); color: #152433; font: 700 13px var(--display); }
+h1 { font: 700 40px/.95 var(--display); margin: 6px 0 0; }
+h2 { font: 700 22px var(--display); margin: 0; }
+p { margin: 0; }
+.lede { color: var(--ink-2); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 12px; }
+.links { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.links li { display: grid; grid-template-columns: 12px auto 1fr; gap: 10px; align-items: center; }
+.links i { width: 12px; height: 12px; border-radius: 50%; background: var(--line); }
+.links li[data-ok="true"] i { background: var(--ok); }
+.links span { font-weight: 600; }
+.links b { font-weight: 400; color: var(--ink-2); text-align: right; }
+.btn { min-height: 48px; border-radius: 10px; font-weight: 600; font-size: 16px; cursor: pointer; border: 1px solid var(--line); background: transparent; padding: 0 14px; }
+.btn-primary { background: var(--taxi); border-color: var(--taxi); color: #152433; min-height: 56px; font-size: 18px; }
+.btn-stop { background: var(--bad); border-color: var(--bad); color: #fff; }
+.msg { font-size: 14px; color: var(--ink-2); min-height: 1.5em; }
+.msg[data-tone="bad"] { color: var(--bad); }
+.meter { background: var(--meter-bg); color: var(--meter-fg); border-radius: 14px; padding: 16px; display: grid; gap: 14px; }
+.phase { display: flex; align-items: center; gap: 8px; color: var(--meter-strong); font-size: 15px; }
+.phase i { flex: none; width: 10px; height: 10px; border-radius: 50%; background: #6f8796; }
+.phase[data-phase="ida"] i { background: var(--taxi); }
+.phase[data-phase="pausa"] i { background: #ffffff; }
+.phase[data-phase="vuelta"] i { background: #8fb3c9; }
+.meter dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0; padding-top: 12px; border-top: 1px solid var(--meter-line); }
+.meter dt { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+.meter dd { margin: 2px 0 0; font: 600 22px/1.1 var(--display); color: var(--meter-strong); font-variant-numeric: tabular-nums; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.seg button { min-height: 42px; border-radius: 8px; border: 1px solid var(--line); background: transparent; cursor: pointer; }
+.seg button[aria-pressed="true"][data-dia="0"] { background: var(--week); border-color: var(--week); color: #fff; }
+.seg button[aria-pressed="true"][data-dia="1"] { background: var(--end); border-color: var(--end); color: #fff; }
+.field { display: grid; gap: 6px; }
+.field-label { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; display: flex; justify-content: space-between; color: var(--ink-2); }
+input[type="range"] { width: 100%; accent-color: var(--taxi); }
+.warn { font-size: 13.5px; color: var(--ink-2); border-left: 3px solid var(--taxi); padding-left: 10px; }
+details { border-top: 1px solid var(--line); padding-block: 10px; }
+details:last-of-type { border-bottom: 1px solid var(--line); }
+summary { cursor: pointer; font-weight: 600; }
+ol { margin: 10px 0 0; padding-left: 20px; display: grid; gap: 6px; }
+code { font: 13px var(--mono); background: var(--surface); border: 1px solid var(--line); border-radius: 5px; padding: 0 5px; }
+.phase[data-phase="prueba"] i { background: var(--taxi); }
+.phase[data-phase="medir"] i { background: #ffffff; }
+.field-label output { text-transform: none; letter-spacing: 0; }
+</style>
+</head>
+<body>
+<script src="https://app.protobject.com/framework/p.js"></script>
+<script src="config.js"></script>
+
+<main class="wrap">
+  <header>
+    <div class="brand"><span class="roof">TAXI</span><span>El pulso de Nueva York</span></div>
+    <h1>Celular de la maqueta</h1>
+    <p class="lede">Este celular va sobre el taxi: alimenta el Arduino y mueve el servo. Todo se maneja desde el computador, también la calibración.</p>
+  </header>
+
+  <section class="card" aria-label="Conexiones">
+    <ul class="links">
+      <li id="st-pc" data-ok="false"><i></i><span>Computador</span><b>Esperando…</b></li>
+      <li id="st-board" data-ok="false"><i></i><span>Arduino</span><b>Sin conectar</b></li>
+    </ul>
+    <button type="button" class="btn btn-primary" id="connect">Conectar Arduino</button>
+    <p class="msg" id="msg" aria-live="polite"></p>
+    <p class="warn" id="warn">Conecta el Arduino antes de poner el celular en el taxi y deja esta pantalla encendida. Usa Chrome en Android; en iPhone no funciona porque Safari no tiene WebUSB.</p>
+  </section>
+
+  <section class="meter" aria-label="Estado de la maqueta">
+    <p class="phase" id="phase" data-phase="espera" aria-live="polite"><i></i><span id="phase-text">En espera.</span></p>
+    <dl>
+      <div><dt>Servo</dt><dd id="pulse">1.501 µs</dd></div>
+      <div><dt>Posición</dt><dd id="pos">—</dd></div>
+      <div><dt>Tope</dt><dd id="tope">—</dd></div>
+    </dl>
+    <button type="button" class="btn btn-stop" id="stop">Detener</button>
+  </section>
+
+  <section class="card" id="prueba" hidden aria-labelledby="h-prueba">
+    <h2 id="h-prueba">Modo de prueba</h2>
+    <p>No hay Arduino: esta página simula la placa, un taxi pesado y el tope. Las entradas de abajo cuentan solo si están marcadas en «Piezas conectadas», en el computador.</p>
+    <div class="field">
+      <label class="field-label" for="p-perilla"><span>Perilla</span><output id="p-hora">08:00</output></label>
+      <input type="range" id="p-perilla" min="0" max="23" step="1" value="8">
+    </div>
+    <div class="seg" role="group" aria-label="Interruptor de tipo de día">
+      <button type="button" data-dia="0" aria-pressed="true">Lunes a viernes</button>
+      <button type="button" data-dia="1" aria-pressed="false">Fin de semana</button>
+    </div>
+    <button type="button" class="btn" id="p-boton">Apretar el botón Arrancar</button>
+    <p>El taxi está a <b id="p-x">0</b> cm de la salida. Empujó contra la salida <b id="p-empuje">0,0</b> s en total.</p>
+  </section>
+
+  <section aria-label="Ayuda">
+    <details>
+      <summary>Cómo funciona</summary>
+      <ol>
+        <li>El <b>Arduino</b> no decide nada: cada 60 ms le cuenta a este celular cómo están sus pines y aplica al servo el pulso que el celular le pide.</li>
+        <li>Cuando aprietas <b>Arrancar</b> en el computador, el computador busca la velocidad mediana de esa hora y se la manda a este celular.</li>
+        <li>Este celular convierte esa velocidad en un pulso para el servo, con la calibración, y lleva el reloj: 5 s de ida, 3 s de pausa y vuelta a la salida.</li>
+        <li>En cada cambio de fase avisa al computador, que mueve el modelo 3D y hace sonar la ciudad mientras el taxi avanza.</li>
+      </ol>
+    </details>
+    <details>
+      <summary>Cómo se conecta</summary>
+      <ol>
+        <li>En el computador, abre la página del prototipo y toca <b>Conectar celular</b>. Escanea el QR con este celular.</li>
+        <li>Enchufa el Arduino Leonardo a este celular con el cable OTG. El celular le da la energía.</li>
+        <li>Toca <b>Conectar Arduino</b>, luego <b>Confirm</b> y elige la placa en la lista.</li>
+        <li>Cuando las dos luces estén verdes, pon el celular en el taxi. Desde ahí, todo se hace en el computador.</li>
+      </ol>
+    </details>
+  </section>
+</main>
+
+<script>
+/* ---------- Ajustes fijos ---------- */
+const PIN_SERVO = 5;                 // Protobject manda al servo 1.500 µs + valor (con valor 0 manda 1.501 µs)
+const IDA_MS = 5000, PAUSA_MS = 3000, VUELTA_MAX_MS = 25000;
+const ACTIVO_BAJO = true;            // firmware con INPUT_PULLUP: interruptor cerrado se lee como 0
+const IDA_MIN = 60, IDA_MAX = 200;   // sin calibrar: 1.560 µs a 10 km/h y 1.700 µs a 28 km/h (taxi liviano)
+const V_VUELTA_BASE = 16;            // cm/s de la vuelta mientras no se mida
+
+const PRUEBA = new URLSearchParams(location.search).has('prueba');
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const fmt = (n, d = 0) => n.toLocaleString('es-CL', { minimumFractionDigits: d, maximumFractionDigits: d });
+const microsegundos = v => 1500 + (v === 0 ? 1 : v);
+const activo = v => ACTIVO_BAJO ? !v : !!v;
+
+/* ---------- Ajustes de la maqueta ----------
+   Se guardan en este celular, que viaja con el taxi que calibran, y se cambian desde el computador.
+   Para dejarlos fijos en cualquier celular, pega en AJUSTES_BASE lo que copia «Copiar calibración». */
+const AJUSTES_KEY = 'taxi-maqueta-ajustes';
+const AJUSTES_BASE = { largo: 120, vuelta: -80, parado: 0, vVuelta: null, puntos: [], perilla: false, interruptor: false, boton: false, tope: false };
+const PIEZAS = ['perilla', 'interruptor', 'boton', 'tope'];
+function limpiar(a) {
+  const num = (v, d, lo, hi) => v === null || v === undefined || v === '' || !Number.isFinite(+v) ? d : clamp(+v, lo, hi);
+  const out = {
+    largo: num(a.largo, 120, 20, 400),
+    vuelta: Math.round(num(a.vuelta, -80, -500, -10)),
+    parado: Math.round(num(a.parado, 0, -60, 60)),
+    vVuelta: num(a.vVuelta, null, 0.5, 200),
+    puntos: (Array.isArray(a.puntos) ? a.puntos : [])
+      .filter(p => Array.isArray(p) && p.length === 2 && p.every(Number.isFinite))
+      .map(([v, c]) => [clamp(Math.round(v), 1, 600), clamp(c, 0, 400)]),
+  };
+  PIEZAS.forEach(k => { out[k] = a[k] === true; });
+  return out;
+}
+function leerAjustes() {
+  try { const a = JSON.parse(localStorage.getItem(AJUSTES_KEY) || 'null'); if (a && typeof a === 'object') return limpiar({ ...AJUSTES_BASE, ...a }); }
+  catch (err) { /* sin almacenamiento: se usan los valores base */ }
+  return limpiar(AJUSTES_BASE);
+}
+let aj = leerAjustes();
+
+// La regla va de 0 km/h en la salida a 28 km/h a aj.largo cm. Las mediciones dicen cuánto avanza en 5 s cada pulso.
+const metaCm = kmh => clamp(kmh, 0, 28) / 28 * aj.largo;
+function curva() {
+  const out = [];
+  for (const [v, c] of [...aj.puntos].sort((a, b) => a[0] - b[0])) {
+    const ultimo = out[out.length - 1];
+    if (!ultimo || c > ultimo[1]) out.push([v, c]);
+    else if (c === ultimo[1]) ultimo[0] = v;   // misma distancia con más pulso: vale el pulso mayor
+  }
+  return out;
+}
+const calibrado = () => { const t = curva(); return t.length >= 2 && t[t.length - 1][1] > 0; };
+function pulsoIda(kmh) {
+  if (!calibrado()) return Math.round(IDA_MIN + (clamp(kmh, 10, 28) - 10) / 18 * (IDA_MAX - IDA_MIN));
+  const t = curva(), meta = metaCm(kmh);
+  if (meta <= t[0][1]) return t[0][0];
+  for (let i = 1; i < t.length; i++) {
+    if (meta <= t[i][1]) { const [v0, c0] = t[i - 1], [v1, c1] = t[i]; return Math.round(v0 + (meta - c0) / (c1 - c0) * (v1 - v0)); }
+  }
+  return t[t.length - 1][0];   // más lejos de lo medido: el pulso más fuerte que se probó
+}
+// Lo inverso: cuántos cm avanza en 5 s un pulso, según las mediciones (null si no hay calibración).
+function distanciaDe(pulso) {
+  if (!calibrado()) return null;
+  const t = curva();
+  if (pulso <= t[0][0]) return t[0][1];
+  for (let i = 1; i < t.length; i++) {
+    if (pulso <= t[i][0]) { const [v0, c0] = t[i - 1], [v1, c1] = t[i]; return c0 + (pulso - v0) / (v1 - v0) * (c1 - c0); }
+  }
+  return t[t.length - 1][1];
+}
+const vVuelta = () => aj.vVuelta || V_VUELTA_BASE;
+function resumen() {
+  const t = curva();
+  const movio = t.find(([, c]) => c > 0);   // la medición más corta en que el taxi sí avanzó
+  return { calibrado: calibrado(), alcance: t.length ? t[t.length - 1][1] : 0, minimo: movio ? movio[1] : 0, pulsos: [12, 20, 28].map(k => [k, microsegundos(pulsoIda(k))]), vVueltaMedida: !!aj.vVuelta };
+}
+
+/* ---------- Placa: el Arduino real (WebUSB) o una simulada (?prueba) ---------- */
+function placaDePrueba() {
+  // Un taxi pesado: bajo 35 µs no se mueve; después avanza 0,17 cm/s por µs. La vuelta, 0,3 cm/s por µs desde 25 µs.
+  const e = { a0: 8.5 * 1024 / 24, interruptor: false, boton: false, x: 0, empuje: 0 };   // empuje: segundos girando hacia atrás contra la salida
+  let alRecibir = null, pulso = 0, antes = 0;
+  return {
+    entradas: e,
+    async start() {
+      antes = performance.now();
+      setInterval(() => {
+        const ahora = performance.now(), dt = (ahora - antes) / 1000; antes = ahora;
+        const v = pulso > 0 ? Math.min(40, Math.max(0, pulso - 35) * 0.17) : -Math.min(40, Math.max(0, -pulso - 25) * 0.3);
+        if (v < 0 && e.x <= 0) e.empuje += dt;
+        e.x = Math.max(0, e.x + v * dt);
+        const pin = cerrado => ACTIVO_BAJO ? !cerrado : cerrado;
+        alRecibir?.({ a0: Math.round(e.a0), a1: 0, a2: 0, d7: pin(e.interruptor), d8: pin(e.boton), d9: pin(e.x < 0.5) });
+      }, 60);
+    },
+    onData(f) { alRecibir = f; },
+    onReceiveError() {},
+    contServoWrite({ value }) { pulso = value; },
+  };
+}
+const hayPT = typeof Protobject !== 'undefined';   // p.js lo declara con const: no está en window
+const placa = PRUEBA ? placaDePrueba() : (hayPT && Protobject.Arduino) || null;
+
+let lectura = null, recibido = -1e9, conectando = false, pcVisto = -1e9, pcAntes = false;
+// cm: posición estimada del taxi desde la salida (null si no se sabe). La corrige el tope o «Ya está en la salida».
+const m = { estado: 'espera', desde: 0, pulso: aj.parado, kmh: 0, hora: -1, dia: -1, botonAntes: false,
+            calibrando: false, prueba: 0, cm: 0, cmIda: 0, cmVuelta: 0, cmExacto: false, antes: 0 };
+const placaViva = () => lectura !== null && performance.now() - recibido < 1500;
+const pcVivo = () => performance.now() - pcVisto < 4000;
+const enSalida = () => lectura !== null && (aj.tope ? activo(lectura.d9) : m.cm !== null && m.cm <= 0.5);
+
+function enviar(msg) {
+  if (!hayPT) return;
+  try { Protobject.Core.send(msg).to('index.html'); } catch (err) { /* todavía no hay conexión con el computador */ }
+}
+function enviarEstado() {
+  enviar({
+    tipo: 'estado', placa: placaViva(), fase: m.estado, calibrando: m.calibrando, prueba: microsegundos(m.prueba),
+    enSalida: lectura ? enSalida() : null, cm: m.cm === null ? null : Math.round(m.cm), pulso: microsegundos(m.pulso),
+    t: Math.round(performance.now() - m.desde),
+    lect: lectura ? { a0: lectura.a0, d7: activo(lectura.d7), d8: activo(lectura.d8), d9: activo(lectura.d9) } : null,
+  });
+}
+const enviarAjustes = () => enviar({ tipo: 'ajustes', ajustes: aj, resumen: resumen() });
+function guardarAjustes() {
+  try { localStorage.setItem(AJUSTES_KEY, JSON.stringify(aj)); } catch (err) { /* sin almacenamiento */ }
+  enviarAjustes();
+}
+function aviso(texto, tono = '') { $('msg').textContent = texto; $('msg').dataset.tone = tono; }
+function rechazo(motivo) { enviar({ tipo: 'rechazo', motivo }); aviso(motivo, 'bad'); }
+
+/* ---------- El ciclo: ida, pausa, vuelta ---------- */
+function servo(valor) {
+  m.pulso = valor;
+  if (placa) placa.contServoWrite({ pin: PIN_SERVO, value: valor });
+}
+function cambiar(estado, fase, extra = {}) {
+  m.estado = estado; m.desde = performance.now();
+  if (fase && !m.calibrando) enviar({ tipo: 'fase', fase, ...extra });   // las pruebas de calibración no mueven el modelo del computador
+  enviarEstado();
+}
+// La perilla da 24 franjas; la hora solo cambia cuando la lectura entra 10 unidades en la franja nueva.
+function horaDe(a0, antes) {
+  const ancho = 1024 / 24;
+  if (antes >= 0 && a0 >= antes * ancho - 10 && a0 < (antes + 1) * ancho + 10) return antes;
+  return clamp(Math.floor(a0 / ancho), 0, 23);
+}
+// Cuánto puede durar la vuelta. Con tope, es un límite de seguridad; sin tope, la vuelta termina por la posición estimada.
+function limiteVuelta() {
+  if (m.cmVuelta === null) return VUELTA_MAX_MS;
+  return aj.tope ? clamp(m.cmVuelta / vVuelta() * 1600 + 2000, 6000, VUELTA_MAX_MS) : VUELTA_MAX_MS;
+}
+function paso() {
+  const ahora = performance.now(), dt = m.antes ? (ahora - m.antes) / 1000 : 0;
+  m.antes = ahora;
+  if (lectura === null) return;
+  const t = ahora - m.desde;
+  if ((m.estado === 'ida' || m.estado === 'prueba') && m.cmIda !== null) m.cm = m.cmIda * Math.min(1, t / IDA_MS);
+  else if (m.estado === 'vuelta' && m.cm !== null) m.cm = Math.max(0, m.cm - vVuelta() * dt);
+  if (aj.tope && activo(lectura.d9)) m.cm = 0;
+  const salida = enSalida();
+  if (m.estado === 'espera') {
+    const hora = aj.perilla ? horaDe(lectura.a0, m.hora) : m.hora;
+    const dia = aj.interruptor ? (activo(lectura.d7) ? 1 : 0) : m.dia;
+    if (hora !== m.hora || dia !== m.dia) {
+      m.hora = hora; m.dia = dia;
+      const msg = { tipo: 'entrada' };
+      if (aj.perilla) msg.hora = hora;
+      if (aj.interruptor) msg.dia = dia;
+      if (aj.perilla || aj.interruptor) enviar(msg);
+    }
+    const boton = aj.boton && activo(lectura.d8);
+    if (boton && !m.botonAntes) {
+      if (!salida) aviso('El taxi no está en la salida.', 'bad');
+      else if (!pcVivo()) aviso('No hay computador conectado: la velocidad sale de sus datos.', 'bad');
+      else enviar({ tipo: 'salir' });
+    }
+    m.botonAntes = boton;
+  } else if (m.estado === 'ida' && t >= IDA_MS) {
+    servo(aj.parado); cambiar('pausa', 'pausa');
+  } else if (m.estado === 'pausa' && t >= PAUSA_MS) {
+    empezarVuelta();
+  } else if (m.estado === 'prueba' && t >= IDA_MS) {
+    servo(aj.parado); cambiar('medir');
+  } else if (m.estado === 'vuelta') {
+    // En la vuelta de una prueba sin tope, la llegada la marca el computador («Ya llegó a la salida»): así se mide la vuelta.
+    const esperaAviso = m.calibrando && m.cmExacto && !aj.tope;
+    if (salida && !esperaAviso) llegar(aj.tope ? 'tope' : 'posicion');
+    else if (t >= limiteVuelta()) {
+      servo(aj.parado);
+      if (aj.tope) {
+        cambiar('espera', 'sin_tope'); m.calibrando = false;
+        aviso('El taxi no llegó al tope a tiempo y el servo se detuvo. Revisa el microinterruptor.', 'bad');
+      } else llegar('tiempo');   // sin tope y sin saber dónde estaba: se da por llegado
+    }
+  }
+}
+function empezarVuelta() {
+  m.cmVuelta = m.cm;
+  servo(aj.vuelta); cambiar('vuelta', 'vuelta');
+}
+// El taxi llegó a la salida. Si venía de una prueba medida, el tiempo de la vuelta da su velocidad.
+function llegar(como) {
+  const s = (performance.now() - m.desde) / 1000;
+  if (m.calibrando && m.cmExacto && m.cmVuelta > 5 && s > 0.3 && (como === 'tope' || como === 'pc')) {
+    aj.vVuelta = Math.round(m.cmVuelta / s * 10) / 10;
+    guardarAjustes();
+  }
+  servo(aj.parado); m.cm = 0;
+  cambiar('espera', 'salida');
+  m.calibrando = false; m.cmExacto = false;
+  enviarEstado();
+}
+function arrancar(kmh) {
+  if (!placaViva()) return rechazo('El Arduino no está conectado al celular.');
+  if (m.estado !== 'espera') return rechazo(m.calibrando ? 'El celular está calibrando la maqueta.' : 'El taxi todavía está en una carrera.');
+  if (!enSalida()) return rechazo(aj.tope ? 'El taxi no está en la salida: el tope no está apretado. Usa «Volver a la salida».' : 'El taxi no ha vuelto a la salida. Usa «Volver a la salida» o, si ya está ahí, «Ya está en la salida».');
+  if (!Number.isFinite(kmh)) return rechazo('La velocidad recibida no es un número.');
+  m.kmh = kmh; m.cm = 0;
+  servo(pulsoIda(kmh));
+  m.cmIda = distanciaDe(m.pulso) ?? metaCm(kmh);
+  cambiar('ida', 'ida', { kmh, us: microsegundos(m.pulso) });
+  aviso('');
+}
+function detener() {
+  servo(aj.parado);
+  if (m.estado !== 'espera') cambiar('espera', 'detenido');
+  m.calibrando = false; m.cmExacto = false;
+  aviso('Servo detenido.');
+  enviarEstado();
+}
+function volver() {
+  if (!placaViva()) return rechazo('El Arduino no está conectado al celular.');
+  if (m.estado === 'vuelta') return;
+  if (m.estado === 'espera' && enSalida()) { aviso('El taxi ya está en la salida.'); return enviarEstado(); }
+  empezarVuelta();
+  aviso('');
+}
+// El computador avisa que el taxi está en la salida: termina la vuelta, o corrige la posición si estaba detenido.
+function yaLlego() {
+  if (m.estado === 'vuelta') return llegar('pc');
+  if (m.estado === 'espera') { m.cm = 0; servo(aj.parado); enviarEstado(); }
+}
+function probar(valor) {
+  if (!Number.isFinite(valor) || valor < 1 || valor > 600) return rechazo('El pulso de prueba no es válido.');
+  if (!placaViva()) return rechazo('El Arduino no está conectado al celular.');
+  if (m.estado !== 'espera') return rechazo('Espera a que el taxi vuelva a la salida.');
+  if (!enSalida()) return rechazo('Lleva el taxi a la salida antes de probar: «Volver a la salida» o «Ya está en la salida».');
+  m.calibrando = true; m.prueba = Math.round(valor); m.cmExacto = false;
+  m.cmIda = distanciaDe(m.prueba); m.cm = m.cmIda === null ? null : 0;
+  servo(m.prueba); cambiar('prueba');
+  aviso('');
+}
+function medida(cm) {
+  if (m.estado !== 'medir') return;
+  if (!Number.isFinite(cm) || cm < 0 || cm > 400) return rechazo('La medida tiene que estar entre 0 y 400 cm.');
+  aj.puntos = aj.puntos.filter(p => p[0] !== m.prueba).concat([[m.prueba, Math.round(cm * 10) / 10]]);
+  m.cm = cm; m.cmExacto = true;
+  guardarAjustes();
+  empezarVuelta();
+}
+function descartar() {
+  if (m.estado !== 'medir') return;
+  empezarVuelta();
+}
+function ajustar(c) {
+  if (!c || typeof c !== 'object') return;
+  const antes = aj, cambios = {};
+  ['largo', 'vuelta', 'parado', ...PIEZAS].forEach(k => { if (k in c) cambios[k] = c[k]; });
+  aj = limpiar({ ...aj, ...cambios });
+  if (aj.vuelta !== antes.vuelta) aj.vVuelta = null;   // otra vuelta, otra velocidad: hay que volver a medirla
+  if (aj.perilla !== antes.perilla) m.hora = -1;
+  if (aj.interruptor !== antes.interruptor) m.dia = -1;
+  if (aj.parado !== antes.parado && m.estado === 'espera' && placaViva()) servo(aj.parado);   // se ve al tiro si deja de arrastrarse
+  guardarAjustes();
+  enviarEstado();
+}
+
+/* ---------- Mensajes del computador ---------- */
+if (hayPT) {
+  Protobject.Core.onReceived(msg => {
+    if (!msg || typeof msg !== 'object') return;
+    switch (msg.tipo) {
+      case 'hola': pcVisto = performance.now(); break;
+      case 'velocidad': arrancar(+msg.kmh); break;
+      case 'detener': detener(); break;
+      case 'volver': volver(); break;
+      case 'llego': yaLlego(); break;
+      case 'probar': probar(+msg.valor); break;
+      case 'medida': medida(+msg.cm); break;
+      case 'descartar': descartar(); break;
+      case 'ajustar': ajustar(msg.cambios); break;
+      case 'borrar': aj.puntos = aj.puntos.filter(p => p[0] !== +msg.valor); guardarAjustes(); break;
+      case 'borrarTodo': aj.puntos = []; guardarAjustes(); break;
+    }
+  });
+}
+// Latido: el computador responde «hola» a cada «estado». Cuando aparece, se le mandan los ajustes, la hora y el día.
+setInterval(() => {
+  const pc = pcVivo();
+  if (pc && !pcAntes) { m.hora = -1; m.dia = -1; enviarAjustes(); }
+  pcAntes = pc;
+  enviarEstado();
+}, 1000);
+
+/* ---------- Conectar la placa ---------- */
+let pantalla = null;
+async function mantenerPantalla() {
+  try { if ('wakeLock' in navigator && document.visibilityState === 'visible') pantalla = await navigator.wakeLock.request('screen'); } catch (err) { /* sin bloqueo de pantalla */ }
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && placaViva()) mantenerPantalla(); });
+
+$('connect').addEventListener('click', async () => {
+  if (!placa) return aviso('No cargó Protobject: revisa la conexión a internet y recarga la página.', 'bad');
+  if (!PRUEBA && !navigator.usb) return aviso('Este navegador no tiene WebUSB. Usa Chrome en Android.', 'bad');
+  conectando = true; aviso(PRUEBA ? 'Simulando la placa…' : 'Toca «Confirm» y elige el Arduino en la lista.');
+  try {
+    await placa.start();
+    Object.assign(m, { estado: 'espera', hora: -1, dia: -1, botonAntes: true, calibrando: false, cm: 0, cmExacto: false });
+    servo(aj.parado);
+    aviso(PRUEBA ? 'Placa simulada lista.' : 'Arduino conectado. Ya puedes poner el celular en el taxi.');
+    mantenerPantalla();
+  } catch (err) {
+    aviso('No se pudo conectar: ' + (err?.message || err), 'bad');
+  } finally {
+    conectando = false;
+  }
+});
+if (placa) {
+  placa.onData(d => { lectura = d; recibido = performance.now(); });
+  placa.onReceiveError(() => {
+    lectura = null; m.estado = 'espera'; m.pulso = aj.parado; m.calibrando = false;
+    aviso('Se desconectó el Arduino. Revisa el cable OTG y toca «Conectar Arduino» de nuevo.', 'bad');
+  });
+}
+$('stop').addEventListener('click', detener);
+
+/* ---------- Pantalla del celular ---------- */
+function fila(id, ok, texto) {
+  const li = $(id); li.dataset.ok = String(ok);
+  const b = li.querySelector('b'); if (b.textContent !== texto) b.textContent = texto;
+}
+function pintar() {
+  const viva = placaViva(), pc = pcVivo();
+  fila('st-pc', pc, pc ? 'Conectado' : hayPT ? 'Esperando al computador…' : 'Sin Protobject');
+  fila('st-board', viva, viva ? (PRUEBA ? 'Simulado' : 'Conectado') : conectando ? 'Conectando…' : 'Sin conectar');
+  $('connect').hidden = viva;
+  $('stop').disabled = !viva;
+  const t = (performance.now() - m.desde) / 1000, seg = `${fmt(Math.min(t, IDA_MS / 1000), 1)} s de ${IDA_MS / 1000}`;
+  const texto = {
+    espera: !viva ? 'En espera.' : enSalida() ? 'En la salida.' : 'Fuera de la salida.',
+    ida: `Ida a ${fmt(m.kmh, 1)} km/h: ${seg}`,
+    pausa: 'Pausa: lee la regla.',
+    vuelta: 'Volviendo a la salida.',
+    prueba: `Calibrando con ${fmt(microsegundos(m.prueba))} µs: ${seg}`,
+    medir: 'Calibrando: anota en el computador dónde quedó la aguja.',
+  }[m.estado];
+  if ($('phase-text').textContent !== texto) $('phase-text').textContent = texto;
+  $('phase').dataset.phase = m.estado;
+  $('pulse').textContent = `${fmt(microsegundos(m.pulso))} µs`;
+  $('pos').textContent = !viva ? '—' : m.cm === null ? '¿?' : `≈ ${fmt(m.cm)} cm`;
+  $('tope').textContent = !viva ? '—' : !aj.tope ? 'No usado' : activo(lectura.d9) ? 'Apretado' : 'Libre';
+  if (PRUEBA) { $('p-x').textContent = fmt(placa.entradas.x, 0); $('p-empuje').textContent = fmt(placa.entradas.empuje, 1); }
+}
+setInterval(() => { paso(); pintar(); }, 50);
+
+/* ---------- Modo de prueba ---------- */
+if (PRUEBA) {
+  $('prueba').hidden = false;
+  $('warn').textContent = 'Modo de prueba: no se usa ningún Arduino ni cable.';
+  const e = placa.entradas;
+  const hh = h => String(h).padStart(2, '0');
+  $('p-perilla').addEventListener('input', ev => { const h = +ev.target.value; e.a0 = (h + 0.5) * 1024 / 24; $('p-hora').textContent = `${hh(h)}:00`; });
+  document.querySelectorAll('#prueba [data-dia]').forEach(b => b.addEventListener('click', () => {
+    e.interruptor = b.dataset.dia === '1';
+    document.querySelectorAll('#prueba [data-dia]').forEach(o => o.setAttribute('aria-pressed', String(o === b)));
+  }));
+  $('p-boton').addEventListener('click', () => { e.boton = true; setTimeout(() => { e.boton = false; }, 200); });
+}
+pintar();
+</script>
+</body>
+</html>

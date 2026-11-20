@@ -121,6 +121,44 @@ h1 { font: 700 clamp(40px, 5.6vw, 76px)/.94 var(--display); letter-spacing: -.01
 .btn-ghost[aria-pressed="true"] { background: var(--meter-strong); color: #152433; border-color: var(--meter-strong); }
 .legend { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: 13px; color: var(--meter-fg); }
 .legend b { color: var(--meter-strong); font-weight: 600; }
+.link-box { display: grid; gap: 10px; padding-top: 14px; border-top: 1px solid var(--meter-line); }
+.link-state { display: flex; align-items: baseline; gap: 8px; margin: 0; font-size: 14px; color: var(--meter-strong); }
+.link-state i { flex: none; width: 9px; height: 9px; border-radius: 50%; background: #6f8796; transform: translateY(-1px); }
+.link-state[data-state="phone"] i { background: var(--taxi); }
+.link-state[data-state="on"] i { background: #7cc79a; }
+.link-note { margin: 0; font-size: 12.5px; color: var(--meter-fg); }
+.link-hw { display: grid; gap: 8px; }
+.link-more { color: var(--taxi); font-size: 13px; }
+.rig .sub { margin-bottom: 14px; }
+.rig-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 16px; align-items: start; }
+.rig-card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: grid; gap: 12px; min-width: 0; }
+.rig-card h3 { font: 700 22px var(--display); margin: 0; }
+.rig-card h3:not(:first-child) { margin-top: 8px; }
+.rig-note { margin: 0; font-size: 13.5px; color: var(--ink-2); }
+.rig-checks { display: grid; gap: 10px; }
+.rig-check { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; cursor: pointer; font-weight: 600; }
+.rig-check input { width: 18px; height: 18px; margin: 3px 0 0; accent-color: var(--taxi-ink); }
+.rig-check small { display: block; font-weight: 400; color: var(--ink-2); font-size: 13px; }
+.rig-read { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 0; font-size: 14px; }
+.rig-read dt { color: var(--ink-2); }
+.rig-read dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.rig-field { display: grid; gap: 6px; }
+.rig-field label { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.rig-field input[type="range"] { width: 100%; accent-color: var(--taxi); }
+.rig-num { width: 100%; min-height: 40px; border-radius: 8px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); padding: 0 10px; font-size: 15px; }
+.rig-btn { min-height: 42px; border-radius: 8px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); font-weight: 600; font-size: 14px; padding: 0 12px; cursor: pointer; }
+.rig-primary { background: var(--taxi); border-color: var(--taxi); color: #152433; }
+.rig-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.rig-grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.rig-state { margin: 0; font-size: 14px; font-weight: 600; min-height: 1.4em; }
+.rig-medir { display: grid; gap: 8px; padding: 12px; border: 2px solid var(--taxi); border-radius: 10px; }
+.rig-medir label { font-weight: 600; font-size: 14px; }
+.rig-table { font-variant-numeric: tabular-nums; }
+.rig-table button { border: 0; background: transparent; color: var(--ink-2); cursor: pointer; font-size: 15px; padding: 2px 8px; }
+.rig-json { margin: 0; font: 12px/1.5 var(--mono); color: var(--ink-2); word-break: break-all; }
+/* El botón «+» de Protobject se reemplaza por «Conectar celular», que abre el mismo QR. */
+#ProtobjectPlusButton { display: none !important; }
+.qr-code-container, .dropdown-menu { color: #152433; }
 
 section.block { padding-block: 40px 0; }
 h2 { font: 700 clamp(28px, 3.2vw, 40px)/1 var(--display); margin: 0 0 8px; letter-spacing: -.005em; text-wrap: balance; }
@@ -176,6 +214,7 @@ td:first-child { font-weight: 600; }
 .build { display: grid; gap: 0; max-width: 980px; }
 .build details > .table-wrap, .build details > .checks { margin-top: 12px; }
 .note { margin: 14px 0 6px; font-size: 13px; color: var(--ink-2); }
+.block a { color: var(--ink); }
 caption { text-align: left; font: 700 20px var(--display); padding-bottom: 6px; }
 details { border-top: 1px solid var(--line); padding-block: 10px; }
 details:last-of-type { border-bottom: 1px solid var(--line); }
@@ -194,7 +233,8 @@ footer a { color: inherit; }
 @media (max-width: 980px) {
   .stage, .loop { grid-template-columns: minmax(0, 1fr); }
   .meter { grid-template-columns: 1fr 1fr; gap: 16px 20px; }
-  .meter > .controls, .meter > .sound-box { grid-column: 1 / -1; }
+  .meter > .controls, .meter > .sound-box, .meter > .link-box { grid-column: 1 / -1; }
+  .rig-grid { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 640px) {
   .viewport { height: min(80vw, 60vh); min-height: 320px; }
@@ -209,11 +249,14 @@ footer a { color: inherit; }
 </style>
 </head>
 <body>
+<!-- Protobject une esta pantalla con el celular que lleva el Arduino (config.js). Sin él, la página es una simulación. -->
+<script src="https://app.protobject.com/framework/p.js"></script>
+<script src="config.js"></script>
 <header class="top wrap">
   <div class="brand"><span class="roof">TAXI</span><span>El pulso de Nueva York · Prototipo físico-digital</span></div>
   <h1>Mientras más rápido va la ciudad, más lejos llega el taxi</h1>
   <p class="lede">Elige una hora y un tipo de día, y arranca el taxi. Durante 5 segundos avanza a la velocidad mediana de los taxis amarillos de Nueva York a esa hora de enero. El punto donde se detiene marca esa velocidad en la regla. Después vuelve solo a la salida.</p>
-  <p class="sim-note"><span class="pill">Modelo 3D</span><span>Los datos son reales: registros de la NYC TLC, enero de 2019 a 2026. El taxi, la avenida y los controles son una simulación del prototipo físico.</span></p>
+  <p class="sim-note"><span class="pill" id="sim-pill">Modelo 3D</span><span>Los datos son reales: registros de la NYC TLC, enero de 2019 a 2026. El taxi, la avenida y los controles son una simulación del prototipo físico. Si conectas la maqueta con un celular, el modelo sigue al taxi real.</span></p>
 </header>
 
 <section class="stage wrap" aria-label="Prototipo y taxímetro">
@@ -267,6 +310,20 @@ footer a { color: inherit; }
       <p class="busy" id="busy" hidden>Los controles se activan cuando el taxi vuelve a la salida.</p>
       <p class="story-note">Recorrer el día hace 10 carreras en unos 2 minutos: 01, 05, 08, 11 y 13 h, de lunes a viernes y el fin de semana.</p>
     </div>
+    <div class="link-box" aria-label="Maqueta física">
+      <div class="field-label"><span>Maqueta física</span></div>
+      <p class="link-state" id="link-state" data-state="off" aria-live="polite"><i></i><span id="link-text">Simulación: no hay un celular conectado.</span></p>
+      <p class="link-note" id="link-note">Toca «Conectar celular» y escanea el QR con el celular que lleva el Arduino.</p>
+      <button type="button" class="btn btn-ghost" id="link-qr">Conectar celular</button>
+      <div class="link-hw" id="link-hw" hidden>
+        <div class="row">
+          <button type="button" class="btn btn-ghost" id="hw-stop">Detener</button>
+          <button type="button" class="btn btn-ghost" id="hw-home">Volver a la salida</button>
+        </div>
+        <button type="button" class="btn btn-ghost" id="hw-here" hidden>Ya está en la salida</button>
+        <a class="link-more" href="#ajustes">Ajustes y calibración de la maqueta ↓</a>
+      </div>
+    </div>
     <div class="sound-box">
       <button type="button" class="btn btn-ghost" id="sound" aria-pressed="false">Activar sonido</button>
       <div>
@@ -285,6 +342,58 @@ footer a { color: inherit; }
       </ul>
     </div>
   </aside>
+</section>
+
+<section class="block wrap rig" id="ajustes" aria-labelledby="h-rig" hidden>
+  <h2 id="h-rig">Ajustes de la maqueta</h2>
+  <p class="sub">El celular va sobre el taxi, así que la maqueta se ajusta desde aquí. Los ajustes quedan guardados en el celular, junto con el taxi que calibran.</p>
+  <div class="rig-grid">
+    <div class="rig-card">
+      <h3>Piezas conectadas</h3>
+      <p class="rig-note">Marca solo lo que está cableado al Arduino: un pin sin nada conectado da lecturas falsas. Lo que no esté marcado se maneja desde esta página.</p>
+      <div class="rig-checks">
+        <label class="rig-check"><input type="checkbox" data-pieza="tope"><span>Microinterruptor de tope (D9)<small>Detiene la vuelta justo en la salida. Sin él, la vuelta dura lo que calcula la velocidad de vuelta, y «Ya está en la salida» la corrige.</small></span></label>
+        <label class="rig-check"><input type="checkbox" data-pieza="perilla"><span>Perilla de la hora (A0)</span></label>
+        <label class="rig-check"><input type="checkbox" data-pieza="interruptor"><span>Interruptor del tipo de día (D7)</span></label>
+        <label class="rig-check"><input type="checkbox" data-pieza="boton"><span>Botón Arrancar (D8)</span></label>
+      </div>
+      <h3>Lecturas en vivo</h3>
+      <dl class="rig-read" id="rig-read"></dl>
+    </div>
+    <div class="rig-card">
+      <h3>Calibrar con el peso real</h3>
+      <p class="rig-note">El pulso no fija la fuerza del servo: fija la velocidad que intenta alcanzar. Con el celular encima, el mismo pulso avanza menos, y uno bajo puede ni moverlo. Con el taxi armado como en la demostración y en la salida, prueba varios pulsos y anota hasta dónde llega la aguja en 5 s; con eso se calcula el pulso de cada velocidad.</p>
+      <div class="rig-field">
+        <label for="cal-pulso"><span>Pulso de prueba</span><output id="cal-pulso-out">1.600 µs</output></label>
+        <input type="range" id="cal-pulso" min="20" max="500" step="10" value="100">
+      </div>
+      <button type="button" class="rig-btn rig-primary" id="cal-probar">Probar 5 s con este pulso</button>
+      <p class="rig-state" id="cal-estado" aria-live="polite"></p>
+      <div class="rig-medir" id="cal-medir" hidden>
+        <label for="cal-cm">¿Hasta dónde llegó la aguja? (cm desde la salida)</label>
+        <input class="rig-num" type="number" id="cal-cm" inputmode="decimal" min="0" max="400" step="0.5" placeholder="Ej.: 54">
+        <div class="rig-row">
+          <button type="button" class="rig-btn rig-primary" id="cal-guardar">Guardar y volver</button>
+          <button type="button" class="rig-btn" id="cal-descartar">Descartar y volver</button>
+        </div>
+      </div>
+      <button type="button" class="rig-btn rig-primary" id="cal-llego" hidden>Ya llegó a la salida</button>
+      <div class="table-wrap"><table class="rig-table" id="cal-tabla"></table></div>
+      <p class="rig-note" id="cal-resumen"></p>
+      <div class="rig-grid3">
+        <div class="rig-field"><label for="cal-largo">Regla (cm)</label><input class="rig-num" type="number" id="cal-largo" min="20" max="400" step="1"></div>
+        <div class="rig-field"><label for="cal-vuelta">Vuelta (µs)</label><input class="rig-num" type="number" id="cal-vuelta" min="1000" max="1490" step="5"></div>
+        <div class="rig-field"><label for="cal-parado">Quieto (µs)</label><input class="rig-num" type="number" id="cal-parado" min="1440" max="1560" step="1"></div>
+      </div>
+      <p class="rig-note"><b>Regla:</b> distancia desde la salida hasta la marca de 28 km/h. <b>Vuelta:</b> pulso para volver; si con el peso no alcanza a volver, bájalo (por ejemplo, 1.380). Al cambiarlo, la velocidad de vuelta se vuelve a medir. <b>Quieto:</b> si el taxi sigue moviéndose cuando debería estar detenido, cambia este valor de a 1 o 2 hasta que se quede quieto; se aplica al tiro.</p>
+      <p class="rig-note" id="cal-marcas"></p>
+      <div class="rig-row">
+        <button type="button" class="rig-btn" id="cal-copiar">Copiar calibración</button>
+        <button type="button" class="rig-btn" id="cal-borrar">Borrar mediciones</button>
+      </div>
+      <p class="rig-json" id="cal-json"></p>
+    </div>
+  </div>
 </section>
 
 <section class="block wrap" aria-labelledby="h-top">
@@ -343,140 +452,102 @@ footer a { color: inherit; }
 
 <section class="block wrap" aria-labelledby="h-build">
   <h2 id="h-build">Notas técnicas</h2>
-  <p class="sub">Información para construir y calibrar el prototipo físico.</p>
+  <p class="sub">Información para construir, conectar y calibrar el prototipo físico. El computador muestra esta página. Un celular Android lleva enchufado el Arduino, le da energía y le dice al servo qué hacer. Los dos se unen con <a href="https://framework.protobject.com" target="_blank" rel="noopener">Protobject</a>, el framework del curso.</p>
   <div class="build">
+    <details>
+      <summary>Conectar la maqueta</summary>
+      <ol class="checks">
+        <li><strong>Programar el Arduino, una sola vez</strong><span>Desde el computador, con el Arduino IDE, cargar <a href="protobject-leonardo-pullup.ino" download>protobject-leonardo-pullup.ino</a> al Leonardo. Necesita las bibliotecas Servo, ArduinoJson y WebUSB; el encabezado del archivo explica cómo instalarlas.</span></li>
+        <li><strong>Abrir esta página en el computador</strong><span>Con Chrome o Edge, en una sola pestaña. La dirección suma <code>?ptjuid=…</code>: es el canal de esta sesión.</span></li>
+        <li><strong>Unir el celular</strong><span>Tocar «Conectar celular» en el taxímetro y escanear el QR con un celular Android con Chrome. Se abre la página del celular.</span></li>
+        <li><strong>Enchufar el Arduino al celular</strong><span>Con un cable USB-OTG. En el celular, tocar «Conectar Arduino», luego «Confirm», y elegir la placa en la lista. Después, poner el celular sobre el taxi: desde ahí todo se hace en el computador.</span></li>
+        <li><strong>Ajustar y calibrar</strong><span>Al conectarse el celular aparece «Ajustes de la maqueta», bajo el modelo 3D. Ahí se marcan las piezas que están cableadas (un pin sin nada conectado da lecturas falsas) y se calibra con el peso real.</span></li>
+        <li><strong>Usar la maqueta</strong><span>El taxímetro dice «Maqueta conectada». Se arranca con «Arrancar» o con «Recorrer el día». Sin microinterruptor de tope, «Ya está en la salida» detiene la vuelta si el taxi llegó antes de lo calculado.</span></li>
+      </ol>
+      <p class="note">Para probar sin Arduino, agregar <code>&amp;prueba</code> a la dirección que abre el celular: su página simula la placa, el servo y el tope.</p>
+    </details>
     <details>
       <summary>Componentes y conexiones</summary>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Componente</th><th>Función</th><th>Conexión</th></tr></thead>
           <tbody>
-            <tr><td>Arduino Leonardo</td><td>Lee los controles, mide los tiempos y mueve el servo</td><td>USB al computador (también lo alimenta)</td></tr>
-            <tr><td>Servo de rotación continua</td><td>Mueve los dos ejes por la fila de engranajes</td><td>Señal en D9, 5 V y GND</td></tr>
-            <tr><td>Potenciómetro (perilla)</td><td>Hora, en 24 posiciones</td><td>A0</td></tr>
-            <tr><td>Interruptor</td><td>Tipo de día</td><td>D2 a GND</td></tr>
-            <tr><td>Botón Arrancar</td><td>Inicia la carrera</td><td>D3 a GND</td></tr>
-            <tr><td>Microinterruptor de tope</td><td>Detecta el taxi en la salida</td><td>D4 a GND</td></tr>
+            <tr><td>Computador</td><td>Muestra esta página: datos, modelo 3D, sonido y año</td><td>Chrome o Edge, con internet</td></tr>
+            <tr><td>Celular Android</td><td>Va sobre el taxi: lleva los tiempos del ciclo, lee los pines y mueve el servo</td><td>Chrome; se une a esta página con el QR</td></tr>
+            <tr><td>Arduino Leonardo</td><td>Firmware de Protobject: aplica el pulso del servo y entrega las lecturas</td><td>USB-OTG al celular (también lo alimenta)</td></tr>
+            <tr><td>Servo de rotación continua</td><td>Mueve los dos ejes por la fila de engranajes</td><td>Señal en D5, 5 V y GND</td></tr>
+            <tr><td>Potenciómetro (perilla), opcional</td><td>Hora, en 24 posiciones</td><td>A0, 5 V y GND</td></tr>
+            <tr><td>Interruptor, opcional</td><td>Tipo de día</td><td>D7 a GND (abierto: lunes a viernes)</td></tr>
+            <tr><td>Botón Arrancar, opcional</td><td>Inicia la carrera</td><td>D8 a GND</td></tr>
+            <tr><td>Microinterruptor de tope, recomendado</td><td>Detecta el taxi en la salida: va atrás del taxi y lo aprieta la pared de la salida</td><td>D9 a GND</td></tr>
           </tbody>
         </table>
       </div>
+      <p class="note">El firmware de Protobject fija los pines: el servo va en D5 o D6, y las entradas digitales en D7, D8 y D9.</p>
     </details>
     <details>
-      <summary>Ciclo y mensajes entre el Arduino y el navegador</summary>
+      <summary>Ciclo y mensajes entre el computador y el celular</summary>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Mensaje</th><th>Sentido</th><th>Significado</th></tr></thead>
           <tbody>
-            <tr><td><code>H08 S</code></td><td>Arduino → navegador</td><td>Cambió la hora o el tipo de día (S: lunes a viernes, F: fin de semana).</td></tr>
-            <tr><td><code>SALIR</code></td><td>Arduino → navegador</td><td>Se apretó Arrancar con el taxi en la salida.</td></tr>
-            <tr><td><code>V14.2</code></td><td>Navegador → Arduino</td><td>Velocidad de esa hora en km/h. El Arduino arranca la ida.</td></tr>
-            <tr><td><code>IDA</code> · <code>PAUSA</code> · <code>VUELTA</code></td><td>Arduino → navegador</td><td>Fases del ciclo: 5 s de ida, 3 s de pausa y vuelta hasta el tope.</td></tr>
-            <tr><td><code>SALIDA</code> · <code>SIN_TOPE</code></td><td>Arduino → navegador</td><td>El taxi llegó al tope, o no llegó en 15 s y el servo se detuvo.</td></tr>
+            <tr><td><code>{tipo:'entrada', hora:8, dia:0}</code></td><td>celular → PC</td><td>Cambió la hora o el tipo de día (0: lunes a viernes, 1: fin de semana).</td></tr>
+            <tr><td><code>{tipo:'salir'}</code></td><td>celular → PC</td><td>Se apretó Arrancar con el taxi en la salida.</td></tr>
+            <tr><td><code>{tipo:'velocidad', kmh:14.2}</code></td><td>PC → celular</td><td>Velocidad de esa hora. El celular arranca la ida.</td></tr>
+            <tr><td><code>{tipo:'fase', fase:'ida'}</code> · <code>'pausa'</code> · <code>'vuelta'</code></td><td>celular → PC</td><td>Fases del ciclo: 5 s de ida, 3 s de pausa y vuelta hasta el tope.</td></tr>
+            <tr><td><code>'salida'</code> · <code>'sin_tope'</code> · <code>'detenido'</code></td><td>celular → PC</td><td>El taxi llegó al tope, no llegó en 15 s, o alguien lo detuvo.</td></tr>
+            <tr><td><code>{tipo:'rechazo', motivo}</code></td><td>celular → PC</td><td>No pudo arrancar: el taxi no está en la salida o el Arduino no está conectado.</td></tr>
+            <tr><td><code>{tipo:'detener'}</code> · <code>{tipo:'volver'}</code> · <code>{tipo:'llego'}</code></td><td>PC → celular</td><td>Detener el servo, volver a la salida, o avisar que el taxi ya está en la salida.</td></tr>
+            <tr><td><code>{tipo:'probar', valor}</code> · <code>{tipo:'medida', cm}</code></td><td>PC → celular</td><td>Calibración: probar un pulso 5 s y guardar hasta dónde llegó.</td></tr>
+            <tr><td><code>{tipo:'ajustar', cambios}</code></td><td>PC → celular</td><td>Cambiar las piezas conectadas, la regla, la vuelta o el pulso quieto.</td></tr>
+            <tr><td><code>{tipo:'ajustes', …}</code></td><td>celular → PC</td><td>Los ajustes guardados en el celular y los pulsos que resultan de la calibración.</td></tr>
+            <tr><td><code>{tipo:'estado'}</code> · <code>{tipo:'hola'}</code></td><td>Ida y vuelta, cada 1 s</td><td>Latido con la fase, la posición estimada y las lecturas de los pines. Si pasan 4 s sin él, la conexión se da por perdida.</td></tr>
           </tbody>
         </table>
       </div>
-      <p class="note">Registro de la simulación:</p>
+      <p class="note">El ciclo corre en el celular, junto al Arduino: así el taxi se detiene en el tope aunque la red se atrase. Si se pierde el computador a mitad de una carrera, el celular la termina solo.</p>
+      <p class="note" id="log-note">Mensajes de la simulación (los mismos que manda la maqueta):</p>
       <ol class="log" id="log" aria-live="off"></ol>
     </details>
     <details>
-      <summary>Programa del Arduino <small>C++ · biblioteca Servo</small></summary>
-<pre><code>#include &lt;Servo.h&gt;
-
-const int PIN_SERVO = 9;
-const int PIN_PERILLA = A0;       // potenciómetro de la perilla
-const int PIN_DIA = 2;            // interruptor a GND: abierto = lunes a viernes
-const int PIN_ARRANCAR = 3;       // botón Arrancar a GND
-const int PIN_TOPE = 4;           // microinterruptor a GND: apretado = taxi en la salida
-const int PARADO_US = 1500;       // calibrar: pulso en que el servo no gira
-const int VUELTA_US = 1420;       // calibrar: retroceso lento y siempre igual
-const unsigned long IDA_MS = 5000, PAUSA_MS = 3000, VUELTA_MAX_MS = 15000;
-
-enum Estado { ESPERA, IDA, PAUSA, VUELTA };
-Estado estado = ESPERA;
-Servo rueda;
-unsigned long desde = 0;
-int horaAnterior = -1, diaAnterior = -1;
-bool botonAntes = false;
-
-void cambiar(Estado nuevo, const char *aviso) {
-  estado = nuevo;
-  desde = millis();
-  Serial.println(aviso);
-}
-
-void setup() {
-  Serial.begin(115200);           // en el Leonardo, Serial usa el mismo cable USB
-  Serial.setTimeout(50);
-  pinMode(PIN_DIA, INPUT_PULLUP);
-  pinMode(PIN_ARRANCAR, INPUT_PULLUP);
-  pinMode(PIN_TOPE, INPUT_PULLUP);
-  rueda.attach(PIN_SERVO);
-  rueda.writeMicroseconds(PARADO_US);
-}
-
-void loop() {
-  unsigned long t = millis() - desde;
-  bool enSalida = digitalRead(PIN_TOPE) == LOW;
-
-  if (estado == ESPERA) {
-    int hora = map(analogRead(PIN_PERILLA), 0, 1024, 0, 24);   // 0 a 23
-    int dia = digitalRead(PIN_DIA) == HIGH ? 0 : 1;            // 0 = S, 1 = F
-    if (hora != horaAnterior || dia != diaAnterior) {
-      Serial.print('H');
-      if (hora &lt; 10) Serial.print('0');
-      Serial.print(hora);
-      Serial.println(dia == 0 ? " S" : " F");                  // ejemplo: H08 S
-      horaAnterior = hora;
-      diaAnterior = dia;
-    }
-    bool boton = digitalRead(PIN_ARRANCAR) == LOW;
-    if (boton &amp;&amp; !botonAntes &amp;&amp; enSalida) Serial.println("SALIR");
-    botonAntes = boton;
-  }
-
-  if (Serial.available()) {
-    String linea = Serial.readStringUntil('\n');             // ejemplo: V14.2
-    if (estado == ESPERA &amp;&amp; enSalida &amp;&amp; linea.startsWith("V")) {
-      float kmh = constrain(linea.substring(1).toFloat(), 10, 28);
-      rueda.writeMicroseconds(1560 + (kmh - 10) / 18 * 140);  // calibrar con la regla
-      cambiar(IDA, "IDA");
-    }
-  }
-
-  if (estado == IDA &amp;&amp; t &gt;= IDA_MS) {
-    rueda.writeMicroseconds(PARADO_US);
-    cambiar(PAUSA, "PAUSA");
-  } else if (estado == PAUSA &amp;&amp; t &gt;= PAUSA_MS) {
-    rueda.writeMicroseconds(VUELTA_US);
-    cambiar(VUELTA, "VUELTA");
-  } else if (estado == VUELTA &amp;&amp; (enSalida || t &gt;= VUELTA_MAX_MS)) {
-    rueda.writeMicroseconds(PARADO_US);
-    cambiar(ESPERA, enSalida ? "SALIDA" : "SIN_TOPE");
-  }
-}</code></pre>
+      <summary>Programa del Arduino <small>firmware de Protobject · C++</small></summary>
+      <p class="note">El Leonardo no lleva un programa propio. Corre el firmware genérico de Protobject, que recibe órdenes en JSON por WebUSB (mover el servo, leer los pines) y no sabe nada del taxi. Se diferencia del oficial en tres líneas, para que los interruptores vayan a GND sin resistencias: <a href="protobject-leonardo-pullup.ino" download>descargar protobject-leonardo-pullup.ino</a>.</p>
+<pre><code>pinMode(7, INPUT_PULLUP);   // interruptor de tipo de día a GND
+pinMode(8, INPUT_PULLUP);   // botón Arrancar a GND
+pinMode(9, INPUT_PULLUP);   // microinterruptor de tope a GND</code></pre>
     </details>
     <details>
-      <summary>Programa del navegador <small>Web Serial · Chrome o Edge</small></summary>
-<pre><code>const port = await navigator.serial.requestPort();   // necesita un clic
-await port.open({ baudRate: 115200 });
-const writer = port.writable.getWriter();
-// Por cada línea que llega del Arduino:
-//   "H08 S"  → cambiar la hora y el tipo de día en la pantalla
-//   "SALIR"  → responder con la velocidad de esa hora
-//   "IDA"    → empezar el sonido   ·   "PAUSA" → detenerlo
-//   "SALIDA" → taxi listo para la siguiente carrera
-await writer.write(new TextEncoder().encode(`V${kmh.toFixed(1)}\n`));</code></pre>
+      <summary>Programa del navegador <small>Protobject · WebUSB en el celular</small></summary>
+<pre><code>// config.js: las dos páginas del prototipo
+Protobject.initialize([
+  { name: 'Pantalla', page: 'index.html', main: true },
+  { name: 'Celular con Arduino', page: 'arduino.html' },
+]);
+
+// index.html (computador): manda la velocidad de la hora elegida
+Protobject.Core.send({ tipo: 'velocidad', kmh: 14.2 }).to('arduino.html');
+
+// arduino.html (celular): conecta la placa y mueve el servo
+await Protobject.Arduino.start();                    // pide permiso WebUSB
+Protobject.Arduino.onData(d =&gt; { lectura = d; });     // a0, d7, d8 y d9 cada 60 ms
+Protobject.Core.onReceived(msg =&gt; {
+  if (msg.tipo === 'velocidad') {
+    Protobject.Arduino.contServoWrite({ pin: 5, value: pulsoIda(msg.kmh) });   // 1.500 µs + valor
+    Protobject.Core.send({ tipo: 'fase', fase: 'ida' }).to('index.html');
+  }
+});</code></pre>
     </details>
     <details>
       <summary>Construcción y calibración</summary>
       <ol class="checks">
         <li><strong>Servo de rotación continua</strong><span>Para volver, el servo gira al revés con un pulso bajo 1.500 µs. Un servo de 180° no puede hacerlo.</span></li>
-        <li><strong>Regla medida con carreras reales</strong><span>Correr el taxi 3 veces con cada velocidad, de 10 a 28 km/h, y marcar dónde se detiene la aguja. El giro del servo no cambia en línea recta con el pulso.</span></li>
+        <li><strong>Calibrar con el peso real</strong><span>El pulso fija la velocidad que el servo intenta alcanzar, no su fuerza: con más peso, el mismo pulso avanza menos, y un pulso bajo puede no moverlo. En «Ajustes de la maqueta», «Calibrar con el peso real» prueba un pulso durante 5 s; se anota hasta dónde llegó la aguja y, con varias mediciones, se calcula el pulso de cada velocidad. La vuelta de cada prueba mide además la velocidad de vuelta, que sin tope decide cuánto dura. Ahí mismo se ajustan el pulso de vuelta, el pulso en que queda quieto y el largo de la regla. Todo se guarda en el celular, que viaja con el taxi.</span></li>
         <li><strong>Tope en la salida</strong><span>El servo no gira igual hacia adelante que hacia atrás. El microinterruptor corrige esa diferencia en cada vuelta.</span></li>
         <li><strong>Avenida</strong><span>Recta, de unos 24 cm de ancho, con bordes de cartón. El taxi mide unos 18 cm de ancho y no tiene dirección. El largo depende de la velocidad máxima del servo: este modelo supone 24 cm/s, es decir, 120 cm en 5 s.</span></li>
         <li><strong>Engranajes</strong><span>Entre los dos ejes tiene que haber una cantidad impar de engranajes. Con una cantidad par, los ejes giran en sentidos opuestos y el taxi se traba.</span></li>
-        <li><strong>Cable USB</strong><span>De unos 2 m, colgado desde un punto alto sobre la avenida para que no frene al taxi.</span></li>
-        <li><strong>Alimentación</strong><span>Si la placa se reinicia cuando el servo arranca o cambia de sentido, usar una fuente de 5 V aparte, con GND común.</span></li>
+        <li><strong>Dónde va el celular</strong><span>Sobre el taxi, junto al Arduino, con un cable OTG corto: así no hay cables colgando, pero el taxi pesa más y hay que calibrar con el celular puesto. La otra opción es dejarlo fijo junto al poste, con un cable USB de unos 2 m colgado desde arriba hasta el Arduino.</span></li>
+        <li><strong>Alimentación</strong><span>El celular entrega poca corriente por OTG. Si la placa se reinicia cuando el servo arranca o cambia de sentido, alimentar el servo con una fuente de 5 V aparte, con GND común.</span></li>
+        <li><strong>Navegador del celular</strong><span>Chrome en Android. En iPhone no funciona: Safari no tiene WebUSB.</span></li>
       </ol>
     </details>
   </div>
@@ -517,8 +588,10 @@ const distFor = kmh => rideSpeed(kmh) * RUN_S;               // cm que avanza en
 const nightness = hour => { const t = Math.min(1, Math.max(0, (((1 + Math.cos(2 * Math.PI * (hour - 2) / 24)) / 2) ** 2 - 0.3) / 0.6)); return t * t * (3 - 2 * t); };
 
 const state = { year: '2026', day: 0, hour: 8 };
-const run = { phase: 'home', t: 0, z: 0, v: 0, kmh: 0, day: 0, hour: 8 };
+const run = { phase: 'home', t: 0, z: 0, v: 0, kmh: 0, day: 0, hour: 8, hw: false };   // hw: la carrera la dicta la maqueta real
 let queue = [], storyTotal = 0;
+let pending = 0;   // temporizador mientras se espera que la maqueta confirme la ida
+const busy = () => run.phase !== 'home' || !!pending;
 const flags = new Map();   // clave año-día-hora → { day, hour, z }
 const current = () => { const y = DATA[state.year]; return { kmh: y.s[state.day][state.hour] ?? 0, trips: y.t[state.day][state.hour] ?? 0 }; };
 const $ = id => document.getElementById(id);
@@ -544,16 +617,18 @@ function refreshMeter() {
   [0, 1].forEach(d => $('day-' + d).setAttribute('aria-pressed', String(d === state.day)));
 }
 function lockControls() {
-  const busy = run.phase !== 'home';
-  ['hour', 'day-0', 'day-1', 'year', 'go', 'clear'].forEach(id => { $(id).disabled = busy; });
-  $('busy').hidden = !busy;
+  const b = busy();
+  ['hour', 'day-0', 'day-1', 'year', 'go', 'clear'].forEach(id => { $(id).disabled = b; });
+  $('busy').hidden = !b;
 }
 const pace = kmh => kmh < 16 ? 'lento' : kmh < 22 ? 'intermedio' : 'rápido';
 let lastPhaseText = '';
 function refreshPhase() {
   const p = run.phase, lap = storyTotal ? `Carrera ${storyTotal - queue.length} de ${storyTotal} · ` : '';
   let text;
-  if (p === 'home') text = queue.length ? 'En la salida. Sigue la próxima carrera.' : 'Listo en la salida. Aprieta Arrancar.';
+  if (p === 'home' && pending) text = 'Esperando que la maqueta arranque…';
+  else if (p === 'home' && run.z > 0.5) text = 'El taxi quedó fuera de la salida. Usa «Volver a la salida».';
+  else if (p === 'home') text = queue.length ? 'En la salida. Sigue la próxima carrera.' : 'Listo en la salida. Aprieta Arrancar.';
   else if (p === 'ida') text = `${lap}Avanzando: ${fmt(Math.min(run.t, RUN_S), 1)} s de ${RUN_S}`;
   else if (p === 'pausa') text = `${lap}Se detuvo en ${fmt(run.kmh, 1)} km/h: a esta hora el tráfico es ${pace(run.kmh)}.`;
   else text = `${lap}Vuelve a la salida. La vuelta no representa datos.`;
@@ -567,11 +642,11 @@ function changed(kind) {
   refreshMeter();
   drawCharts();
   sim?.drawScreen();
-  if (kind === 'input') addLog('from-arduino', `Arduino → navegador   H${hh(state.hour)} ${state.day === 0 ? 'S' : 'F'}`);
+  if (kind === 'input' && !hw()) logIn({ tipo: 'entrada', hora: state.hour, dia: state.day });
 }
-function setHour(h) { if (run.phase !== 'home') return; h = ((h % 24) + 24) % 24; if (h === state.hour) return; state.hour = h; changed('input'); }
-function setDay(d) { if (run.phase !== 'home' || d === state.day) return; state.day = d; changed('input'); }
-function setYear(y) { if (run.phase !== 'home') return; state.year = y; changed('year'); drawTop(); refreshDemos(); sim?.drawFlags(); }
+function setHour(h) { if (busy() || !Number.isFinite(h)) return; h = ((Math.round(h) % 24) + 24) % 24; if (h === state.hour) return; state.hour = h; changed('input'); }
+function setDay(d) { if (busy() || d === state.day) return; state.day = d; changed('input'); }
+function setYear(y) { if (busy()) return; state.year = y; changed('year'); drawTop(); refreshDemos(); sim?.drawFlags(); }
 
 $('hour').addEventListener('input', e => setHour(+e.target.value));
 $('day-0').addEventListener('click', () => setDay(0));
@@ -582,7 +657,9 @@ $('story').addEventListener('click', toggleStory);
 $('sound').addEventListener('click', toggleSound);
 $('clear').addEventListener('click', () => { for (const k of [...flags.keys()]) if (k.startsWith(state.year + '-')) flags.delete(k); drawTop(); sim?.drawFlags(); });
 
-/* ---------- El ciclo: ida, pausa, vuelta ---------- */
+/* ---------- El ciclo: ida, pausa, vuelta ----------
+   Sin maqueta, esta página lleva los tiempos (simulación). Con la maqueta conectada, el ciclo corre en el
+   celular (arduino.html), que avisa cada fase: aquí solo se mueve el modelo y suena la ciudad. */
 const log = [];
 function addLog(cls, text) {
   const t = `${hh(state.hour)}:00`;
@@ -590,57 +667,255 @@ function addLog(cls, text) {
   while (log.length > 8) log.shift();
   $('log').innerHTML = log.map(l => `<li class="${l.cls}">${l.text}</li>`).join('');
 }
-function startRun() {
-  if (run.phase !== 'home') return;
-  const { kmh } = current();
-  Object.assign(run, { phase: 'ida', t: 0, v: rideSpeed(kmh), kmh, day: state.day, hour: state.hour });
-  addLog('from-arduino', 'Arduino → navegador   SALIR');
-  addLog('to-arduino', `navegador → Arduino   V${kmh.toFixed(1)}   (servo ${servoUs(kmh)} µs)`);
-  addLog('from-arduino', 'Arduino → navegador   IDA');
+const fmtMsg = msg => JSON.stringify(msg).replace(/"(\w+)":/g, '$1:');
+const logIn = msg => addLog('from-arduino', `celular → PC   ${fmtMsg(msg)}`);
+const logOut = msg => addLog('to-arduino', `PC → celular   ${fmtMsg(msg)}`);
+
+function startRun(fromBox = false) {
+  if (busy()) return;
+  const { kmh } = current(), msg = { tipo: 'velocidad', kmh: Math.round(kmh * 10) / 10 };
+  if (hw()) {
+    toPhone(msg);
+    pending = setTimeout(noAnswer, 3000);
+    lockControls(); refreshPhase();
+    return;
+  }
+  if (fromBox) logIn({ tipo: 'salir' });
+  logOut(msg);
+  logIn({ tipo: 'fase', fase: 'ida', kmh: msg.kmh, us: servoUs(kmh) });
+  beginRun(kmh, false);
+}
+function beginRun(kmh, hwRun) {
+  Object.assign(run, { phase: 'ida', t: 0, z: 0, v: rideSpeed(kmh), kmh, day: state.day, hour: state.hour, hw: hwRun });
   lockControls(); refreshPhase(); sim?.drawScreen();
 }
+function toPause() {
+  run.z = distFor(run.kmh); run.v = 0;
+  run.phase = 'pausa'; run.t = 0;
+  flags.set(`${state.year}-${run.day}-${run.hour}`, { day: run.day, hour: run.hour, z: run.z });
+  drawTop(); sim?.drawFlags(); sim?.drawScreen();
+}
+function toBack() { run.phase = 'vuelta'; run.t = 0; run.v = -BACK_CM_S; lockControls(); sim?.drawScreen(); }
+function toHome(z = 0) {
+  Object.assign(run, { phase: 'home', t: 0, v: 0, z, hw: false });
+  lockControls(); sim?.drawScreen();
+  if (queue.length && z === 0) setTimeout(nextInQueue, 700); else stopStory();
+}
+function stopStory() { queue = []; storyTotal = 0; setStoryButton(false); }
 function toggleStory() {
-  if ($('story').getAttribute('aria-pressed') === 'true') { queue = []; storyTotal = 0; setStoryButton(false); refreshPhase(); return; }
+  if ($('story').getAttribute('aria-pressed') === 'true') { stopStory(); refreshPhase(); return; }
   queue = STORY.map(x => x.slice()); storyTotal = queue.length;
   setStoryButton(true);
   nextInQueue();
 }
 function setStoryButton(on) { $('story').setAttribute('aria-pressed', String(on)); $('story').textContent = on ? 'Detener el recorrido' : 'Recorrer el día'; }
 function nextInQueue() {
-  if (run.phase !== 'home') return;
-  if (!queue.length) { storyTotal = 0; setStoryButton(false); refreshPhase(); return; }
+  if (busy()) return;
+  if (!queue.length) { stopStory(); refreshPhase(); return; }
   const [h, d] = queue[0];
   setDay(d); setHour(h);
   queue.shift();
   startRun();
 }
 function tick(dt) {
+  const timed = !(run.hw && hw());   // con la maqueta, las fases las avisa el celular; si se pierde, sigue el reloj
   if (run.phase === 'ida') {
     run.t += dt;
     run.z = run.v * Math.min(run.t, RUN_S);
-    if (run.t >= RUN_S) {
-      run.z = distFor(run.kmh); run.v = 0;
-      run.phase = 'pausa'; run.t = 0;
-      flags.set(`${state.year}-${run.day}-${run.hour}`, { day: run.day, hour: run.hour, z: run.z });
-      addLog('from-arduino', 'Arduino → navegador   PAUSA');
-      drawTop(); sim?.drawFlags(); sim?.drawScreen();
-    }
+    if (timed && run.t >= RUN_S) { logIn({ tipo: 'fase', fase: 'pausa' }); toPause(); }
   } else if (run.phase === 'pausa') {
     run.t += dt;
-    if (run.t >= PAUSE_S) { run.phase = 'vuelta'; run.t = 0; run.v = -BACK_CM_S; addLog('from-arduino', 'Arduino → navegador   VUELTA'); sim?.drawScreen(); }
+    if (timed && run.t >= PAUSE_S) { logIn({ tipo: 'fase', fase: 'vuelta' }); toBack(); }
   } else if (run.phase === 'vuelta') {
     run.t += dt;
     run.z = Math.max(0, run.z - BACK_CM_S * dt);
-    if (run.z <= 0) {
-      run.phase = 'home'; run.v = 0; run.t = 0;
-      addLog('from-arduino', 'Arduino → navegador   SALIDA');
-      lockControls(); sim?.drawScreen();
-      if (queue.length) setTimeout(nextInQueue, 700); else { storyTotal = 0; setStoryButton(false); }
-    }
+    if (timed && run.z <= 0) { logIn({ tipo: 'fase', fase: 'salida' }); toHome(); }
   }
   refreshPhase();
   moveTopCar();
 }
+
+/* ---------- Maqueta física: el celular con el Arduino, unido por Protobject (config.js) ---------- */
+const hasPT = typeof Protobject !== 'undefined';   // p.js lo declara con const: no está en window
+const link = { phone: false, board: false, seen: -1e9 };
+const hw = () => link.phone && link.board;
+function toPhone(msg) {
+  logOut(msg);
+  try { Protobject.Core.send(msg).to('arduino.html'); } catch (err) { console.warn(err); }
+}
+function linkNote(text) { $('link-note').textContent = text; }
+function noAnswer() {
+  pending = 0; stopStory();
+  linkNote('La maqueta no respondió. Revisa que el celular siga con su página abierta.');
+  lockControls(); refreshPhase();
+}
+function onPhase(msg) {
+  const f = msg.fase;
+  if (f === 'ida' || f === 'salida') linkNote(LINK_NOTE[linkState()]);   // borra el aviso de la carrera anterior
+  if (f === 'ida') { clearTimeout(pending); pending = 0; beginRun(Number.isFinite(msg.kmh) ? msg.kmh : current().kmh, true); }
+  else if (f === 'pausa') { if (run.phase === 'ida') toPause(); }
+  else if (f === 'vuelta') { if (run.phase !== 'vuelta') { toBack(); run.hw = true; } }
+  else if (f === 'salida') { if (run.phase !== 'home' || run.z > 0) toHome(0); }
+  else if (f === 'sin_tope') { toHome(Math.max(run.z, 1)); linkNote('El taxi no llegó al tope a tiempo y el servo se detuvo. Revisa el microinterruptor, o desmárcalo en «Ajustes de la maqueta».'); }
+  else if (f === 'detenido') { toHome(Math.max(run.z, 1)); linkNote('Se detuvo la maqueta. Usa «Volver a la salida» o, si el taxi ya está ahí, «Ya está en la salida».'); }
+  refreshPhase();
+}
+function onStatus(msg) {
+  const phone = link.phone, was = hw();
+  link.seen = performance.now(); link.phone = true; link.board = !!msg.placa;
+  rig.estado = msg; rig.at = performance.now();
+  // «Ya está en la salida» con el taxi detenido a medio camino: el modelo también vuelve a la salida.
+  if (hw() && msg.enSalida && msg.fase === 'espera' && run.phase === 'home' && !pending && run.z > 0) { run.z = 0; refreshPhase(); moveTopCar(); sim?.drawScreen(); }
+  if (!phone || was !== hw()) refreshLink();
+  paintEstado();
+  try { Protobject.Core.send({ tipo: 'hola' }).to('arduino.html'); } catch (err) { /* el celular aún no termina de conectarse */ }
+}
+function onPhone(msg) {
+  if (!msg || typeof msg !== 'object') return;
+  if (msg.tipo === 'estado') return onStatus(msg);
+  link.seen = performance.now();
+  if (msg.tipo === 'ajustes') { rig.ajustes = msg.ajustes; rig.resumen = msg.resumen; paintAjustes(); paintEstado(); return; }
+  logIn(msg);
+  if (msg.tipo === 'entrada') {   // sin perilla o sin interruptor, el celular no manda esa parte
+    if (msg.dia === 0 || msg.dia === 1) setDay(msg.dia);
+    if (Number.isInteger(msg.hora) && msg.hora >= 0 && msg.hora < 24) setHour(msg.hora);
+  }
+  else if (msg.tipo === 'salir') startRun();
+  else if (msg.tipo === 'fase') onPhase(msg);
+  else if (msg.tipo === 'rechazo') {
+    clearTimeout(pending); pending = 0; stopStory();
+    linkNote(msg.motivo || 'La maqueta no pudo arrancar.');
+    rigNotice(msg.motivo || 'La maqueta no pudo hacerlo.');
+    lockControls(); refreshPhase();
+  }
+}
+// Latido: el celular manda «estado» cada segundo; si pasan 4 s sin noticias, se da por desconectado.
+setInterval(() => { if (link.phone && performance.now() - link.seen > 4000) { link.phone = link.board = false; rig.estado = null; refreshLink(); } }, 1000);
+const linkState = () => !hasPT ? 'none' : !link.phone ? 'off' : !link.board ? 'phone' : 'on';
+const LINK_NOTE = {
+  none: 'Revisa la conexión a internet y recarga la página.',
+  off: 'Toca «Conectar celular» y escanea el QR con el celular que lleva el Arduino.',
+  phone: 'En el celular, enchufa el Arduino con el cable OTG y toca «Conectar Arduino».',
+  on: 'Maneja la carrera con los controles de esta página. Las piezas conectadas y la calibración están en «Ajustes de la maqueta», más abajo.',
+};
+function refreshLink() {
+  const s = linkState();
+  $('link-state').dataset.state = s;
+  $('link-text').textContent = {
+    none: 'No cargó Protobject: solo funciona la simulación.',
+    off: 'Simulación: no hay un celular conectado.',
+    phone: 'Celular conectado. Falta conectar el Arduino.',
+    on: 'Maqueta conectada: el modelo sigue al taxi real.',
+  }[s];
+  linkNote(LINK_NOTE[s]);
+  $('link-qr').hidden = s === 'none' || s === 'on';
+  $('link-hw').hidden = s !== 'on';
+  $('ajustes').hidden = s !== 'phone' && s !== 'on';
+  paintAjustes(); paintEstado();
+  $('log-note').textContent = s === 'on' ? 'Mensajes reales entre el computador y el celular:' : 'Mensajes de la simulación (los mismos que manda la maqueta):';
+  $('sim-pill').textContent = s === 'on' ? 'Maqueta conectada' : 'Modelo 3D';
+}
+$('link-qr').addEventListener('click', e => {
+  e.stopPropagation();   // el menú de Protobject se cierra con el siguiente clic en la página
+  const plus = document.getElementById('ProtobjectPlusButton');
+  if (!plus) { linkNote('Protobject todavía se está cargando. Prueba de nuevo en unos segundos.'); return; }
+  document.querySelectorAll('.qr-code-container').forEach(n => n.remove());
+  window.scrollTo(0, 0);
+  plus.click();                                               // abre el menú de páginas de Protobject…
+  document.querySelector('.dropdown-menu > div')?.click();    // …y elige «Celular con Arduino»: aparece el QR
+});
+$('hw-stop').addEventListener('click', () => toPhone({ tipo: 'detener' }));
+$('hw-home').addEventListener('click', () => toPhone({ tipo: 'volver' }));
+if (hasPT) Protobject.Core.onReceived(onPhone);
+
+/* ---------- Ajustes de la maqueta: viven en el celular (viaja con el taxi); aquí se ven y se cambian ---------- */
+const rig = { ajustes: null, resumen: null, estado: null, at: 0, aviso: null, readHtml: '' };
+const FASES = { espera: 'En espera', ida: 'Ida', pausa: 'Pausa', vuelta: 'Vuelta', prueba: 'Prueba de calibración', medir: 'Esperando la medida' };
+const calJSON = () => { const a = rig.ajustes; return a ? JSON.stringify({ largo: a.largo, vuelta: a.vuelta, parado: a.parado, vVuelta: a.vVuelta, puntos: [...a.puntos].sort((x, y) => x[0] - y[0]) }) : ''; };
+function rigNotice(text) { rig.aviso = { text, until: performance.now() + 6000 }; paintEstado(); }
+function paintAjustes() {
+  const a = rig.ajustes, r = rig.resumen;
+  document.querySelectorAll('[data-pieza]').forEach(x => { x.checked = !!a?.[x.dataset.pieza]; x.disabled = !a; });
+  ['cal-largo', 'cal-vuelta', 'cal-parado', 'cal-copiar', 'cal-borrar'].forEach(id => { $(id).disabled = !a; });
+  if (!a) { $('cal-resumen').textContent = 'Esperando los ajustes del celular…'; $('cal-tabla').innerHTML = ''; $('cal-marcas').textContent = ''; $('cal-json').textContent = ''; return; }
+  if (document.activeElement !== $('cal-largo')) $('cal-largo').value = a.largo;
+  if (document.activeElement !== $('cal-vuelta')) $('cal-vuelta').value = 1500 + a.vuelta;
+  if (document.activeElement !== $('cal-parado')) $('cal-parado').value = 1500 + a.parado;
+  const filas = [...a.puntos].sort((x, y) => x[0] - y[0]);
+  $('cal-tabla').innerHTML = filas.length
+    ? '<thead><tr><th>Pulso</th><th>Avanzó en 5 s</th><th>Equivale a</th><th></th></tr></thead><tbody>' +
+      filas.map(([v, c]) => `<tr><td>${fmt(1500 + v)} µs</td><td>${fmt(c, 1)} cm</td><td>${fmt(c / a.largo * 28, 1)} km/h</td><td><button type="button" data-borrar="${v}" aria-label="Borrar la medición de ${fmt(1500 + v)} µs">✕</button></td></tr>`).join('') + '</tbody>'
+    : '';
+  let t = r.calibrado
+    ? `Pulsos que se usarán: ${r.pulsos.map(([k, us]) => `${k} km/h → ${fmt(us)} µs`).join(' · ')}.`
+    : `Faltan mediciones (van ${filas.length}; se necesitan al menos 2 que avancen distinto). Mientras tanto se usa la regla de fábrica, pensada para un taxi liviano: 1.560 µs a 10 km/h y 1.700 µs a 28 km/h. Empieza con un pulso bajo y sube de a poco hasta que la aguja llegue al final de la regla.`;
+  const cm12 = 12 / 28 * a.largo;
+  if (r.calibrado && r.minimo > cm12 && !a.puntos.some(([, c]) => c > 0 && c <= cm12)) t += ` Ojo: la medición más corta llegó a ${fmt(r.minimo, 1)} cm, más lejos que 12 km/h (${fmt(cm12, 1)} cm). Mide también un pulso más bajo; si no, las horas más lentas quedan todas en ${fmt(r.minimo, 1)} cm.`;
+  if (r.calibrado && r.alcance < a.largo) t += ` Ojo: lo más lejos que llegó fue ${fmt(r.alcance, 1)} cm, menos que la regla (${fmt(a.largo)} cm). Prueba un pulso mayor, o acorta la regla a ${fmt(Math.floor(r.alcance))} cm y vuelve a marcarla.`;
+  t += a.vVuelta
+    ? ` Vuelta medida: ${fmt(a.vVuelta, 1)} cm/s.`
+    : ' Vuelta sin medir: se supone 16 cm/s. Se mide sola al volver de una prueba: con tope, al tocarlo; sin tope, cuando tocas «Ya llegó a la salida».';
+  $('cal-resumen').textContent = t;
+  $('cal-marcas').innerHTML = '<b>Marcas de la regla:</b> ' + [0, 4, 8, 12, 16, 20, 24, 28].map(k => `${k} km/h a ${fmt(k / 28 * a.largo, 1)} cm`).join(' · ') + '.';
+  $('cal-json').textContent = calJSON();
+}
+function paintEstado() {
+  const e = rig.estado, a = rig.ajustes, live = !!(e && e.placa && link.phone), f = e?.fase;
+  const secs = e ? (e.t + performance.now() - rig.at) / 1000 : 0;
+  const rows = [];
+  if (!live) rows.push(['Arduino', 'sin conectar en el celular']);
+  else {
+    const L = e.lect || {};
+    const uso = (k, txt, no = 'no usado') => a?.[k] ? txt : `${no} · lee ${txt}`;
+    rows.push(['Fase', FASES[f] || f]);
+    rows.push(['Servo', `${fmt(e.pulso)} µs`]);
+    rows.push(['Posición', e.cm === null ? 'no se sabe' : `≈ ${fmt(e.cm)} cm${e.enSalida ? ' · en la salida' : ''}`]);
+    rows.push(['Tope (D9)', uso('tope', L.d9 ? 'apretado' : 'libre')]);
+    rows.push(['Perilla (A0)', uso('perilla', `${L.a0} (${hh(Math.min(23, Math.floor(L.a0 * 24 / 1024)))}:00)`, 'no usada')]);
+    rows.push(['Interruptor (D7)', uso('interruptor', L.d7 ? 'cerrado' : 'abierto')]);
+    rows.push(['Botón (D8)', uso('boton', L.d8 ? 'apretado' : 'suelto')]);
+  }
+  const html = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+  if (html !== rig.readHtml) { $('rig-read').innerHTML = html; rig.readHtml = html; }
+
+  let st = '';
+  if (!live) st = 'Conecta el Arduino en el celular para calibrar.';
+  else if (f === 'espera') st = e.enSalida ? '' : 'El taxi no está en la salida. Usa «Volver a la salida» o, si ya está ahí, «Ya está en la salida» (en el taxímetro).';
+  else if (f === 'prueba') st = `Probando ${fmt(e.prueba)} µs: ${fmt(Math.min(5, secs), 1)} s de 5.`;
+  else if (f === 'medir') st = 'Mide dónde quedó la aguja y escríbelo.';
+  else if (f === 'vuelta' && e.calibrando) st = a?.tope ? 'Volviendo hasta el tope. Al tocarlo se mide la velocidad de vuelta.' : 'Volviendo. Toca «Ya llegó a la salida» justo cuando llegue: así se mide la velocidad de vuelta.';
+  else st = 'Hay una carrera en curso.';
+  if (rig.aviso && performance.now() < rig.aviso.until) st = rig.aviso.text;
+  if ($('cal-estado').textContent !== st) $('cal-estado').textContent = st;
+  $('cal-probar').disabled = !(live && f === 'espera' && e.enSalida);
+  const medir = live && f === 'medir';
+  if (medir && $('cal-medir').hidden) { $('cal-medir').hidden = false; $('cal-cm').value = ''; $('cal-cm').focus(); }
+  if (!medir) $('cal-medir').hidden = true;
+  $('cal-llego').hidden = !(live && f === 'vuelta' && e.calibrando && a && !a.tope);
+  $('hw-here').hidden = !(hw() && live && a && !a.tope && (f === 'vuelta' || (f === 'espera' && !e.enSalida)));
+}
+document.querySelectorAll('[data-pieza]').forEach(x => x.addEventListener('change', () => toPhone({ tipo: 'ajustar', cambios: { [x.dataset.pieza]: x.checked } })));
+$('cal-pulso').addEventListener('input', () => { $('cal-pulso-out').textContent = `${fmt(1500 + +$('cal-pulso').value)} µs`; });
+$('cal-probar').addEventListener('click', () => toPhone({ tipo: 'probar', valor: +$('cal-pulso').value }));
+$('cal-guardar').addEventListener('click', () => {
+  const cm = parseFloat(String($('cal-cm').value).replace(',', '.'));
+  if (!Number.isFinite(cm) || cm < 0 || cm > 400) return rigNotice('Escribe cuántos centímetros avanzó la aguja (de 0 a 400).');
+  toPhone({ tipo: 'medida', cm });
+});
+$('cal-cm').addEventListener('keydown', e => { if (e.key === 'Enter') $('cal-guardar').click(); });
+$('cal-descartar').addEventListener('click', () => toPhone({ tipo: 'descartar' }));
+$('cal-llego').addEventListener('click', () => toPhone({ tipo: 'llego' }));
+$('hw-here').addEventListener('click', () => toPhone({ tipo: 'llego' }));
+$('cal-tabla').addEventListener('click', e => { const b = e.target.closest('[data-borrar]'); if (b) toPhone({ tipo: 'borrar', valor: +b.dataset.borrar }); });
+[['cal-largo', v => ({ largo: v })], ['cal-vuelta', v => ({ vuelta: v - 1500 })], ['cal-parado', v => ({ parado: v - 1500 })]].forEach(([id, cambio]) => {
+  $(id).addEventListener('change', e => { const v = parseFloat(String(e.target.value).replace(',', '.')); if (Number.isFinite(v)) toPhone({ tipo: 'ajustar', cambios: cambio(v) }); });
+});
+$('cal-copiar').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(calJSON()); rigNotice('Calibración copiada.'); }
+  catch (err) { rigNotice('No se pudo copiar: selecciona el texto bajo los botones.'); }
+});
+$('cal-borrar').addEventListener('click', () => { if (rig.ajustes?.puntos.length && confirm('¿Borrar todas las mediciones guardadas en el celular?')) toPhone({ tipo: 'borrarTodo' }); });
+setInterval(() => { if (!$('ajustes').hidden && rig.estado && ['prueba', 'ida', 'vuelta'].includes(rig.estado.fase)) paintEstado(); }, 250);
 
 /* ---------- Regla vista desde arriba ---------- */
 let topGeom = null;
@@ -1097,8 +1372,8 @@ function buildScene(canvas, host) {
     const what = hit(e); if (!what) return;
     e.stopImmediatePropagation();
     if (what === 'switch') { setDay(1 - state.day); return; }
-    if (what === 'go') { press = 1; startRun(); return; }
-    if (run.phase !== 'home') return;
+    if (what === 'go') { press = 1; startRun(true); return; }
+    if (busy()) return;
     drag = { x: e.clientX, y: e.clientY, hour: state.hour }; controls.enabled = false; canvas.setPointerCapture(e.pointerId); canvas.style.cursor = 'grabbing';
   }, { capture: true });
   canvas.addEventListener('pointermove', e => {
@@ -1168,7 +1443,8 @@ drawCharts();
 drawTop();
 refreshDemos();
 lockControls();
-addLog('from-arduino', 'Arduino → navegador   SALIDA');
+refreshLink();
+logIn({ tipo: 'fase', fase: 'salida' });
 requestAnimationFrame(loop);
 start3D();
 </script>

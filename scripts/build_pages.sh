@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Construye el sitio de GitHub Pages en dist/ para recorrer la evolución del diseño:
 #   dist/                      versión vigente (el checkout actual, normalmente main)
-#   dist/<tag>/                cada versión etiquetada (v1, v2…), construida desde su propio commit
+#   dist/<tag>/                cada versión de la E1 (tags v1, v2…), construida desde su propio commit
+#   dist/e2/<vN>/              cada versión de la E2 (tags e2-v1, e2-v2…); el prototipo queda en dist/e2/<vN>/modelo1/
 #   dist/prototipos/<nombre>/  cada rama *prototipo-<nombre> (material para las revisiones)
 #   dist/versiones/            índice con enlace, fecha y commit de cada una
 # En CI requiere un checkout con fetch-depth: 0 (trae tags y ramas).
@@ -39,11 +40,18 @@ row() {
 
 current=$(git rev-parse --abbrev-ref HEAD)
 rows=$(row "../" "Versión vigente" HEAD "Rama $current: la versión publicada en la raíz del sitio." ok)
-rows+=$'\n'$(row "../modelo1/" "Modelo del prototipo físico" HEAD "Modelo 3D interactivo del prototipo físico-digital (public/modelo1)." ok)
+rows+=$'\n'$(row "../modelo1/" "Prototipo físico (versión vigente)" HEAD "Prototipo físico-digital de la E2 (public/modelo1): la maqueta, controlada desde el computador." ok)
 
 for tag in $(git tag --list 'v*' --sort=version:refname); do
   if build_ref "$tag" "$tag"; then status=ok; else status=error; echo "::warning::No se pudo construir $tag"; fi
-  rows+=$'\n'$(row "../$tag/" "$(echo "$tag" | tr '[:lower:]' '[:upper:]')" "$tag" "$(git for-each-ref "refs/tags/$tag" --format='%(contents:subject)')" "$status")
+  rows+=$'\n'$(row "../$tag/" "E1 $(echo "$tag" | tr '[:lower:]' '[:upper:]')" "$tag" "$(git for-each-ref "refs/tags/$tag" --format='%(contents:subject)')" "$status")
+done
+
+# Entrega 2: el sitio completo de cada tag e2-vN en dist/e2/vN/; el índice enlaza a su prototipo.
+for tag in $(git tag --list 'e2-v*' --sort=version:refname); do
+  n=${tag#e2-}
+  if build_ref "$tag" "e2/$n"; then status=ok; else status=error; echo "::warning::No se pudo construir $tag"; fi
+  rows+=$'\n'$(row "../e2/$n/modelo1/" "E2 $(echo "$n" | tr '[:lower:]' '[:upper:]')" "$tag" "$(git for-each-ref "refs/tags/$tag" --format='%(contents:subject)')" "$status")
 done
 
 # Prototipos: ramas locales y remotas cuyo nombre contiene «prototipo-» (sin repetir nombres).

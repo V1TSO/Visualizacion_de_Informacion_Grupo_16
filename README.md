@@ -17,6 +17,8 @@ El modelo 3D del prototipo físico-digital está en `public/modelo1/index.html` 
 
 La misma página maneja la maqueta real con [Protobject](https://framework.protobject.com) (`public/modelo1/config.js`). En el computador se toca «Conectar celular» y se escanea el QR con un celular Android. El celular abre `public/modelo1/arduino.html`, se conecta por WebUSB y cable OTG a un Arduino Leonardo, va sobre el taxi y corre el ciclo ida, pausa y vuelta. Todo se maneja desde el computador: la sección «Ajustes de la maqueta» marca las piezas cableadas y calibra el servo con el peso real. El Leonardo lleva el firmware de Protobject con pull-ups (`public/modelo1/protobject-leonardo-pullup.ino`). Para probar sin hardware, agregar `&prueba` a la dirección del celular.
 
+Las versiones de la Entrega 2 se etiquetan `e2-v1`, `e2-v2`… y se publican enteras en `/e2/vN/` (el prototipo, en `/e2/vN/modelo1/`); `/versiones/` las enlaza junto a las de la E1 (`v1` a `v4`). El registro de diseño de la E2 está en `DESIGN_E2.md`; el de la E1, en `DESIGN.md`.
+
 ## Recorrido
 
 La página abre con una **portada**: las curvas de viajes por hora de enero de 2026, con las 01:00 y las 08:00 anotadas con sus cifras, y una leyenda que explica el sonido antes de activarlo. Después vienen dos partes que comparten el mismo mapa fijo:

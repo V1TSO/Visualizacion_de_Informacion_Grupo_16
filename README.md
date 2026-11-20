@@ -15,6 +15,8 @@ Abrir la URL que indica Vite. `npm run build` genera `dist/` y `npm run preview`
 
 El modelo 3D del prototipo físico-digital está en `public/modelo1/index.html` y se publica en `/modelo1/`. Es una página independiente: trae sus datos dentro (curvas de `public/data/years.json`) y carga Three.js desde jsDelivr.
 
+La misma página maneja la maqueta real con [Protobject](https://framework.protobject.com) (`public/modelo1/config.js`). En el computador se toca «Conectar celular» y se escanea el QR con un celular Android. El celular abre `public/modelo1/arduino.html`, se conecta por WebUSB y cable OTG a un Arduino Leonardo y corre el ciclo ida, pausa y vuelta. El Leonardo lleva el firmware de Protobject con pull-ups (`public/modelo1/protobject-leonardo-pullup.ino`). Para probar sin hardware, agregar `&prueba` a la dirección del celular.
+
 ## Recorrido
 
 La página abre con una **portada**: las curvas de viajes por hora de enero de 2026, con las 01:00 y las 08:00 anotadas con sus cifras, y una leyenda que explica el sonido antes de activarlo. Después vienen dos partes que comparten el mismo mapa fijo:

@@ -10,7 +10,8 @@
     "data": "uv run --with duckdb --with geopandas scripts/prepare_data.py",
     "test": "node --experimental-strip-types --test src/data.test.ts src/story.test.ts",
     "capture": "node scripts/capture.mjs",
-    "doc": "node scripts/build_doc.mjs"
+    "doc": "node scripts/build_doc.mjs",
+    "regla": "node scripts/regla.mjs"
   },
   "dependencies": {
     "maplibre-gl": "^6.11.2",

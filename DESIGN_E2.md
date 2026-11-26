@@ -17,12 +17,12 @@
 
 ### Propósito de la fisicalización
 <!-- máx 10 -->
-En la pantalla de la E1, la velocidad de los taxis era una cifra en el taxímetro y una curva. Se podía leer, pero no se sentía la diferencia entre 12,5 km/h a las 11:00 de un día de semana y 27,4 km/h a las 05:00 del fin de semana (enero de 2026). En la maqueta, la velocidad mediana de cada hora se vuelve distancia: un taxi de juguete avanza 5 s a esa velocidad y su aguja se detiene sobre una regla de 0 a 28 km/h. En el mismo tiempo, el taxi del fin de semana a las 05:00 llega más del doble de lejos que el de las 11:00 de un día de semana. Desde la V3, la carrera se elige tocando el taxi mismo: el celular que lleva encima es su taxímetro. Una voz dice qué carrera es, y el sonido sale del taxi mientras avanza: el tono sigue la velocidad y la bocina marca el tráfico lento. En la R2, el otro grupo destacó justamente que lo físico «permite contrastar la velocidad», mientras que en la pantalla «tiene otros distractores».
+En la pantalla de la E1, la velocidad de los taxis era una cifra en el taxímetro y una curva. Se podía leer, pero no se sentía la diferencia entre 12,5 km/h a las 11:00 de un día de semana y 27,4 km/h a las 05:00 del fin de semana (enero de 2026). En la maqueta, la velocidad mediana de cada hora se vuelve distancia: un taxi de juguete avanza 5 s a esa velocidad (28 km/h llega al final de la avenida). En el mismo tiempo, el taxi del fin de semana a las 05:00 llega más del doble de lejos que el de las 11:00 de un día de semana. Desde la V3, la carrera se elige tocando el taxi mismo: el celular que lleva encima es su taxímetro. Una voz dice qué carrera es, y el sonido sale del taxi mientras avanza: el tono sigue la velocidad y la bocina marca el tráfico lento. En la R2, el otro grupo destacó justamente que lo físico «permite contrastar la velocidad», mientras que en la pantalla «tiene otros distractores».
 
 ### Procesamiento de los datos
 <!-- máx 8 -->
 - Mismos datos de la E1 (NYC TLC, `public/data/years.json`): velocidad mediana por hora de salida (distancia / duración, viajes de 1 minuto a 3 horas) de toda la ciudad, en un día de lunes a viernes y en uno de fin de semana.
-- Ajuste para la maqueta: la regla va de 0 a 28 km/h. Las pocas horas sobre 28 km/h quedan al final de la regla (en enero de 2026 no hay ninguna; el máximo es 27,4).
+- Ajuste para la maqueta: la distancia va de 0 a 28 km/h. Las horas sobre 28 km/h quedarían al final de la avenida (en enero de 2026 no hay ninguna; el máximo es 27,4).
 - V3: solo enero de 2026, en 48 valores dentro del celular (`public/modelo1/datos.js`). Se dejó de sonificar la cantidad de viajes (ver V3).
 
 ## V1 — la idea completa (aunque simulada)
@@ -34,7 +34,7 @@ En la pantalla de la E1, la velocidad de los taxis era una cifra en el taxímetr
 <div class="fila"><img src="docs/evidencia/e2-v1/01-modelo-3d.jpg" alt="V1: modelo 3D de la maqueta con la avenida, la regla, el taxi y el taxímetro"><img src="docs/evidencia/e2-v1/02-caja-de-controles.jpg" alt="V1: caja de controles con perilla, interruptor y botón Arrancar"></div>
 <div class="fila"><img src="docs/evidencia/e2-v1/03-carrera-simulada.jpg" alt="V1: carrera simulada del fin de semana a las 05:00"><img src="docs/evidencia/e2-v1/04-regla-y-datos.jpg" alt="V1: regla vista desde arriba con banderitas y curvas de datos"></div>
 
-[completar: foto de bocetos o del cartón de la V1, si hubo. Video corto del modelo 3D con sonido.]
+[completar: video corto del modelo 3D con sonido (grabación de pantalla de /e2/v1/modelo1/).]
 
 ### Qué cambió: las decisiones iniciales
 <!-- máx 8 -->
@@ -54,11 +54,13 @@ En la pantalla de la E1, la velocidad de los taxis era una cifra en el taxímetr
 
 ### Qué se descartó
 <!-- máx 5 -->
-[completar: alternativas que el grupo discutió y descartó para la V1, con su motivo.]
+- Llevar el mapa de Nueva York a lo físico: el elemento central del mensaje es el taxi y su velocidad. Un mapa sumaba zonas que la maqueta no codifica y competía con el taxi (cap. 20).
 
 ## R1 — revisión con el equipo docente
 <!-- máx 10 -->
-[completar: fecha · síntesis de lo discutido sobre la V1 (modelo 3D) · qué adoptamos, qué descartamos y por qué · cómo se ve en la V2.]
+**Fecha:** [completar]. Revisó la V1 (modelo 3D).
+**Síntesis:** nos preguntaron cómo se vería la visualización expuesta físicamente en una exhibición. Surgieron dos ideas: una pista circular o una línea recta, y que el taxi volviera a la misma velocidad con que avanzó.
+**Decisiones:** pensar en una exhibición llevó a la V2: la maqueta debe funcionar sola, sin cables colgando, y ser fácil de transportar. Por eso el celular va sobre el taxi. Adoptamos la línea recta y descartamos la pista circular. En una recta, la distancia se lee como posición sobre una escala común (cap. 16); en un círculo se vuelve un arco, más difícil de comparar y sin un final claro. Descartamos volver a la misma velocidad: la vuelta no codifica datos y no debe competir con la ida (cap. 20). Además, con peso, el servo no gira igual hacia atrás, y la V2 mide la vuelta aparte.
 
 ## V2 — primera iteración de diseño
 
@@ -68,21 +70,22 @@ En la pantalla de la E1, la velocidad de los taxis era una cifra en el taxímetr
 ### Evidencia
 <div class="fila"><img src="docs/evidencia/e2-v2/01-computador.jpg" alt="V2: el computador maneja la maqueta: controles, modelo 3D y sonido"><img src="docs/evidencia/e2-v2/02-celular.jpg" alt="V2: la pantalla del celular que va sobre el taxi solo muestra el estado"></div>
 
-[completar: fotos del taxi con el celular encima y de la regla, y un video de una carrera con su sonido.]
+[completar: fotos del taxi con el celular encima y un video de una carrera con su sonido.]
 
 ### Qué cambió
 <!-- máx 8 -->
 - La maqueta se mueve de verdad. Un celular Android va sobre el taxi, alimenta al Arduino por un cable OTG y mueve el servo. El computador lo controla por Protobject.
 - El ciclo (5 s de ida, 3 s de pausa y vuelta) corre en el celular, junto al servo. El modelo 3D y el sonido del computador siguen al taxi real.
 - Los controles pasan al computador (hora, tipo de día, Arrancar). La caja de controles queda opcional.
-- Calibración con el peso real: se mide hasta dónde llega la aguja con cada pulso y se interpola el pulso de cada velocidad.
+- Sin regla ni banderitas físicas: no alcanzaron a construirse, y la distancia se compara a ojo.
+- Calibración con el peso real: se mide cuánto avanza el taxi con cada pulso y se interpola el pulso de cada velocidad.
 
 ### Por qué cambió — el rationale
 <!-- máx 12 -->
-- Fidelidad (cap. 29): de la simulación de la V1 a una maqueta que se mueve, para discutir en la R2 la experiencia real y no una promesa. [completar: qué pidió la R1]
+- Fidelidad (cap. 29) y la R1 (exhibición): de la simulación de la V1 a una maqueta que se mueve sola, para discutir en la R2 la experiencia real y no una promesa.
 - El celular como actuador y fuente de energía (cap. 30, con Protobject): sin el cable colgado del poste, el taxi recorre la avenida sin nada que lo frene ni lo desvíe.
 - Con el celular sobre el taxi, su pantalla parecía fuera de alcance, así que todo pasó al computador. La entrada perdió tangibilidad, a sabiendas: la R2 y la R3 lo confirmaron, y la V3 lo corrige.
-- Restricción técnica: el celular pesa [completar] g. Con el mismo pulso, el taxi avanzaba menos y la aguja marcaba otra velocidad. El pulso fija la velocidad que el servo intenta alcanzar, no su fuerza, así que se calibra lo que se lee: la distancia sobre la regla (cap. 16).
+- Restricción técnica: el celular (Samsung Galaxy A55, 213 g) pesa más que el taxi. Con el mismo pulso, el taxi avanzaba menos. El pulso fija la velocidad que el servo intenta alcanzar, no su fuerza, así que se calibra lo que se lee: la distancia recorrida (cap. 16).
 - El ciclo vive en el celular porque la red puede atrasarse, y el taxi debe detenerse a tiempo en la salida.
 
 ### Qué se descartó
@@ -90,7 +93,7 @@ En la pantalla de la E1, la velocidad de los taxis era una cifra en el taxímetr
 - Controles en la pantalla del celular: sobre el taxi parecían fuera de alcance (la V3 lo retoma).
 - Calibrar la «fuerza» del servo: el pulso solo fija la velocidad, así que se calibra la distancia.
 - Estimar la vuelta como pulso × tiempo: con el peso del celular, el taxi seguía empujando contra la salida.
-- Celular fijo junto a la avenida, con un cable de 2 m hasta el taxi: [completar: por qué lo pusimos arriba].
+- Celular fijo junto a la avenida, con un cable de 2 m: arriba del taxi es más sencillo de controlar y fácil de transportar (R1).
 
 ## R2 — revisión entre pares
 <!-- máx 10 -->
@@ -135,7 +138,7 @@ Capturas en modo de prueba (`?prueba`): el computador muestra carreras simuladas
 <!-- máx 5 -->
 - Un segundo celular como control remoto: separa el gesto del objeto y suma otra conexión.
 - Eliminar el computador: hace falta para unir (QR) y calibrar.
-- Que la voz diga la velocidad: la lectura es la regla, y la voz solo da el contexto.
+- Que la voz diga la velocidad: la lectura es la distancia, y la voz solo da el contexto.
 - Mantener el 3D como capa opcional: la R3 pidió sacarlo, y sigue publicado en `/e2/v1/` y `/e2/v2/`.
 
 ## V4 — la experiencia final
@@ -148,12 +151,14 @@ Capturas en modo de prueba (`?prueba`): el computador muestra carreras simuladas
 
 ### Qué cambió
 <!-- máx 8 -->
-- El taxi se lee como taxi sin mirar la pantalla: [completar: cómo lo decoraron (cartón amarillo, letrero TAXI, franja a cuadros…)].
+- El taxi se lee como taxi sin mirar la pantalla: [completar: cómo lo decoraron (piezas impresas y pegadas sobre cartón…)].
+- [confirmar] Regla impresa a tamaño real junto a la avenida (0 a 28 km/h, con la zona bajo 15 km/h marcada «suena la bocina») y banderitas con la hora en palos de brocheta (`npm run regla`).
 - [completar: lo que cambió al probar la V3 en la maqueta real (volumen, voz, alcance del slider, toques que empujan el taxi…).]
 
 ### Por qué cambió — el rationale
 <!-- máx 12 -->
-- R2: «falta algo que dé a entender que se trata de un taxi sin tener que leer la pantalla; si no, se entiende como un vehículo genérico». La forma del objeto tiene que nombrar el dato: la velocidad es de taxis amarillos, no de autos en general. [completar con lo observado]
+- R2: «falta algo que dé a entender que se trata de un taxi sin tener que leer la pantalla; si no, se entiende como un vehículo genérico». La forma del objeto tiene que nombrar el dato: la velocidad es de taxis amarillos, no de autos en general.
+- [confirmar] Regla: sin escala, la distancia se veía, pero no se leía como velocidad. La posición se compara bien solo sobre una escala común (cap. 16). La franja «bocina» une lo que se ve con lo que suena (cap. 27). Las banderitas dejan cada carrera en el objeto, para comparar horas sin la pantalla: la R2 dijo que solo comparar velocidades «no nos dice mucho».
 - [completar: rationale de cada ajuste salido de la prueba de la V3.]
 
 ### Qué se descartó
@@ -162,13 +167,13 @@ Capturas en modo de prueba (`?prueba`): el computador muestra carreras simuladas
 
 ### Balance del recorrido
 - **Mejoró desde la V1:** la maqueta pasó de simulación (V1) a objeto que se mueve (V2) y a objeto que se maneja tocándolo (V3). El contexto de cada carrera pasó de la pantalla a la voz (V3). El sonido pasó del computador al taxi, con un solo parlante y menos variables (V3). El taxi se lee como taxi (V4).
-- **No cambió, a propósito:** velocidad → distancia en 5 s fijos sobre una regla común de 0 a 28 km/h (cap. 16), la vuelta en silencio, la bocina bajo 15 km/h y el auto como forma (la R2 pidió conservarlo).
+- **No cambió, a propósito:** velocidad → distancia en 5 s fijos, en línea recta desde una misma salida (cap. 16; R1), la vuelta en silencio, la bocina bajo 15 km/h y el auto como forma (la R2 pidió conservarlo).
 
 ## El feedback al otro grupo (lo que dimos en la R2)
 
 ### El proyecto evaluado
 <!-- máx 5 -->
-Grupo [completar: número], sobre estadios de fútbol y su capacidad. Su prototipo es una maqueta de estadio con un sensor de fuerza: al apretarla, la pantalla llena el estadio de puntos y mueve un medidor de colores según la fuerza. Lo vimos y lo manipulamos en estado [completar: cómo estaba: maqueta de cartón con sensor funcionando, pantalla en el computador…].
+Grupo 2, el mismo que evaluamos en la E1, sobre estadios de fútbol y su capacidad. Su prototipo es una maqueta de estadio con un sensor de fuerza: al apretarla, la pantalla llena el estadio de puntos y mueve un medidor de colores según la fuerza. Lo vimos funcionando: maqueta, sensor y pantalla respondían al apretar.
 
 ### El feedback que dimos
 <!-- máx 12 -->
@@ -182,11 +187,10 @@ Grupo [completar: número], sobre estadios de fútbol y su capacidad. Su prototi
 <!-- máx 5 -->
 - «Pintar la cancha» es el mismo error que nos señalaron a nosotros con el taxi genérico: lo adoptamos en la V4.
 - Su gesto de apretar responde al tiro. Contrastaba con nuestra V2, donde nadie tocaba nada, y confirmó llevar los controles al taxi (V3).
-- [completar: otra idea, si la hubo.]
 
 ## Evaluación con usuarios
 
-**No hicimos la ronda de pensar en voz alta con una persona externa.** [completar: el motivo real.] No reconstruimos una sesión que no ocurrió. Por eso la bitácora, las heurísticas y las tres respuestas de cierre quedan vacías.
+**No hicimos la ronda de pensar en voz alta con una persona externa.** No alcanzamos: la maqueta que se maneja desde el taxi (V3) estuvo lista recién el 26 de noviembre, el día de la entrega. No reconstruimos una sesión que no ocurrió. Por eso la bitácora, las heurísticas y las tres respuestas de cierre quedan vacías.
 
 - **Pensador:** no hubo.
 - **Bitácora (tiempo · cita literal · acción física):** no hay.

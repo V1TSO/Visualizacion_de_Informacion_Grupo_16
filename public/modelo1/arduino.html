@@ -99,13 +99,16 @@ ol { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 6px; }
 .fuerza { display: grid; gap: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
 .fuerza h2 { font: 700 20px var(--display); margin: 0; }
 .ajuste { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; }
-.ajuste b { display: block; }
-.ajuste small, .fine { display: block; font-size: 13px; color: var(--ink-2); }
+.ajuste b, .ajuste-txt b { display: block; }
+.ajuste small, .ajuste-txt small, .fine { display: block; font-size: 13px; color: var(--ink-2); }
 .stepper { display: grid; grid-template-columns: 46px minmax(96px, auto) 46px; align-items: center; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); }
 .stepper button { min-height: 46px; border: 0; background: var(--paper); font: 700 22px/1 var(--body); cursor: pointer; }
 .stepper output { text-align: center; padding-inline: 6px; white-space: nowrap; font: 700 20px var(--display); font-variant-numeric: tabular-nums; }
 .fine a { color: inherit; }
 .medidas { display: grid; gap: 8px; padding: 10px 12px; border-left: 3px solid var(--taxi); }
+.ajuste-txt { display: block; margin-bottom: 8px; }
+.sentido button { min-height: 46px; font-size: 15px; }
+.sentido button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
 </style>
 </head>
 <body data-conectado="false">
@@ -171,11 +174,14 @@ ol { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 6px; }
           <p class="fine" id="f-medidas-txt"></p>
           <button type="button" class="btn" id="f-borrar">Borrar mediciones y usar estas fuerzas</button>
         </div>
-        <div class="ajuste">
-          <span><b>Quieto</b><small>Pulso entre carreras. Déjalo en 1.500 µs: el servo queda apagado y el taxi no puede andar solo.</small></span>
-          <div class="stepper"><button type="button" data-ajuste="parado" data-d="-1" aria-label="Bajar el pulso quieto">−</button><output id="f-parado"></output><button type="button" data-ajuste="parado" data-d="1" aria-label="Subir el pulso quieto">+</button></div>
+        <div>
+          <span class="ajuste-txt"><b>Sentido</b><small>Si en la ida el taxi retrocede, cambia el sentido.</small></span>
+          <div class="seg sentido" role="group" aria-label="Sentido del servo">
+            <button type="button" data-invertir="false" aria-pressed="false">Normal</button>
+            <button type="button" data-invertir="true" aria-pressed="true">Invertido</button>
+          </div>
         </div>
-        <p class="fine">Esto necesita el <a href="protobject-leonardo-pullup.ino" download>firmware nuevo</a> cargado en el Arduino. Con el anterior, 1.500 µs es un pulso y no apaga el servo: si el taxi se arrastra al conectar, mueve «Quieto» de a 1 hasta que se quede quieto.</p>
+        <p class="fine">Entre carreras el servo queda apagado, sin pulsos. Si el taxi se mueve solo al conectarlo, el Arduino todavía tiene el firmware anterior: vuelve a cargarle <a href="protobject-leonardo-pullup.ino" download>protobject-leonardo-pullup.ino</a>.</p>
       </section>
       <section class="prueba" id="prueba" hidden aria-labelledby="h-prueba">
         <h2 id="h-prueba">Modo de prueba</h2>
@@ -230,16 +236,20 @@ const activo = v => ACTIVO_BAJO ? !v : !!v;
    Para dejarlos fijos en cualquier celular, pega en AJUSTES_BASE lo que copia «Copiar calibración». */
 const AJUSTES_KEY = 'taxi-maqueta-ajustes';
 // base y maxima: fuerza (pulso − 1.500 µs) de la ida a 0 y a 28 km/h, mientras no haya mediciones.
-// parado: pulso entre carreras; 0 apaga el servo (firmware de esta carpeta), así no puede andar solo.
-const AJUSTES_BASE = { largo: 120, vuelta: -80, parado: 0, base: 40, maxima: 200, vVuelta: null, puntos: [], perilla: false, interruptor: false, boton: false, tope: false };
+// invertir: el servo gira al revés de lo que esperan las cuentas (depende de cómo va montado y de los engranajes).
+// Todos los pulsos se piensan con + hacia adelante; el sentido se aplica solo al mandarlos (servo()).
+const AJUSTES_BASE = { largo: 120, vuelta: -80, base: 40, maxima: 200, invertir: true, vVuelta: null, puntos: [], perilla: false, interruptor: false, boton: false, tope: false };
 const PIEZAS = ['perilla', 'interruptor', 'boton', 'tope'];
-const AJUSTABLES = ['largo', 'vuelta', 'parado', 'base', 'maxima', ...PIEZAS];
+const AJUSTABLES = ['largo', 'vuelta', 'base', 'maxima', 'invertir', ...PIEZAS];
+// Entre carreras el servo va apagado (0: sin pulsos, firmware de esta carpeta). No hay un «quieto» ajustable:
+// cualquier otro valor son pulsos, y con un neutro corrido el taxi se arrastra solo.
+const QUIETO = 0;
 function limpiar(a) {
   const num = (v, d, lo, hi) => v === null || v === undefined || v === '' || !Number.isFinite(+v) ? d : clamp(+v, lo, hi);
   const out = {
     largo: num(a.largo, 120, 20, 400),
     vuelta: Math.round(num(a.vuelta, -80, -500, -10)),
-    parado: Math.round(num(a.parado, 0, -60, 60)),
+    invertir: a.invertir !== false,
     base: Math.round(num(a.base, 40, 1, 400)),
     maxima: Math.round(num(a.maxima, 200, 10, 500)),
     vVuelta: num(a.vVuelta, null, 0.5, 200),
@@ -300,7 +310,7 @@ function resumen() {
 function placaDePrueba() {
   // Un taxi pesado: bajo 35 µs no se mueve; después avanza 0,17 cm/s por µs. La vuelta, 0,3 cm/s por µs desde 25 µs.
   const e = { a0: 8.5 * 1024 / 24, interruptor: false, boton: false, x: 0, empuje: 0 };   // empuje: segundos girando hacia atrás contra la salida
-  let alRecibir = null, pulso = 0, antes = 0;
+  let alRecibir = null, pulso = 0, antes = 0;   // pulso: + hacia adelante (el taxi simulado va montado como el real)
   return {
     entradas: e,
     async start() {
@@ -316,7 +326,7 @@ function placaDePrueba() {
     },
     onData(f) { alRecibir = f; },
     onReceiveError() {},
-    servoWrite({ value }) { pulso = value; },
+    servoWrite({ value }) { pulso = aj.invertir ? -value : value; },
   };
 }
 const hayPT = typeof Protobject !== 'undefined';   // p.js lo declara con const: no está en window
@@ -326,7 +336,7 @@ let lectura = null, recibido = -1e9, conectando = false, pcVisto = -1e9, pcAntes
 // La carrera que se elige en esta pantalla (o con la perilla y el interruptor, si están cableados).
 const sel = { hora: 8, dia: 0 };
 // cm: posición estimada del taxi desde la salida (null si no se sabe). La corrige el tope o «Ya está en la salida».
-const m = { estado: 'espera', desde: 0, pulso: aj.parado, kmh: 0, carrera: null, hora: -1, dia: -1, botonAntes: false,
+const m = { estado: 'espera', desde: 0, pulso: QUIETO, kmh: 0, carrera: null, hora: -1, dia: -1, botonAntes: false,
             calibrando: false, prueba: 0, cm: 0, cmIda: 0, cmVuelta: 0, cmExacto: false, antes: 0 };
 const placaViva = () => lectura !== null && performance.now() - recibido < 1500;
 const pcVivo = () => performance.now() - pcVisto < 4000;
@@ -401,9 +411,10 @@ document.addEventListener('visibilitychange', () => { if (son.ctx) document.hidd
 
 /* ---------- El ciclo: ida, pausa, vuelta ---------- */
 // servoWrite y no contServoWrite: contServoWrite cambia el 0 por 1 (1.501 µs), y entonces el servo nunca se apaga.
+// valor: + hacia adelante. Con «invertir», al servo le llega con el signo cambiado.
 function servo(valor) {
   m.pulso = valor;
-  if (placa) placa.servoWrite({ pin: PIN_SERVO, value: valor });
+  if (placa) placa.servoWrite({ pin: PIN_SERVO, value: aj.invertir && valor ? -valor : valor });
 }
 function cambiar(estado, fase, extra = {}) {
   m.estado = estado; m.desde = performance.now();
@@ -438,17 +449,17 @@ function paso() {
     if (boton && !m.botonAntes) salir();
     m.botonAntes = boton;
   } else if (m.estado === 'ida' && t >= IDA_MS) {
-    servo(aj.parado); cambiar('pausa', 'pausa');
+    servo(QUIETO); cambiar('pausa', 'pausa');
   } else if (m.estado === 'pausa' && t >= PAUSA_MS) {
     empezarVuelta();
   } else if (m.estado === 'prueba' && t >= IDA_MS) {
-    servo(aj.parado); cambiar('medir');
+    servo(QUIETO); cambiar('medir');
   } else if (m.estado === 'vuelta') {
     // En la vuelta de una prueba sin tope, la llegada la marca el computador («Ya llegó a la salida»): así se mide la vuelta.
     const esperaAviso = m.calibrando && m.cmExacto && !aj.tope;
     if (salida && !esperaAviso) llegar(aj.tope ? 'tope' : 'posicion');
     else if (t >= limiteVuelta()) {
-      servo(aj.parado);
+      servo(QUIETO);
       if (aj.tope) {
         cambiar('espera', 'sin_tope'); m.calibrando = false;
         aviso('El taxi no llegó al tope a tiempo y el servo se detuvo. Revisa el microinterruptor.', 'bad');
@@ -467,7 +478,7 @@ function llegar(como) {
     aj.vVuelta = Math.round(m.cmVuelta / s * 10) / 10;
     guardarAjustes();
   }
-  servo(aj.parado); m.cm = 0;
+  servo(QUIETO); m.cm = 0;
   cambiar('espera', 'salida');
   m.calibrando = false; m.cmExacto = false;
   enviarEstado();
@@ -492,7 +503,7 @@ function arrancar({ hora, dia, kmh }) {
   aviso('');
 }
 function detener() {
-  servo(aj.parado);
+  servo(QUIETO);
   if (m.estado !== 'espera') cambiar('espera', 'detenido');
   m.calibrando = false; m.cmExacto = false;
   aviso('Detenido. Si el taxi quedó fuera de la salida, usa «Volver a la salida».');
@@ -508,7 +519,7 @@ function volver() {
 // El taxi está en la salida: termina la vuelta, o corrige la posición si estaba detenido.
 function yaLlego() {
   if (m.estado === 'vuelta') return llegar('pc');
-  if (m.estado === 'espera') { m.cm = 0; servo(aj.parado); aviso(''); enviarEstado(); }
+  if (m.estado === 'espera') { m.cm = 0; servo(QUIETO); aviso(''); enviarEstado(); }
 }
 function probar(valor) {
   if (!Number.isFinite(valor) || valor < 1 || valor > 600) return rechazo('El pulso de prueba no es válido.');
@@ -540,7 +551,6 @@ function ajustar(c) {
   if (aj.vuelta !== antes.vuelta) aj.vVuelta = null;   // otra vuelta, otra velocidad: hay que volver a medirla
   if (aj.perilla !== antes.perilla) m.hora = -1;
   if (aj.interruptor !== antes.interruptor) m.dia = -1;
-  if (aj.parado !== antes.parado && m.estado === 'espera' && placaViva()) servo(aj.parado);   // se ve al tiro si deja de arrastrarse
   guardarAjustes();
   enviarEstado();
 }
@@ -568,11 +578,15 @@ $('go').addEventListener('click', () => { if (ocupado()) detener(); else salir()
 $('volver').addEventListener('click', volver);
 $('aqui').addEventListener('click', yaLlego);
 
-/* ---------- Fuerza del servo y quieto: se cambian aquí mismo (o desde el computador) ---------- */
-const LIMITES = { base: () => [1, 400], maxima: () => [aj.base + 10, 500], parado: () => [-60, 60] };
+/* ---------- Fuerza y sentido del servo: se cambian aquí mismo (o desde el computador) ---------- */
+const LIMITES = { base: () => [1, 400], maxima: () => [aj.base + 10, 500] };
 document.querySelectorAll('[data-ajuste]').forEach(b => b.addEventListener('click', () => {
   const k = b.dataset.ajuste;
   ajustar({ [k]: aj[k] + +b.dataset.d });
+}));
+document.querySelectorAll('[data-invertir]').forEach(b => b.addEventListener('click', () => {
+  if (ocupado()) return aviso('Cambia el sentido con el taxi detenido en la salida.', 'bad');
+  ajustar({ invertir: b.dataset.invertir === 'true' });
 }));
 $('f-borrar').addEventListener('click', () => {
   if (!confirm('¿Borrar las mediciones hechas desde el computador? La ida volverá a usar la fuerza base y la máxima.')) return;
@@ -584,7 +598,7 @@ $('f-borrar').addEventListener('click', () => {
    el taxi se detiene. Al cerrarla o recargarla se apaga el servo; si ni eso alcanza a salir, el firmware lo apaga
    solo tras 1 s sin mensajes. */
 document.addEventListener('visibilitychange', () => { if (document.hidden && ['ida', 'pausa', 'vuelta', 'prueba'].includes(m.estado)) detener(); });
-window.addEventListener('pagehide', () => { if (placaViva()) servo(aj.parado); });
+window.addEventListener('pagehide', () => { if (placaViva()) servo(QUIETO); });
 
 /* ---------- Mensajes del computador (opcional: unir, calibrar y ver las carreras) ---------- */
 if (hayPT) {
@@ -627,7 +641,7 @@ $('connect').addEventListener('click', async () => {
   try {
     await placa.start();
     Object.assign(m, { estado: 'espera', hora: -1, dia: -1, botonAntes: true, calibrando: false, cm: 0, cmExacto: false });
-    servo(aj.parado);
+    servo(QUIETO);
     aviso(PRUEBA ? 'Placa simulada lista.' : 'Arduino conectado. Pon el celular sobre el taxi, con la pantalla hacia arriba.');
     mantenerPantalla();
   } catch (err) {
@@ -639,7 +653,7 @@ $('connect').addEventListener('click', async () => {
 if (placa) {
   placa.onData(d => { lectura = d; recibido = performance.now(); });
   placa.onReceiveError(() => {
-    lectura = null; m.estado = 'espera'; m.pulso = aj.parado; m.calibrando = false;
+    lectura = null; m.estado = 'espera'; m.pulso = QUIETO; m.calibrando = false;
     aviso('Se desconectó el Arduino. Revisa el cable OTG y toca «Conectar Arduino» de nuevo.', 'bad');
   });
 }
@@ -696,13 +710,13 @@ function pintarFuerza() {
   const cal = calibrado(), kmh = VELOCIDAD[sel.dia][sel.hora];
   poner('f-base', `${fmt(microsegundos(aj.base))} µs`);
   poner('f-maxima', `${fmt(microsegundos(aj.maxima))} µs`);
-  poner('f-parado', `${fmt(microsegundos(aj.parado))} µs`);
+  document.querySelectorAll('[data-invertir]').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.invertir === 'true') === aj.invertir)));
   poner('f-uso', `La carrera elegida (${hh(sel.hora)}, ${fmt(kmh, 1)} km/h) sale con ${fmt(microsegundos(pulsoIda(kmh)))} µs${cal ? ', según las mediciones' : ''}.`);
   $('f-medidas').hidden = !cal;
   if (cal) poner('f-medidas-txt', `Ahora mandan las ${aj.puntos.length} mediciones hechas desde el computador. La fuerza base y la máxima se usan solo cuando no hay mediciones.`);
   document.querySelectorAll('[data-ajuste]').forEach(b => {
     const k = b.dataset.ajuste, v = aj[k] + +b.dataset.d, [lo, hi] = LIMITES[k]();
-    b.disabled = v < lo || v > hi || (cal && k !== 'parado');
+    b.disabled = v < lo || v > hi || cal;
   });
 }
 setInterval(() => { paso(); pintar(); }, 50);

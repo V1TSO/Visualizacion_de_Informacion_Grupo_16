@@ -237,12 +237,12 @@ footer a, .block a { color: inherit; }
             <div class="rig-field"><label for="cal-base">Fuerza base (µs)</label><input class="rig-num" type="number" id="cal-base" min="1501" max="1900" step="5"></div>
             <div class="rig-field"><label for="cal-maxima">Fuerza máxima (µs)</label><input class="rig-num" type="number" id="cal-maxima" min="1510" max="2000" step="5"></div>
           </div>
-          <div class="rig-row3">
+          <div class="rig-row">
             <div class="rig-field"><label for="cal-largo">Regla (cm)</label><input class="rig-num" type="number" id="cal-largo" min="20" max="400" step="1"></div>
             <div class="rig-field"><label for="cal-vuelta">Vuelta (µs)</label><input class="rig-num" type="number" id="cal-vuelta" min="1000" max="1490" step="5"></div>
-            <div class="rig-field"><label for="cal-parado">Quieto (µs)</label><input class="rig-num" type="number" id="cal-parado" min="1440" max="1560" step="1"></div>
           </div>
-          <p class="rig-note"><b>Fuerza base:</b> pulso con que el taxi apenas empieza a avanzar (0 km/h). <b>Fuerza máxima:</b> pulso con que llega a 28 km/h, al final de la regla. Se usan mientras no haya mediciones, y también se cambian en el celular. <b>Regla:</b> distancia desde la salida hasta la marca de 28 km/h. <b>Vuelta:</b> pulso para volver; si con el peso no alcanza a volver, bájalo (por ejemplo, 1.380). Al cambiarlo, la velocidad de vuelta se vuelve a medir. <b>Quieto:</b> déjalo en 1.500 µs, que apaga el servo entre carreras (firmware de esta página). Solo con el firmware anterior, si el taxi se arrastra cuando debería estar detenido, cámbialo de a 1 o 2 hasta que se quede quieto; se aplica al tiro.</p>
+          <label class="rig-check"><input type="checkbox" id="cal-invertir"><span>Invertir el sentido del servo<small>Si en la ida el taxi retrocede. Los pulsos de esta página siguen contando hacia adelante sobre 1.500 µs.</small></span></label>
+          <p class="rig-note"><b>Fuerza base:</b> pulso con que el taxi apenas empieza a avanzar (0 km/h). <b>Fuerza máxima:</b> pulso con que llega a 28 km/h, al final de la regla. Se usan mientras no haya mediciones, y también se cambian en el celular. <b>Regla:</b> distancia desde la salida hasta la marca de 28 km/h. <b>Vuelta:</b> pulso para volver; si con el peso no alcanza a volver, bájalo (por ejemplo, 1.380). Al cambiarlo, la velocidad de vuelta se vuelve a medir. Entre carreras el servo queda apagado, sin pulsos: si el taxi se mueve solo, el Arduino tiene el firmware anterior.</p>
           <p class="rig-note" id="cal-marcas"></p>
           <div class="rig-row">
             <button type="button" class="rig-btn" id="cal-copiar">Copiar calibración</button>
@@ -418,18 +418,18 @@ if (hasPT) Protobject.Core.onReceived(onPhone);
 /* ---------- Ajustes de la maqueta: viven en el celular (viaja con el taxi); aquí se ven y se cambian ---------- */
 const rig = { ajustes: null, resumen: null, estado: null, at: 0, aviso: null, readHtml: '' };
 const FASES = { espera: 'En espera', ida: 'Ida', pausa: 'Pausa', vuelta: 'Vuelta', prueba: 'Prueba de calibración', medir: 'Esperando la medida' };
-const calJSON = () => { const a = rig.ajustes; return a ? JSON.stringify({ largo: a.largo, vuelta: a.vuelta, parado: a.parado, base: a.base, maxima: a.maxima, vVuelta: a.vVuelta, puntos: [...a.puntos].sort((x, y) => x[0] - y[0]) }) : ''; };
+const calJSON = () => { const a = rig.ajustes; return a ? JSON.stringify({ largo: a.largo, vuelta: a.vuelta, base: a.base, maxima: a.maxima, invertir: a.invertir, vVuelta: a.vVuelta, puntos: [...a.puntos].sort((x, y) => x[0] - y[0]) }) : ''; };
 function rigNotice(text) { rig.aviso = { text, until: performance.now() + 6000 }; paintEstado(); }
 function paintAjustes() {
   const a = rig.ajustes, r = rig.resumen;
   document.querySelectorAll('[data-pieza]').forEach(x => { x.checked = !!a?.[x.dataset.pieza]; x.disabled = !a; });
-  ['cal-base', 'cal-maxima', 'cal-largo', 'cal-vuelta', 'cal-parado', 'cal-copiar', 'cal-borrar'].forEach(id => { $(id).disabled = !a; });
+  ['cal-base', 'cal-maxima', 'cal-largo', 'cal-vuelta', 'cal-invertir', 'cal-copiar', 'cal-borrar'].forEach(id => { $(id).disabled = !a; });
   if (!a) { $('cal-resumen').textContent = 'Esperando los ajustes del celular…'; $('cal-tabla').innerHTML = ''; $('cal-marcas').textContent = ''; $('cal-json').textContent = ''; return; }
   if (document.activeElement !== $('cal-base')) $('cal-base').value = 1500 + a.base;
   if (document.activeElement !== $('cal-maxima')) $('cal-maxima').value = 1500 + a.maxima;
   if (document.activeElement !== $('cal-largo')) $('cal-largo').value = a.largo;
   if (document.activeElement !== $('cal-vuelta')) $('cal-vuelta').value = 1500 + a.vuelta;
-  if (document.activeElement !== $('cal-parado')) $('cal-parado').value = 1500 + a.parado;
+  $('cal-invertir').checked = a.invertir !== false;
   const filas = [...a.puntos].sort((x, y) => x[0] - y[0]);
   $('cal-tabla').innerHTML = filas.length
     ? '<thead><tr><th>Pulso</th><th>Avanzó en 5 s</th><th>Equivale a</th><th></th></tr></thead><tbody>' +
@@ -495,9 +495,10 @@ $('cal-cm').addEventListener('keydown', e => { if (e.key === 'Enter') $('cal-gua
 $('cal-descartar').addEventListener('click', () => toPhone({ tipo: 'descartar' }));
 $('cal-llego').addEventListener('click', () => toPhone({ tipo: 'llego' }));
 $('cal-tabla').addEventListener('click', e => { const b = e.target.closest('[data-borrar]'); if (b) toPhone({ tipo: 'borrar', valor: +b.dataset.borrar }); });
-[['cal-base', v => ({ base: v - 1500 })], ['cal-maxima', v => ({ maxima: v - 1500 })], ['cal-largo', v => ({ largo: v })], ['cal-vuelta', v => ({ vuelta: v - 1500 })], ['cal-parado', v => ({ parado: v - 1500 })]].forEach(([id, cambio]) => {
+[['cal-base', v => ({ base: v - 1500 })], ['cal-maxima', v => ({ maxima: v - 1500 })], ['cal-largo', v => ({ largo: v })], ['cal-vuelta', v => ({ vuelta: v - 1500 })]].forEach(([id, cambio]) => {
   $(id).addEventListener('change', e => { const v = parseFloat(String(e.target.value).replace(',', '.')); if (Number.isFinite(v)) toPhone({ tipo: 'ajustar', cambios: cambio(v) }); });
 });
+$('cal-invertir').addEventListener('change', e => toPhone({ tipo: 'ajustar', cambios: { invertir: e.target.checked } }));
 $('cal-copiar').addEventListener('click', async () => {
   try { await navigator.clipboard.writeText(calJSON()); rigNotice('Calibración copiada.'); }
   catch (err) { rigNotice('No se pudo copiar: selecciona el texto bajo los botones.'); }

@@ -150,7 +150,7 @@ Capturas en modo de prueba (`?prueba`): el computador muestra carreras simuladas
 - El celular sobre el taxi es su taxímetro: hora en grande, slider de hora, dos botones de día y Arrancar, que se vuelve Detener. Trae los datos de enero de 2026, sin selector de año.
 - El taxi sale al apretar Arrancar. El sonido sale del taxi: tono = velocidad, timbre = tipo de día, bocina bajo 15 km/h y ritmo fijo.
 - La página del computador pierde el 3D, el sonido y los controles: une, calibra y anota cada carrera sobre la curva.
-- Ajustes tras probar en la maqueta real: al enchufar el Arduino, el taxi andaba solo. Ahora el servo queda sin pulsos entre carreras y se apaga si el celular deja de hablarle. La fuerza base (el pulso con que el taxi apenas avanza, 0 km/h) y la máxima (28 km/h) se ajustan en el mismo celular.
+- Ajustes tras probar en la maqueta real: al enchufar el Arduino, el taxi andaba solo. Ahora el servo queda sin pulsos entre carreras y se apaga si el celular deja de hablarle. La fuerza base (el pulso con que el taxi apenas avanza, 0 km/h), la máxima (28 km/h) y el sentido del servo se ajustan en el mismo celular.
 - Taxi decorado: [completar: cómo]. [confirmar] Regla impresa y banderitas (`npm run regla`). [completar: ajustes de la prueba en la maqueta real.]
 
 ### Por qué cambió — el rationale

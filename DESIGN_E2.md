@@ -31,6 +31,7 @@ En la pantalla de la E1, la velocidad de los taxis era una cifra en el taxímetr
 3 de noviembre de 2026 · tag [`e2-v1`](https://github.com/V1TSO/Visualizacion_de_Informacion_Grupo_16/tree/e2-v1) (commit `5532f7c`, PR #3) · publicada en [/e2/v1/modelo1/](https://v1tso.github.io/Visualizacion_de_Informacion_Grupo_16/e2/v1/modelo1/).
 
 ### Evidencia
+<div class="fila"><img src="docs/evidencia/e2-v1/05-chasis-arriba.jpg" alt="V1: chasis de LEGO Technic visto desde arriba: micro servo MG90S en un marco azul, fila de engranajes y ruedas rojas"><img src="docs/evidencia/e2-v1/06-chasis-servo.jpg" alt="V1: chasis con el servo y la fila de engranajes que mueve los dos ejes"><img src="docs/evidencia/e2-v1/07-chasis-engranajes.jpg" alt="V1: la fila de engranajes vista de lado"></div>
 <div class="fila"><img src="docs/evidencia/e2-v1/01-modelo-3d.jpg" alt="V1: modelo 3D de la maqueta con la avenida, la regla, el taxi y el taxímetro"><img src="docs/evidencia/e2-v1/02-caja-de-controles.jpg" alt="V1: caja de controles con perilla, interruptor y botón Arrancar"></div>
 <div class="fila"><img src="docs/evidencia/e2-v1/03-carrera-simulada.jpg" alt="V1: carrera simulada del fin de semana a las 05:00"><img src="docs/evidencia/e2-v1/04-regla-y-datos.jpg" alt="V1: regla vista desde arriba con banderitas y curvas de datos"></div>
 
@@ -42,7 +43,7 @@ En la pantalla de la E1, la velocidad de los taxis era una cifra en el taxímetr
 - Interacción: caja con perilla de hora, interruptor de día y botón Arrancar. El taxi vuelve solo, en silencio.
 - Sonido en la ida: tono = velocidad, ritmo = viajes, bocina bajo 15 km/h, izquierda/derecha = tipo de día.
 - Capa digital: el computador muestra hora, velocidad y curvas. Un Arduino, con un cable colgado de un poste, lee la caja y mueve el servo.
-- Mago de Oz: un modelo 3D interactivo de la maqueta mientras llegaban los materiales.
+- Prototipo: un chasis de LEGO Technic con un micro servo MG90S y una fila de engranajes que mueve los ejes, todavía sin electrónica, y un modelo 3D interactivo de la maqueta completa (Mago de Oz).
 
 ### Por qué cambió — el rationale
 <!-- máx 12 -->
@@ -50,7 +51,8 @@ En la pantalla de la E1, la velocidad de los taxis era una cifra en el taxímetr
 - Con el tiempo fijo (5 s), la distancia es proporcional a la velocidad: la metáfora del taxi que «llega más lejos» calza con el dato.
 - La vuelta no codifica datos y es siempre igual y en silencio, para que no compita con la ida (cap. 20: solo lo que suma al mensaje).
 - El sonido repite la velocidad con el tono y agrega los viajes con el ritmo (cap. 27), en estéreo para separar los tipos de día, como en la E1.
-- Prototipar primero en virtual, con baja fidelidad física (cap. 29), permitió discutir la experiencia completa antes de cortar cartón.
+- Baja fidelidad (cap. 29): con el LEGO del curso, el mecanismo se probó sin cortar cartón, y el modelo 3D permitió discutir la experiencia completa antes de tener la electrónica.
+- Entre los dos ejes va una cantidad impar de engranajes, para que ambos giren en el mismo sentido: con una cantidad par, el taxi se traba.
 
 ### Qué se descartó
 <!-- máx 5 -->
@@ -68,11 +70,13 @@ En la pantalla de la E1, la velocidad de los taxis era una cifra en el taxímetr
 12 de noviembre de 2026 · sin tag: el código de esta versión no se subió al repositorio (no hay commits entre `e2-v1` y el 19 de noviembre). Se documenta con fotos.
 
 ### Evidencia
-[completar: fotos del 12/11 (el taxi con Arduino y servo, el cable al computador, la pantalla) y video si hay.]
+<div class="fila"><img src="docs/evidencia/e2-12nov/01-arduino-sobre-el-taxi.jpg" alt="V2: el Arduino Leonardo sobre una base negra encima del chasis de LEGO, con su cable USB"></div>
+
+[completar: video de una carrera de la V2, si hay.]
 
 ### Qué cambió
 <!-- máx 8 -->
-- De la simulación al objeto: un taxi [completar: material] con un Arduino Leonardo y un servo de rotación continua avanza de verdad, en línea recta (R1).
+- De la simulación al objeto: sobre el chasis de LEGO de la V1, una base lleva el Arduino Leonardo, que mueve el servo. El taxi avanza de verdad, en línea recta (R1).
 - El Arduino va conectado por cable USB al computador. La página elige la hora y el tipo de día y manda la velocidad. [confirmar: ¿sonaba?]
 - La caja de controles (perilla, interruptor y botón) no se construyó: la carrera se elige en la pantalla.
 - Sin regla ni banderitas físicas: no alcanzaron a construirse, y la distancia se compara a ojo.

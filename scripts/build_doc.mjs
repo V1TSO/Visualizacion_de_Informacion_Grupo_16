@@ -33,10 +33,10 @@ const fonts = 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@60
 
 mkdirSync(dir, { recursive: true });
 const markdown = readFileSync(source, 'utf8');
-const pending = markdown.match(/\[completar[^\]]*\]/g) ?? [];
+const pending = markdown.match(/\[(?:completar|confirmar)[^\]]*\]/g) ?? [];
 if (pending.length) console.warn(`⚠ Quedan ${pending.length} campos «[completar…]»:\n${pending.map(p => '  · ' + p.slice(0, 110)).join('\n')}`);
 // Lo que falta se ve resaltado en el PDF, para que no se escape nada.
-const body = marked.parse(markdown).replace(/\[completar[^\]]*\]/g, m => `<mark>${m}</mark>`);
+const body = marked.parse(markdown).replace(/\[(?:completar|confirmar)[^\]]*\]/g, m => `<mark>${m}</mark>`);
 // <base>: las imágenes se escriben relativas a la raíz del repositorio, igual que al ver DESIGN_E2.md en GitHub.
 writeFileSync(html, `<!doctype html><html lang="es"><head><meta charset="utf-8"><base href="../../"><title>Entrega 2 · Grupo 16</title><link rel="stylesheet" href="${fonts}"><style>${css}</style></head><body>${body}</body></html>`);
 

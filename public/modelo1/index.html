@@ -145,7 +145,7 @@ footer a, .block a { color: inherit; }
 <header class="top wrap">
   <div class="brand"><span class="roof">TAXI</span><span>El pulso de Nueva York · Prototipo físico-digital</span></div>
   <h1>Mientras más rápido va la ciudad, más lejos llega el taxi</h1>
-  <p class="lede">La maqueta se maneja desde el celular que va sobre el taxi: ahí se eligen la hora y el tipo de día y se aprieta Arrancar. Una voz dice qué carrera es, y el taxi avanza 5 segundos a la velocidad mediana de los taxis amarillos de Nueva York a esa hora de enero de 2026. Donde se detiene, la aguja marca esa velocidad en la regla. Esta página solo une el celular, guarda la calibración y anota las carreras sobre la curva del día.</p>
+  <p class="lede">La maqueta se maneja desde el celular que va sobre el taxi: ahí se eligen la hora y el tipo de día y se aprieta Arrancar. El taxi avanza 5 segundos a la velocidad mediana de los taxis amarillos de Nueva York a esa hora de enero de 2026. Donde se detiene, la aguja marca esa velocidad en la regla. Esta página solo une el celular, guarda la calibración y anota las carreras sobre la curva del día.</p>
 </header>
 
 <section class="main wrap" aria-label="Carreras de la maqueta">
@@ -185,7 +185,7 @@ footer a, .block a { color: inherit; }
       <thead><tr><th>Parte</th><th>Dato</th><th>Cómo se lee</th></tr></thead>
       <tbody>
         <tr><td>Distancia del taxi</td><td>Velocidad mediana de esa hora</td><td>Mismo tiempo (5 s), más lejos: más rápido. La regla va de 0 a 28 km/h desde la salida.</td></tr>
-        <tr><td>Voz</td><td>Hora y tipo de día</td><td>Antes de salir: «Fin de semana, a la una de la madrugada».</td></tr>
+        <tr><td>Taxímetro</td><td>Hora y tipo de día</td><td>En la pantalla del celular, sobre el taxi: la hora en grande y el tipo de día debajo.</td></tr>
         <tr><td>Tono</td><td>Velocidad mediana</td><td>Nota más aguda, tráfico más rápido. El sonido sale del taxi, solo durante la ida.</td></tr>
         <tr><td>Timbre</td><td>Tipo de día</td><td>Suave (sine): lunes a viernes. Más áspero (triangle): fin de semana.</td></tr>
         <tr><td>Bocina</td><td>Tráfico lento</td><td>Bajo 15 km/h, más seguida cuanto más lento.</td></tr>
@@ -233,12 +233,16 @@ footer a, .block a { color: inherit; }
           <button type="button" class="rig-btn rig-primary" id="cal-llego" hidden>Ya llegó a la salida</button>
           <div class="table-wrap"><table class="rig-table" id="cal-tabla"></table></div>
           <p class="rig-note" id="cal-resumen"></p>
-          <div class="rig-row3">
+          <div class="rig-row">
+            <div class="rig-field"><label for="cal-base">Fuerza base (µs)</label><input class="rig-num" type="number" id="cal-base" min="1501" max="1900" step="5"></div>
+            <div class="rig-field"><label for="cal-maxima">Fuerza máxima (µs)</label><input class="rig-num" type="number" id="cal-maxima" min="1510" max="2000" step="5"></div>
+          </div>
+          <div class="rig-row">
             <div class="rig-field"><label for="cal-largo">Regla (cm)</label><input class="rig-num" type="number" id="cal-largo" min="20" max="400" step="1"></div>
             <div class="rig-field"><label for="cal-vuelta">Vuelta (µs)</label><input class="rig-num" type="number" id="cal-vuelta" min="1000" max="1490" step="5"></div>
-            <div class="rig-field"><label for="cal-parado">Quieto (µs)</label><input class="rig-num" type="number" id="cal-parado" min="1440" max="1560" step="1"></div>
           </div>
-          <p class="rig-note"><b>Regla:</b> distancia desde la salida hasta la marca de 28 km/h. <b>Vuelta:</b> pulso para volver; si con el peso no alcanza a volver, bájalo (por ejemplo, 1.380). Al cambiarlo, la velocidad de vuelta se vuelve a medir. <b>Quieto:</b> si el taxi sigue moviéndose cuando debería estar detenido, cambia este valor de a 1 o 2 hasta que se quede quieto; se aplica al tiro.</p>
+          <label class="rig-check"><input type="checkbox" id="cal-invertir"><span>Invertir el sentido del servo<small>Si en la ida el taxi retrocede. Los pulsos de esta página siguen contando hacia adelante sobre 1.500 µs.</small></span></label>
+          <p class="rig-note"><b>Fuerza base:</b> pulso con que el taxi apenas empieza a avanzar (0 km/h). <b>Fuerza máxima:</b> pulso con que llega a 28 km/h, al final de la regla. Se usan mientras no haya mediciones, y también se cambian en el celular. <b>Regla:</b> distancia desde la salida hasta la marca de 28 km/h. <b>Vuelta:</b> pulso para volver; si con el peso no alcanza a volver, bájalo (por ejemplo, 1.380). Al cambiarlo, la velocidad de vuelta se vuelve a medir. Entre carreras el servo queda apagado, sin pulsos: si el taxi se mueve solo, el Arduino tiene el firmware anterior.</p>
           <p class="rig-note" id="cal-marcas"></p>
           <div class="rig-row">
             <button type="button" class="rig-btn" id="cal-copiar">Copiar calibración</button>
@@ -254,7 +258,7 @@ footer a, .block a { color: inherit; }
     <summary>Notas técnicas <small>conectar, componentes y mensajes</small></summary>
     <div class="fold-body">
       <ol class="steps">
-        <li><strong>Programar el Arduino, una sola vez.</strong> <span>Con el Arduino IDE, cargar <a href="protobject-leonardo-pullup.ino" download>protobject-leonardo-pullup.ino</a> al Leonardo (bibliotecas Servo, ArduinoJson y WebUSB; el encabezado del archivo explica cómo instalarlas).</span></li>
+        <li><strong>Programar el Arduino.</strong> <span>Con el Arduino IDE, cargar <a href="protobject-leonardo-pullup.ino" download>protobject-leonardo-pullup.ino</a> al Leonardo (bibliotecas Servo, ArduinoJson y WebUSB; el encabezado del archivo explica cómo instalarlas). Si se cargó una versión anterior, volver a cargarlo: esta deja el servo apagado entre carreras, para que el taxi no ande solo al enchufarlo.</span></li>
         <li><strong>Unir el celular.</strong> <span>Abrir esta página en Chrome o Edge, tocar «Conectar celular» y escanear el QR con un celular Android con Chrome. Se abre el taxímetro de la maqueta.</span></li>
         <li><strong>Enchufar el Arduino al celular</strong> <span>con un cable USB-OTG (también lo alimenta). En el celular, «Conectar Arduino», «Confirm» y elegir la placa.</span></li>
         <li><strong>Calibrar</strong> <span>en «Ajustes de la maqueta», con el celular ya puesto sobre el taxi.</span></li>
@@ -265,7 +269,7 @@ footer a, .block a { color: inherit; }
           <thead><tr><th>Componente</th><th>Función</th><th>Conexión</th></tr></thead>
           <tbody>
             <tr><td>Celular Android</td><td>Va sobre el taxi: es su taxímetro. Trae los datos, lleva el ciclo, mueve el servo, habla y suena</td><td>Chrome; se une a esta página con el QR</td></tr>
-            <tr><td>Arduino Leonardo</td><td>Firmware de Protobject: aplica el pulso del servo y entrega las lecturas</td><td>USB-OTG al celular</td></tr>
+            <tr><td>Arduino Leonardo</td><td>Firmware de Protobject: aplica el pulso del servo y entrega las lecturas. Apaga el servo entre carreras y si pasa 1 s sin mensajes del celular</td><td>USB-OTG al celular</td></tr>
             <tr><td>Servo de rotación continua</td><td>Mueve los ejes por la fila de engranajes</td><td>Señal en D5, 5 V y GND</td></tr>
             <tr><td>Microinterruptor de tope, recomendado</td><td>Detecta el taxi en la salida</td><td>D9 a GND</td></tr>
             <tr><td>Perilla, interruptor y botón, opcionales</td><td>Hora, tipo de día y Arrancar, además de la pantalla</td><td>A0; D7 y D8 a GND</td></tr>
@@ -286,7 +290,7 @@ footer a, .block a { color: inherit; }
           </tbody>
         </table>
       </div>
-      <p class="fine">Para probar sin Arduino, agregar <code>&amp;prueba</code> a la dirección que abre el celular: simula la placa, el servo y el tope. El sonido y la voz suenan igual.</p>
+      <p class="fine">Para probar sin Arduino, agregar <code>&amp;prueba</code> a la dirección que abre el celular: simula la placa, el servo y el tope. El sonido suena igual.</p>
     </div>
   </details>
 </section>
@@ -414,16 +418,18 @@ if (hasPT) Protobject.Core.onReceived(onPhone);
 /* ---------- Ajustes de la maqueta: viven en el celular (viaja con el taxi); aquí se ven y se cambian ---------- */
 const rig = { ajustes: null, resumen: null, estado: null, at: 0, aviso: null, readHtml: '' };
 const FASES = { espera: 'En espera', ida: 'Ida', pausa: 'Pausa', vuelta: 'Vuelta', prueba: 'Prueba de calibración', medir: 'Esperando la medida' };
-const calJSON = () => { const a = rig.ajustes; return a ? JSON.stringify({ largo: a.largo, vuelta: a.vuelta, parado: a.parado, vVuelta: a.vVuelta, puntos: [...a.puntos].sort((x, y) => x[0] - y[0]) }) : ''; };
+const calJSON = () => { const a = rig.ajustes; return a ? JSON.stringify({ largo: a.largo, vuelta: a.vuelta, base: a.base, maxima: a.maxima, invertir: a.invertir, vVuelta: a.vVuelta, puntos: [...a.puntos].sort((x, y) => x[0] - y[0]) }) : ''; };
 function rigNotice(text) { rig.aviso = { text, until: performance.now() + 6000 }; paintEstado(); }
 function paintAjustes() {
   const a = rig.ajustes, r = rig.resumen;
   document.querySelectorAll('[data-pieza]').forEach(x => { x.checked = !!a?.[x.dataset.pieza]; x.disabled = !a; });
-  ['cal-largo', 'cal-vuelta', 'cal-parado', 'cal-copiar', 'cal-borrar'].forEach(id => { $(id).disabled = !a; });
+  ['cal-base', 'cal-maxima', 'cal-largo', 'cal-vuelta', 'cal-invertir', 'cal-copiar', 'cal-borrar'].forEach(id => { $(id).disabled = !a; });
   if (!a) { $('cal-resumen').textContent = 'Esperando los ajustes del celular…'; $('cal-tabla').innerHTML = ''; $('cal-marcas').textContent = ''; $('cal-json').textContent = ''; return; }
+  if (document.activeElement !== $('cal-base')) $('cal-base').value = 1500 + a.base;
+  if (document.activeElement !== $('cal-maxima')) $('cal-maxima').value = 1500 + a.maxima;
   if (document.activeElement !== $('cal-largo')) $('cal-largo').value = a.largo;
   if (document.activeElement !== $('cal-vuelta')) $('cal-vuelta').value = 1500 + a.vuelta;
-  if (document.activeElement !== $('cal-parado')) $('cal-parado').value = 1500 + a.parado;
+  $('cal-invertir').checked = a.invertir !== false;
   const filas = [...a.puntos].sort((x, y) => x[0] - y[0]);
   $('cal-tabla').innerHTML = filas.length
     ? '<thead><tr><th>Pulso</th><th>Avanzó en 5 s</th><th>Equivale a</th><th></th></tr></thead><tbody>' +
@@ -431,7 +437,7 @@ function paintAjustes() {
     : '';
   let t = r.calibrado
     ? `Pulsos que se usarán: ${r.pulsos.map(([k, us]) => `${k} km/h → ${fmt(us)} µs`).join(' · ')}.`
-    : `Faltan mediciones (van ${filas.length}; se necesitan al menos 2 que avancen distinto). Mientras tanto se usa la regla de fábrica, pensada para un taxi liviano: 1.560 µs a 10 km/h y 1.700 µs a 28 km/h. Empieza con un pulso bajo y sube de a poco hasta que la aguja llegue al final de la regla.`;
+    : `Faltan mediciones (van ${filas.length}; se necesitan al menos 2 que avancen distinto). Mientras tanto se usan la fuerza base (${fmt(1500 + a.base)} µs a 0 km/h) y la máxima (${fmt(1500 + a.maxima)} µs a 28 km/h). Para medir, empieza con un pulso bajo y sube de a poco hasta que la aguja llegue al final de la regla.`;
   const cm12 = 12 / 28 * a.largo;
   if (r.calibrado && r.minimo > cm12 && !a.puntos.some(([, c]) => c > 0 && c <= cm12)) t += ` Ojo: la medición más corta llegó a ${fmt(r.minimo, 1)} cm, más lejos que 12 km/h (${fmt(cm12, 1)} cm). Mide también un pulso más bajo; si no, las horas más lentas quedan todas en ${fmt(r.minimo, 1)} cm.`;
   if (r.calibrado && r.alcance < a.largo) t += ` Ojo: lo más lejos que llegó fue ${fmt(r.alcance, 1)} cm, menos que la regla (${fmt(a.largo)} cm). Prueba un pulso mayor, o acorta la regla a ${fmt(Math.floor(r.alcance))} cm y vuelve a marcarla.`;
@@ -489,9 +495,10 @@ $('cal-cm').addEventListener('keydown', e => { if (e.key === 'Enter') $('cal-gua
 $('cal-descartar').addEventListener('click', () => toPhone({ tipo: 'descartar' }));
 $('cal-llego').addEventListener('click', () => toPhone({ tipo: 'llego' }));
 $('cal-tabla').addEventListener('click', e => { const b = e.target.closest('[data-borrar]'); if (b) toPhone({ tipo: 'borrar', valor: +b.dataset.borrar }); });
-[['cal-largo', v => ({ largo: v })], ['cal-vuelta', v => ({ vuelta: v - 1500 })], ['cal-parado', v => ({ parado: v - 1500 })]].forEach(([id, cambio]) => {
+[['cal-base', v => ({ base: v - 1500 })], ['cal-maxima', v => ({ maxima: v - 1500 })], ['cal-largo', v => ({ largo: v })], ['cal-vuelta', v => ({ vuelta: v - 1500 })]].forEach(([id, cambio]) => {
   $(id).addEventListener('change', e => { const v = parseFloat(String(e.target.value).replace(',', '.')); if (Number.isFinite(v)) toPhone({ tipo: 'ajustar', cambios: cambio(v) }); });
 });
+$('cal-invertir').addEventListener('change', e => toPhone({ tipo: 'ajustar', cambios: { invertir: e.target.checked } }));
 $('cal-copiar').addEventListener('click', async () => {
   try { await navigator.clipboard.writeText(calJSON()); rigNotice('Calibración copiada.'); }
   catch (err) { rigNotice('No se pudo copiar: selecciona el texto bajo los botones.'); }

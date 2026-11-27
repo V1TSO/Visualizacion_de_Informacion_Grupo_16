@@ -1,13 +1,13 @@
 <div class="portada">
 <p class="curso">IIC2026 Visualización de Información · Entrega 2 · El proceso de diseño: la visualización salta al mundo físico</p>
-<h1>El pulso de Nueva York, en una avenida de cartón</h1>
+<h1>El pulso de Nueva York, en un taxi de cartón</h1>
 <p>Un taxi de juguete avanza 5 segundos a la velocidad mediana de los taxis amarillos de Nueva York a la hora que eliges, en enero de 2026. Mismo tiempo, más lejos: más rápido.</p>
 <dl>
 <dt>Grupo</dt><dd>16</dd>
 <dt>Integrantes</dt><dd>Vicente Reñasco · David Parra · Mariano De Sarratea</dd>
 <dt>GitHub Pages</dt><dd><a href="https://v1tso.github.io/Visualizacion_de_Informacion_Grupo_16/modelo1/">v1tso.github.io/Visualizacion_de_Informacion_Grupo_16/modelo1/</a> · cada versión en <a href="https://v1tso.github.io/Visualizacion_de_Informacion_Grupo_16/versiones/">/versiones/</a></dd>
 <dt>Repositorio</dt><dd><a href="https://github.com/V1TSO/Visualizacion_de_Informacion_Grupo_16">github.com/V1TSO/Visualizacion_de_Informacion_Grupo_16</a> · tags <code>e2-v1</code> a <code>e2-v4</code></dd>
-<dt>Video demostrativo</dt><dd>[completar: enlace público de YouTube al video de la V4]</dd>
+<dt>Video demostrativo</dt><dd>[completar: enlace de YouTube] · copia en el repositorio: <a href="https://github.com/V1TSO/Visualizacion_de_Informacion_Grupo_16/blob/feat/v4-taxi-final/docs/evidencia/e2-v4/demo-v4.mp4">docs/evidencia/e2-v4/demo-v4.mp4</a></dd>
 </dl>
 </div>
 
@@ -35,7 +35,7 @@ En la pantalla de la E1, la velocidad de los taxis era una cifra en el taxímetr
 <div class="fila"><img src="docs/evidencia/e2-v1/01-modelo-3d.jpg" alt="V1: modelo 3D de la maqueta con la avenida, la regla, el taxi y el taxímetro"><img src="docs/evidencia/e2-v1/02-caja-de-controles.jpg" alt="V1: caja de controles con perilla, interruptor y botón Arrancar"></div>
 <div class="fila"><img src="docs/evidencia/e2-v1/03-carrera-simulada.jpg" alt="V1: carrera simulada del fin de semana a las 05:00"><img src="docs/evidencia/e2-v1/04-regla-y-datos.jpg" alt="V1: regla vista desde arriba con banderitas y curvas de datos"></div>
 
-[completar: video corto del modelo 3D con sonido (grabación de pantalla de /e2/v1/modelo1/).]
+Sin video: la V1 es una simulación. El modelo 3D, con su sonido, sigue publicado y se puede manejar en [/e2/v1/modelo1/](https://v1tso.github.io/Visualizacion_de_Informacion_Grupo_16/e2/v1/modelo1/).
 
 ### Qué cambió: las decisiones iniciales
 <!-- máx 8 -->
@@ -72,12 +72,12 @@ En la pantalla de la E1, la velocidad de los taxis era una cifra en el taxímetr
 ### Evidencia
 <div class="fila"><img src="docs/evidencia/e2-12nov/01-arduino-sobre-el-taxi.jpg" alt="V2: el Arduino Leonardo sobre una base negra encima del chasis de LEGO, con su cable USB"></div>
 
-[completar: video de una carrera de la V2, si hay.]
+No grabamos video de la V2.
 
 ### Qué cambió
 <!-- máx 8 -->
 - De la simulación al objeto: sobre el chasis de LEGO de la V1, una base lleva el Arduino Leonardo, que mueve el servo. El taxi avanza de verdad, en línea recta (R1).
-- El Arduino va conectado por cable USB al computador. La página elige la hora y el tipo de día y manda la velocidad. [confirmar: ¿sonaba?]
+- El Arduino va conectado por cable USB al computador. La página elige la hora y el tipo de día, manda la velocidad y toca el sonido de la V1 mientras el taxi avanza.
 - La caja de controles (perilla, interruptor y botón) no se construyó: la carrera se elige en la pantalla.
 - Sin regla ni banderitas físicas: no alcanzaron a construirse, y la distancia se compara a ojo.
 
@@ -85,12 +85,11 @@ En la pantalla de la E1, la velocidad de los taxis era una cifra en el taxímetr
 <!-- máx 12 -->
 - Fidelidad (cap. 29) y la R1 (exhibición): de la simulación de la V1 a un objeto que se mueve con los datos reales, para discutir en la R2 la experiencia física y no una promesa.
 - El cable al computador era la forma más directa de mover el servo con los datos: es el diseño de la V1, ahora real.
-- [confirmar] Restricción de tiempo: la caja, la regla y las banderitas no alcanzaron a construirse. Priorizamos que el taxi avanzara a la velocidad de cada hora, que es lo que fisicaliza el dato (cap. 16).
+- Restricción de tiempo: la caja, la regla y las banderitas no alcanzaron a construirse. Priorizamos que el taxi avanzara a la velocidad de cada hora, que es lo que fisicaliza el dato (cap. 16).
 
 ### Qué se descartó
 <!-- máx 5 -->
 - Pista circular y vuelta a la misma velocidad (ver R1).
-- [completar: otras alternativas de material o mecanismo que probaron, si hubo.]
 
 ## R2 — revisión entre pares
 <!-- máx 10 -->
@@ -106,7 +105,7 @@ En la pantalla de la E1, la velocidad de los taxis era una cifra en el taxímetr
 ### Evidencia
 <div class="fila"><img src="docs/evidencia/e2-v2/01-computador.jpg" alt="V3: el computador maneja la maqueta: controles, modelo 3D y sonido"><img src="docs/evidencia/e2-v2/02-celular.jpg" alt="V3: la pantalla del celular que va sobre el taxi solo muestra el estado"></div>
 
-[completar: fotos del taxi con el celular encima y un video de una carrera con su sonido.]
+No guardamos fotos ni video del taxi físico en esta versión: la evidencia son estas capturas y el código del tag.
 
 ### Qué cambió
 <!-- máx 8 -->
@@ -138,37 +137,39 @@ En la pantalla de la E1, la velocidad de los taxis era una cifra en el taxímetr
 ## V4 — la experiencia final
 
 ### Identificación
-26 de noviembre de 2026 · tags [`e2-v3`](https://github.com/V1TSO/Visualizacion_de_Informacion_Grupo_16/tree/e2-v3) (commit `e3ee8da`: el celular como taxímetro) y [`e2-v4`](https://github.com/V1TSO/Visualizacion_de_Informacion_Grupo_16/tree/e2-v4) ([completar: commit], cierre) · publicada en [/modelo1/](https://v1tso.github.io/Visualizacion_de_Informacion_Grupo_16/modelo1/).
+26 de noviembre de 2026 · tags [`e2-v3`](https://github.com/V1TSO/Visualizacion_de_Informacion_Grupo_16/tree/e2-v3) (commit `e3ee8da`: el celular como taxímetro) y [`e2-v4`](https://github.com/V1TSO/Visualizacion_de_Informacion_Grupo_16/tree/e2-v4) (commit `2bd5667`, cierre) · publicada en [/modelo1/](https://v1tso.github.io/Visualizacion_de_Informacion_Grupo_16/modelo1/).
 
 ### Evidencia
-<div class="fila"><img src="docs/evidencia/e2-v3/01-celular-listo.jpg" alt="V4: el celular sobre el taxi es su taxímetro: hora, tipo de día y Arrancar"><img src="docs/evidencia/e2-v3/02-celular-pausa.jpg" alt="V4: en la pausa, el taxímetro dice a qué velocidad llegó"><img src="docs/evidencia/e2-v3/03-computador.jpg" alt="V4: el computador, opcional, anota cada carrera sobre la curva del día"></div>
+<div class="fila"><img src="docs/evidencia/e2-v4/01-taxi-de-lado.jpg" alt="V4: el taxi de lado: carrocería de cartón con un taxi amarillo de Nueva York impreso, franja a cuadros y TAXI 16G, sobre ruedas rojas de LEGO"><img src="docs/evidencia/e2-v4/02-taxi-desde-arriba.jpg" alt="V4: el taxi desde arriba: el Arduino Leonardo adelante y el celular con la pantalla hacia arriba, en un marco de cartón"></div>
+<div class="fila"><img src="docs/evidencia/e2-v4/03-taximetro-sobre-el-taxi.jpg" alt="V4: el taxímetro sobre el taxi, listo en la salida: 17:00, fin de semana, Arrancar"><img src="docs/evidencia/e2-v4/04-celular-lunes-a-viernes.jpg" alt="V4: a las 17:00 de lunes a viernes, el taxímetro dice que llegó a 12,9 km/h"><img src="docs/evidencia/e2-v4/05-celular-fin-de-semana.jpg" alt="V4: a las 17:00 del fin de semana, el taxímetro dice que llegó a 13,9 km/h"><img src="docs/evidencia/e2-v3/03-computador.jpg" alt="V4: el computador, opcional, anota cada carrera sobre la curva del día (captura en modo de prueba)"></div>
+<div class="fila"><img src="docs/evidencia/e2-v4/06-carrera-fotogramas.jpg" alt="V4: tres fotogramas del video: el taxi avanza por el piso con el celular encima"></div>
 
-Capturas en modo de prueba (`?prueba`): el computador muestra carreras simuladas. [completar: fotos del taxi decorado con el celular encima y video final con manipulación y sonido (el mismo de la portada).]
+Video de 27 s con manipulación y sonido (el mismo de la portada; copia en [`docs/evidencia/e2-v4/demo-v4.mp4`](https://github.com/V1TSO/Visualizacion_de_Informacion_Grupo_16/blob/feat/v4-taxi-final/docs/evidencia/e2-v4/demo-v4.mp4)): a las 17:00, el taxi de lunes a viernes llega a 12,9 km/h y el del fin de semana, a 13,9 km/h. La última captura es del computador en modo de prueba (`?prueba`).
 
 ### Qué cambió
 <!-- máx 8 -->
-- El celular sobre el taxi es su taxímetro: hora en grande, slider de hora, dos botones de día y Arrancar, que se vuelve Detener. Trae los datos de enero de 2026, sin selector de año.
-- El taxi sale al apretar Arrancar. El sonido sale del taxi: tono = velocidad, timbre = tipo de día, bocina bajo 15 km/h y ritmo fijo.
+- El celular sobre el taxi es su taxímetro: hora en grande, slider de hora, dos botones de día y Arrancar/Detener. Solo enero de 2026.
+- El sonido sale del taxi: tono = velocidad, timbre = tipo de día, bocina bajo 15 km/h, ritmo fijo.
 - La página del computador pierde el 3D, el sonido y los controles: une, calibra y anota cada carrera sobre la curva.
-- Ajustes tras probar en la maqueta real: al enchufar el Arduino, el taxi andaba solo. Ahora el servo queda sin pulsos entre carreras y se apaga si el celular deja de hablarle. La fuerza base (el pulso con que el taxi apenas avanza, 0 km/h), la máxima (28 km/h) y el sentido del servo se ajustan en el mismo celular.
-- Taxi decorado: [completar: cómo]. [confirmar] Regla impresa y banderitas (`npm run regla`). [completar: ajustes de la prueba en la maqueta real.]
+- Tras probar la maqueta real: el servo queda sin pulsos entre carreras y se apaga si el celular deja de hablarle. Fuerza base (0 km/h), máxima (28 km/h) y sentido del servo se ajustan en el celular.
+- Carrocería de cartón con un taxi amarillo de Nueva York impreso (franja a cuadros, «TAXI 16G»).
 
 ### Por qué cambió — el rationale
 <!-- máx 12 -->
-- R2 y R3, «no hicimos nada»: fallaba «la interacción física no es descubrible». Los controles van en el taxi mismo: hora, día y botón.
+- R2 y R3, «no hicimos nada»: fallaba «la interacción física no es descubrible». Los controles van en el taxi mismo.
 - R3: con la maqueta real, el 3D ya no cumplía su papel de Mago de Oz (cap. 29) y competía con el objeto (cap. 20).
-- R2, sin contexto: la hora y el día van en grande en el taxímetro, sobre el mismo taxi, y el timbre distingue el tipo de día de oído.
-- Restricción técnica: el parlante es mono, así que el timbre reemplaza al estéreo, y la escala sube una octava porque casi no da graves. El ritmo queda fijo: los viajes no son parte del mensaje, y tono y ritmo juntos competían (cap. 20).
-- R2, «falta algo que dé a entender que se trata de un taxi»: la forma del objeto tiene que nombrar el dato.
-- Prueba en la maqueta real: un servo de rotación continua solo queda quieto en su pulso neutro exacto, y Protobject mandaba 1.501 µs para «quieto». Sin pulsos no gira. Con el celular encima, los pulsos bajos no movían el taxi: la fuerza base fija desde dónde parte la escala, sin depender del computador.
-- [confirmar] Regla: sin escala, la distancia no se lee como velocidad (cap. 16). Las banderitas dejan cada carrera en el objeto. [completar: ajustes de la prueba.]
+- R2, sin contexto: hora y día van en grande en el taxímetro, sobre el taxi; el timbre separa el tipo de día de oído.
+- Restricción técnica: parlante mono, así que el timbre reemplaza al estéreo y la escala sube una octava. Ritmo fijo: los viajes no son el mensaje y competían con el tono (cap. 20).
+- R2, «falta algo que dé a entender que se trata de un taxi»: el objeto tiene que nombrar el dato; por eso se viste de taxi amarillo.
+- Prueba en la maqueta real: con 1.501 µs (el «quieto» de Protobject) el taxi andaba solo, y con el celular encima los pulsos bajos no lo movían; de ahí la fuerza base.
 
 ### Qué se descartó
 <!-- máx 5 -->
 - Un segundo celular como control remoto: separa el gesto del objeto y suma otra conexión.
 - Eliminar el computador: hace falta para unir (QR) y calibrar.
-- La voz que decía la carrera antes de salir (estuvo en `e2-v3`): la hora y el día ya se leen en el taxímetro, sobre el taxi, y la voz atrasaba la salida.
-- Mantener el 3D como capa opcional: la R3 pidió sacarlo, y sigue publicado en `/e2/v1/` y `/e2/v2/`.
+- La voz que decía la carrera (en `e2-v3`): el taxímetro ya la muestra y la voz atrasaba la salida.
+- Regla impresa y banderitas: no alcanzamos a montarlas; el taxímetro dice la velocidad.
+- El 3D como capa opcional (R3): sigue publicado en `/e2/v1/` y `/e2/v2/`.
 
 ### Balance del recorrido
 - **Mejoró desde la V1:** de simulación (V1) a objeto que se mueve con cable (V2), sin cable y calibrado (V3), y que se maneja tocándolo (V4). El contexto de cada carrera pasó de la pantalla del computador al taxímetro sobre el taxi, el sonido pasó del computador al taxi y el taxi se lee como taxi (V4).

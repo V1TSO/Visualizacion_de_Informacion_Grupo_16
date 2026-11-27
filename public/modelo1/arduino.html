@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#152433">
-<meta name="description" content="Taxímetro de la maqueta: el celular que va sobre el taxi elige la hora y el tipo de día, mueve el servo, anuncia la carrera con voz y hace sonar la velocidad.">
+<meta name="description" content="Taxímetro de la maqueta: el celular que va sobre el taxi elige la hora y el tipo de día, mueve el servo y hace sonar la velocidad.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23f6bd16'/%3E%3C/svg%3E">
 <title>Taxímetro de la maqueta · El pulso de Nueva York</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -51,7 +51,7 @@ p { margin: 0; }
 .night { font-size: 13px; color: var(--meter-fg); }
 .phase { display: flex; align-items: baseline; gap: 8px; margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--meter-line); color: var(--meter-strong); font-size: 17px; min-height: 2.4em; }
 .phase i { flex: none; width: 11px; height: 11px; border-radius: 50%; background: #6f8796; transform: translateY(-1px); }
-.phase[data-phase="anuncio"] i, .phase[data-phase="ida"] i { background: var(--taxi); }
+.phase[data-phase="ida"] i { background: var(--taxi); }
 .phase[data-phase="pausa"] i { background: #ffffff; }
 .phase[data-phase="vuelta"] i { background: #8fb3c9; }
 
@@ -95,6 +95,17 @@ ol { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 6px; }
 .prueba h2 { font: 700 20px var(--display); margin: 0; }
 .prueba .seg button { min-height: 42px; font-size: 14px; }
 .prueba .seg button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+/* Fuerza del servo: se ajusta aquí mismo, sin el computador. */
+.fuerza { display: grid; gap: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.fuerza h2 { font: 700 20px var(--display); margin: 0; }
+.ajuste { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; }
+.ajuste b { display: block; }
+.ajuste small, .fine { display: block; font-size: 13px; color: var(--ink-2); }
+.stepper { display: grid; grid-template-columns: 46px minmax(96px, auto) 46px; align-items: center; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.stepper button { min-height: 46px; border: 0; background: var(--paper); font: 700 22px/1 var(--body); cursor: pointer; }
+.stepper output { text-align: center; padding-inline: 6px; white-space: nowrap; font: 700 20px var(--display); font-variant-numeric: tabular-nums; }
+.fine a { color: inherit; }
+.medidas { display: grid; gap: 8px; padding: 10px 12px; border-left: 3px solid var(--taxi); }
 </style>
 </head>
 <body data-conectado="false">
@@ -140,10 +151,32 @@ ol { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 6px; }
       <button type="button" class="btn btn-primary" id="connect">Conectar Arduino</button>
       <p class="warn" id="warn">Conecta el Arduino con el cable OTG, sube el volumen al máximo (el sonido sale de este celular) y pon el celular sobre el taxi con la pantalla hacia arriba. Usa Chrome en Android: en iPhone no funciona porque Safari no tiene WebUSB.</p>
       <dl class="read">
-        <div><dt>Servo</dt><dd id="pulse">1.501 µs</dd></div>
+        <div><dt>Servo</dt><dd id="pulse">Apagado</dd></div>
         <div><dt>Posición</dt><dd id="pos">—</dd></div>
         <div><dt>Tope</dt><dd id="tope">—</dd></div>
       </dl>
+      <section class="fuerza" aria-labelledby="h-fuerza">
+        <h2 id="h-fuerza">Fuerza del servo</h2>
+        <div class="ajuste">
+          <span><b>Fuerza base</b><small>Con ella el taxi apenas empieza a avanzar: es 0 km/h.</small></span>
+          <div class="stepper"><button type="button" data-ajuste="base" data-d="-5" aria-label="Bajar la fuerza base">−</button><output id="f-base"></output><button type="button" data-ajuste="base" data-d="5" aria-label="Subir la fuerza base">+</button></div>
+        </div>
+        <div class="ajuste">
+          <span><b>Fuerza máxima</b><small>Con ella llega a 28 km/h, al final de la regla.</small></span>
+          <div class="stepper"><button type="button" data-ajuste="maxima" data-d="-5" aria-label="Bajar la fuerza máxima">−</button><output id="f-maxima"></output><button type="button" data-ajuste="maxima" data-d="5" aria-label="Subir la fuerza máxima">+</button></div>
+        </div>
+        <p class="fine" id="f-uso"></p>
+        <p class="fine">Si el taxi no se mueve en las horas lentas (11:00, lunes a viernes), sube la fuerza base de a 5. Si en la más rápida (05:00, fin de semana) no llega cerca del final de la regla, sube la máxima; si se pasa, bájala.</p>
+        <div class="medidas" id="f-medidas" hidden>
+          <p class="fine" id="f-medidas-txt"></p>
+          <button type="button" class="btn" id="f-borrar">Borrar mediciones y usar estas fuerzas</button>
+        </div>
+        <div class="ajuste">
+          <span><b>Quieto</b><small>Pulso entre carreras. Déjalo en 1.500 µs: el servo queda apagado y el taxi no puede andar solo.</small></span>
+          <div class="stepper"><button type="button" data-ajuste="parado" data-d="-1" aria-label="Bajar el pulso quieto">−</button><output id="f-parado"></output><button type="button" data-ajuste="parado" data-d="1" aria-label="Subir el pulso quieto">+</button></div>
+        </div>
+        <p class="fine">Esto necesita el <a href="protobject-leonardo-pullup.ino" download>firmware nuevo</a> cargado en el Arduino. Con el anterior, 1.500 µs es un pulso y no apaga el servo: si el taxi se arrastra al conectar, mueve «Quieto» de a 1 hasta que se quede quieto.</p>
+      </section>
       <section class="prueba" id="prueba" hidden aria-labelledby="h-prueba">
         <h2 id="h-prueba">Modo de prueba</h2>
         <p>No hay Arduino: esta página simula la placa, un taxi pesado y el tope. La perilla, el interruptor y el botón simulados cuentan solo si están marcados en «Piezas conectadas», en el computador.</p>
@@ -159,11 +192,11 @@ ol { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 6px; }
       <details>
         <summary>Cómo funciona</summary>
         <ol>
-          <li>Eliges la hora y el tipo de día en esta pantalla y aprietas <b>Arrancar</b>.</li>
-          <li>La voz dice qué carrera es («Fin de semana, a la una de la madrugada»).</li>
-          <li>Este celular busca la velocidad mediana de esa hora en enero de 2026, la convierte en un pulso para el servo con la calibración y lleva el reloj: 5 s de ida, 3 s de pausa y vuelta a la salida.</li>
+          <li>Eliges la hora y el tipo de día en esta pantalla y aprietas <b>Arrancar</b>. El taxi sale al tiro.</li>
+          <li>Este celular busca la velocidad mediana de esa hora en enero de 2026 y la convierte en un pulso para el servo: con las mediciones del computador, si las hay; si no, entre la fuerza base (0 km/h) y la máxima (28 km/h). Lleva el reloj: 5 s de ida, 3 s de pausa y vuelta a la salida.</li>
           <li>Durante la ida suena la velocidad: nota más aguda, tráfico más rápido. Bajo 15 km/h suena la bocina. Lunes a viernes suena suave (sine) y el fin de semana, más áspero (triangle).</li>
           <li>El taxi se detiene donde la aguja marca esa velocidad en la regla. La vuelta es siempre igual y en silencio.</li>
+          <li>Entre carreras el servo queda apagado. Si esta página se oculta, se cierra o se suelta el cable, el taxi se detiene.</li>
         </ol>
       </details>
       <details>
@@ -179,10 +212,9 @@ ol { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 6px; }
 
 <script>
 /* ---------- Ajustes fijos ---------- */
-const PIN_SERVO = 5;                 // Protobject manda al servo 1.500 µs + valor (con valor 0 manda 1.501 µs)
+const PIN_SERVO = 5;                 // el firmware manda al servo 1.500 µs + valor; con valor 0 lo apaga (sin pulsos)
 const IDA_MS = 5000, PAUSA_MS = 3000, VUELTA_MAX_MS = 25000;
 const ACTIVO_BAJO = true;            // firmware con INPUT_PULLUP: interruptor cerrado se lee como 0
-const IDA_MIN = 60, IDA_MAX = 200;   // sin calibrar: 1.560 µs a 10 km/h y 1.700 µs a 28 km/h (taxi liviano)
 const V_VUELTA_BASE = 16;            // cm/s de la vuelta mientras no se mida
 
 const PRUEBA = new URLSearchParams(location.search).has('prueba');
@@ -190,26 +222,32 @@ const $ = id => document.getElementById(id);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const fmt = (n, d = 0) => n.toLocaleString('es-CL', { minimumFractionDigits: d, maximumFractionDigits: d });
 const hh = h => `${String(h).padStart(2, '0')}:00`;
-const microsegundos = v => 1500 + (v === 0 ? 1 : v);
+const microsegundos = v => 1500 + v;
 const activo = v => ACTIVO_BAJO ? !v : !!v;
 
 /* ---------- Ajustes de la maqueta ----------
    Se guardan en este celular, que viaja con el taxi que calibran, y se cambian desde el computador.
    Para dejarlos fijos en cualquier celular, pega en AJUSTES_BASE lo que copia «Copiar calibración». */
 const AJUSTES_KEY = 'taxi-maqueta-ajustes';
-const AJUSTES_BASE = { largo: 120, vuelta: -80, parado: 0, vVuelta: null, puntos: [], perilla: false, interruptor: false, boton: false, tope: false };
+// base y maxima: fuerza (pulso − 1.500 µs) de la ida a 0 y a 28 km/h, mientras no haya mediciones.
+// parado: pulso entre carreras; 0 apaga el servo (firmware de esta carpeta), así no puede andar solo.
+const AJUSTES_BASE = { largo: 120, vuelta: -80, parado: 0, base: 40, maxima: 200, vVuelta: null, puntos: [], perilla: false, interruptor: false, boton: false, tope: false };
 const PIEZAS = ['perilla', 'interruptor', 'boton', 'tope'];
+const AJUSTABLES = ['largo', 'vuelta', 'parado', 'base', 'maxima', ...PIEZAS];
 function limpiar(a) {
   const num = (v, d, lo, hi) => v === null || v === undefined || v === '' || !Number.isFinite(+v) ? d : clamp(+v, lo, hi);
   const out = {
     largo: num(a.largo, 120, 20, 400),
     vuelta: Math.round(num(a.vuelta, -80, -500, -10)),
     parado: Math.round(num(a.parado, 0, -60, 60)),
+    base: Math.round(num(a.base, 40, 1, 400)),
+    maxima: Math.round(num(a.maxima, 200, 10, 500)),
     vVuelta: num(a.vVuelta, null, 0.5, 200),
     puntos: (Array.isArray(a.puntos) ? a.puntos : [])
       .filter(p => Array.isArray(p) && p.length === 2 && p.every(Number.isFinite))
       .map(([v, c]) => [clamp(Math.round(v), 1, 600), clamp(c, 0, 400)]),
   };
+  out.maxima = Math.max(out.maxima, out.base + 10);   // la máxima siempre por sobre la base
   PIEZAS.forEach(k => { out[k] = a[k] === true; });
   return out;
 }
@@ -233,7 +271,7 @@ function curva() {
 }
 const calibrado = () => { const t = curva(); return t.length >= 2 && t[t.length - 1][1] > 0; };
 function pulsoIda(kmh) {
-  if (!calibrado()) return Math.round(IDA_MIN + (clamp(kmh, 10, 28) - 10) / 18 * (IDA_MAX - IDA_MIN));
+  if (!calibrado()) return Math.round(aj.base + clamp(kmh, 0, 28) / 28 * (aj.maxima - aj.base));
   const t = curva(), meta = metaCm(kmh);
   if (meta <= t[0][1]) return t[0][0];
   for (let i = 1; i < t.length; i++) {
@@ -278,7 +316,7 @@ function placaDePrueba() {
     },
     onData(f) { alRecibir = f; },
     onReceiveError() {},
-    contServoWrite({ value }) { pulso = value; },
+    servoWrite({ value }) { pulso = value; },
   };
 }
 const hayPT = typeof Protobject !== 'undefined';   // p.js lo declara con const: no está en window
@@ -287,14 +325,13 @@ const placa = PRUEBA ? placaDePrueba() : (hayPT && Protobject.Arduino) || null;
 let lectura = null, recibido = -1e9, conectando = false, pcVisto = -1e9, pcAntes = false;
 // La carrera que se elige en esta pantalla (o con la perilla y el interruptor, si están cableados).
 const sel = { hora: 8, dia: 0 };
-let anuncio = null;   // mientras la voz dice la carrera, antes de salir
 // cm: posición estimada del taxi desde la salida (null si no se sabe). La corrige el tope o «Ya está en la salida».
 const m = { estado: 'espera', desde: 0, pulso: aj.parado, kmh: 0, carrera: null, hora: -1, dia: -1, botonAntes: false,
             calibrando: false, prueba: 0, cm: 0, cmIda: 0, cmVuelta: 0, cmExacto: false, antes: 0 };
 const placaViva = () => lectura !== null && performance.now() - recibido < 1500;
 const pcVivo = () => performance.now() - pcVisto < 4000;
 const enSalida = () => lectura !== null && (aj.tope ? activo(lectura.d9) : m.cm !== null && m.cm <= 0.5);
-const ocupado = () => !!anuncio || m.estado !== 'espera';
+const ocupado = () => m.estado !== 'espera';
 
 function enviar(msg) {
   if (!hayPT) return;
@@ -315,39 +352,6 @@ function guardarAjustes() {
 }
 function aviso(texto, tono = '') { $('msg').textContent = texto; $('msg').dataset.tone = tono; }
 function rechazo(motivo) { enviar({ tipo: 'rechazo', motivo }); aviso(motivo, 'bad'); }
-
-/* ---------- La voz: dice qué carrera es antes de salir ---------- */
-const NUM = ['doce', 'una', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez', 'once'];
-function horaHablada(h) {
-  if (h === 0) return 'medianoche';
-  if (h === 12) return 'mediodía';
-  const n = h % 12, parte = h < 6 ? 'de la madrugada' : h < 12 ? 'de la mañana' : h < 20 ? 'de la tarde' : 'de la noche';
-  return `${n === 1 ? 'la' : 'las'} ${NUM[n]} ${parte}`;
-}
-const frase = (hora, dia) => `${DIAS[dia]}, a ${horaHablada(hora)}.`;
-const voz = { es: null };
-function buscarVoz() {
-  const vs = speechSynthesis.getVoices();
-  voz.es = vs.find(v => /^es[-_]CL/i.test(v.lang)) || vs.find(v => /^es[-_](US|MX|419)/i.test(v.lang)) || vs.find(v => /^es/i.test(v.lang)) || null;
-}
-const hayVoz = 'speechSynthesis' in window;
-if (hayVoz) { buscarVoz(); speechSynthesis.addEventListener?.('voiceschanged', buscarVoz); }
-// Llama a «listo» cuando la voz termina; si no hay voz o no avisa, después de un tope de tiempo.
-function hablar(texto, listo) {
-  let hecho = false;
-  const fin = () => { if (hecho) return; hecho = true; clearTimeout(tope); setTimeout(listo, 250); };
-  const tope = setTimeout(fin, hayVoz ? clamp(texto.length * 90, 1500, 5000) : 700);
-  if (!hayVoz) return;
-  try {
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(texto);
-    u.lang = voz.es?.lang || 'es-CL';
-    if (voz.es) u.voice = voz.es;
-    u.rate = 1; u.volume = 1;
-    u.onend = fin; u.onerror = fin;
-    speechSynthesis.speak(u);
-  } catch (err) { /* sin voz: sale cuando se cumple el tope */ }
-}
 
 /* ---------- El sonido: sale de este celular, que viaja con el taxi ----------
    Solo durante la ida. Tono = velocidad (escala pentatónica de 10 a 28 km/h), a ritmo fijo: el ritmo no codifica datos.
@@ -396,9 +400,10 @@ function sonar() {
 document.addEventListener('visibilitychange', () => { if (son.ctx) document.hidden ? son.ctx.suspend() : son.ctx.resume(); });
 
 /* ---------- El ciclo: ida, pausa, vuelta ---------- */
+// servoWrite y no contServoWrite: contServoWrite cambia el 0 por 1 (1.501 µs), y entonces el servo nunca se apaga.
 function servo(valor) {
   m.pulso = valor;
-  if (placa) placa.contServoWrite({ pin: PIN_SERVO, value: valor });
+  if (placa) placa.servoWrite({ pin: PIN_SERVO, value: valor });
 }
 function cambiar(estado, fase, extra = {}) {
   m.estado = estado; m.desde = performance.now();
@@ -467,20 +472,13 @@ function llegar(como) {
   m.calibrando = false; m.cmExacto = false;
   enviarEstado();
 }
-// Arrancar en la pantalla (o el botón cableado): primero la voz dice la carrera, después sale el taxi.
+// Arrancar en la pantalla (o el botón cableado): el taxi sale al tiro con la carrera elegida.
 function salir() {
   if (ocupado()) return;
   if (!placaViva()) return aviso('Falta conectar el Arduino: «Conexión y ajustes».', 'bad');
   if (!enSalida()) return aviso(aj.tope ? 'El taxi no está en la salida: el tope no está apretado.' : 'El taxi no está en la salida. Usa «Volver a la salida» o, si ya está ahí, «Ya está en la salida».', 'bad');
   audio();
-  const carrera = { hora: sel.hora, dia: sel.dia, kmh: VELOCIDAD[sel.dia][sel.hora] };
-  anuncio = carrera;
-  aviso('');
-  hablar(frase(carrera.hora, carrera.dia), () => {
-    if (anuncio !== carrera) return;   // alguien apretó Detener mientras hablaba
-    anuncio = null;
-    arrancar(carrera);
-  });
+  arrancar({ hora: sel.hora, dia: sel.dia, kmh: VELOCIDAD[sel.dia][sel.hora] });
 }
 function arrancar({ hora, dia, kmh }) {
   if (!placaViva()) return rechazo('El Arduino no está conectado al celular.');
@@ -494,7 +492,6 @@ function arrancar({ hora, dia, kmh }) {
   aviso('');
 }
 function detener() {
-  if (anuncio) { anuncio = null; if (hayVoz) speechSynthesis.cancel(); }
   servo(aj.parado);
   if (m.estado !== 'espera') cambiar('espera', 'detenido');
   m.calibrando = false; m.cmExacto = false;
@@ -538,7 +535,7 @@ function descartar() {
 function ajustar(c) {
   if (!c || typeof c !== 'object') return;
   const antes = aj, cambios = {};
-  ['largo', 'vuelta', 'parado', ...PIEZAS].forEach(k => { if (k in c) cambios[k] = c[k]; });
+  AJUSTABLES.forEach(k => { if (k in c) cambios[k] = c[k]; });
   aj = limpiar({ ...aj, ...cambios });
   if (aj.vuelta !== antes.vuelta) aj.vVuelta = null;   // otra vuelta, otra velocidad: hay que volver a medirla
   if (aj.perilla !== antes.perilla) m.hora = -1;
@@ -556,7 +553,7 @@ function elegir(cambios) {
   enviar({ tipo: 'entrada', hora: sel.hora, dia: sel.dia });
 }
 function pintarSel() {
-  const c = anuncio || (m.estado !== 'espera' && m.carrera && !m.calibrando ? m.carrera : sel);
+  const c = m.estado !== 'espera' && m.carrera && !m.calibrando ? m.carrera : sel;
   $('clock').textContent = hh(c.hora);
   $('day-name').textContent = DIAS[c.dia];
   $('day-name').dataset.dia = c.dia;
@@ -570,6 +567,24 @@ document.querySelectorAll('.controls [data-dia]').forEach(b => b.addEventListene
 $('go').addEventListener('click', () => { if (ocupado()) detener(); else salir(); });
 $('volver').addEventListener('click', volver);
 $('aqui').addEventListener('click', yaLlego);
+
+/* ---------- Fuerza del servo y quieto: se cambian aquí mismo (o desde el computador) ---------- */
+const LIMITES = { base: () => [1, 400], maxima: () => [aj.base + 10, 500], parado: () => [-60, 60] };
+document.querySelectorAll('[data-ajuste]').forEach(b => b.addEventListener('click', () => {
+  const k = b.dataset.ajuste;
+  ajustar({ [k]: aj[k] + +b.dataset.d });
+}));
+$('f-borrar').addEventListener('click', () => {
+  if (!confirm('¿Borrar las mediciones hechas desde el computador? La ida volverá a usar la fuerza base y la máxima.')) return;
+  aj.puntos = []; guardarAjustes();
+});
+
+/* ---------- Que el taxi no siga solo ----------
+   Si la página se oculta (otra app, pantalla apagada), Chrome frena sus relojes y la carrera no terminaría a tiempo:
+   el taxi se detiene. Al cerrarla o recargarla se apaga el servo; si ni eso alcanza a salir, el firmware lo apaga
+   solo tras 1 s sin mensajes. */
+document.addEventListener('visibilitychange', () => { if (document.hidden && ['ida', 'pausa', 'vuelta', 'prueba'].includes(m.estado)) detener(); });
+window.addEventListener('pagehide', () => { if (placaViva()) servo(aj.parado); });
 
 /* ---------- Mensajes del computador (opcional: unir, calibrar y ver las carreras) ---------- */
 if (hayPT) {
@@ -624,7 +639,7 @@ $('connect').addEventListener('click', async () => {
 if (placa) {
   placa.onData(d => { lectura = d; recibido = performance.now(); });
   placa.onReceiveError(() => {
-    lectura = null; anuncio = null; m.estado = 'espera'; m.pulso = aj.parado; m.calibrando = false;
+    lectura = null; m.estado = 'espera'; m.pulso = aj.parado; m.calibrando = false;
     aviso('Se desconectó el Arduino. Revisa el cable OTG y toca «Conectar Arduino» de nuevo.', 'bad');
   });
 }
@@ -649,7 +664,6 @@ function pintar() {
   let fase = m.estado, texto;
   const seg = `${fmt(Math.min((performance.now() - m.desde) / 1000, IDA_MS / 1000), 1)} s de ${IDA_MS / 1000}`;
   if (!viva) { fase = 'espera'; texto = 'Falta conectar el Arduino.'; }
-  else if (anuncio) { fase = 'anuncio'; texto = 'Escucha qué carrera es…'; }
   else if (m.calibrando) texto = m.estado === 'medir' ? 'Calibrando: anota en el computador dónde quedó la aguja.' : 'Calibrando desde el computador.';
   else texto = {
     espera: enSalida() ? 'Listo en la salida. Elige la hora y el día, y arranca.' : 'El taxi no está en la salida.',
@@ -665,23 +679,38 @@ function pintar() {
   const modo = ocup ? 'detener' : 'arrancar';
   if ($('go').dataset.modo !== modo) { $('go').dataset.modo = modo; $('go').textContent = ocup ? 'Detener' : 'Arrancar'; }
   $('go').disabled = !viva;
-  const fuera = viva && !anuncio && m.estado === 'espera' && !enSalida();
+  const fuera = viva && m.estado === 'espera' && !enSalida();
   $('fix').hidden = !(fuera || (viva && !aj.tope && m.estado === 'vuelta' && !m.calibrando));
   $('volver').hidden = !fuera;
   $('aqui').hidden = aj.tope;
   pintarSel();
 
-  $('pulse').textContent = `${fmt(microsegundos(m.pulso))} µs`;
+  $('pulse').textContent = m.pulso === 0 ? 'Apagado' : `${fmt(microsegundos(m.pulso))} µs`;
   $('pos').textContent = !viva ? '—' : m.cm === null ? '¿?' : `≈ ${fmt(m.cm)} cm`;
   $('tope').textContent = !viva ? '—' : !aj.tope ? 'No usado' : activo(lectura.d9) ? 'Apretado' : 'Libre';
   if (PRUEBA) { $('p-x').textContent = fmt(placa.entradas.x, 0); $('p-empuje').textContent = fmt(placa.entradas.empuje, 1); }
+  pintarFuerza();
+}
+const poner = (id, texto) => { if ($(id).textContent !== texto) $(id).textContent = texto; };
+function pintarFuerza() {
+  const cal = calibrado(), kmh = VELOCIDAD[sel.dia][sel.hora];
+  poner('f-base', `${fmt(microsegundos(aj.base))} µs`);
+  poner('f-maxima', `${fmt(microsegundos(aj.maxima))} µs`);
+  poner('f-parado', `${fmt(microsegundos(aj.parado))} µs`);
+  poner('f-uso', `La carrera elegida (${hh(sel.hora)}, ${fmt(kmh, 1)} km/h) sale con ${fmt(microsegundos(pulsoIda(kmh)))} µs${cal ? ', según las mediciones' : ''}.`);
+  $('f-medidas').hidden = !cal;
+  if (cal) poner('f-medidas-txt', `Ahora mandan las ${aj.puntos.length} mediciones hechas desde el computador. La fuerza base y la máxima se usan solo cuando no hay mediciones.`);
+  document.querySelectorAll('[data-ajuste]').forEach(b => {
+    const k = b.dataset.ajuste, v = aj[k] + +b.dataset.d, [lo, hi] = LIMITES[k]();
+    b.disabled = v < lo || v > hi || (cal && k !== 'parado');
+  });
 }
 setInterval(() => { paso(); pintar(); }, 50);
 
 /* ---------- Modo de prueba ---------- */
 if (PRUEBA) {
   $('prueba').hidden = false;
-  $('warn').textContent = 'Modo de prueba: no se usa ningún Arduino ni cable. El sonido y la voz sí suenan.';
+  $('warn').textContent = 'Modo de prueba: no se usa ningún Arduino ni cable. El sonido sí suena.';
   const e = placa.entradas;
   $('p-perilla').addEventListener('input', ev => { const h = +ev.target.value; e.a0 = (h + 0.5) * 1024 / 24; $('p-hora').textContent = hh(h); });
   document.querySelectorAll('#prueba [data-pdia]').forEach(b => b.addEventListener('click', () => {

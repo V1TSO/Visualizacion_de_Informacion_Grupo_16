@@ -7,7 +7,7 @@
 <dt>Integrantes</dt><dd>Vicente Reñasco · David Parra · Mariano De Sarratea</dd>
 <dt>GitHub Pages</dt><dd><a href="https://v1tso.github.io/Visualizacion_de_Informacion_Grupo_16/modelo1/">v1tso.github.io/Visualizacion_de_Informacion_Grupo_16/modelo1/</a> · cada versión en <a href="https://v1tso.github.io/Visualizacion_de_Informacion_Grupo_16/versiones/">/versiones/</a></dd>
 <dt>Repositorio</dt><dd><a href="https://github.com/V1TSO/Visualizacion_de_Informacion_Grupo_16">github.com/V1TSO/Visualizacion_de_Informacion_Grupo_16</a> · tags <code>e2-v1</code> a <code>e2-v4</code></dd>
-<dt>Video demostrativo</dt><dd>[completar: enlace de YouTube] · copia en el repositorio: <a href="https://github.com/V1TSO/Visualizacion_de_Informacion_Grupo_16/blob/feat/v4-taxi-final/docs/evidencia/e2-v4/demo-v4.mp4">docs/evidencia/e2-v4/demo-v4.mp4</a></dd>
+<dt>Video demostrativo</dt><dd><a href="https://youtu.be/0AbTBCM2pwg">youtu.be/0AbTBCM2pwg</a> · copia en el repositorio: <a href="https://github.com/V1TSO/Visualizacion_de_Informacion_Grupo_16/blob/feat/v4-taxi-final/docs/evidencia/e2-v4/demo-v4.mp4">docs/evidencia/e2-v4/demo-v4.mp4</a></dd>
 </dl>
 </div>
 
@@ -144,7 +144,7 @@ No guardamos fotos ni video del taxi físico en esta versión: la evidencia son 
 <div class="fila"><img src="docs/evidencia/e2-v4/03-taximetro-sobre-el-taxi.jpg" alt="V4: el taxímetro sobre el taxi, listo en la salida: 17:00, fin de semana, Arrancar"><img src="docs/evidencia/e2-v4/04-celular-lunes-a-viernes.jpg" alt="V4: a las 17:00 de lunes a viernes, el taxímetro dice que llegó a 12,9 km/h"><img src="docs/evidencia/e2-v4/05-celular-fin-de-semana.jpg" alt="V4: a las 17:00 del fin de semana, el taxímetro dice que llegó a 13,9 km/h"><img src="docs/evidencia/e2-v3/03-computador.jpg" alt="V4: el computador, opcional, anota cada carrera sobre la curva del día (captura en modo de prueba)"></div>
 <div class="fila"><img src="docs/evidencia/e2-v4/06-carrera-fotogramas.jpg" alt="V4: tres fotogramas del video: el taxi avanza por el piso con el celular encima"></div>
 
-Video de 27 s con manipulación y sonido (el mismo de la portada; copia en [`docs/evidencia/e2-v4/demo-v4.mp4`](https://github.com/V1TSO/Visualizacion_de_Informacion_Grupo_16/blob/feat/v4-taxi-final/docs/evidencia/e2-v4/demo-v4.mp4)): a las 17:00, el taxi de lunes a viernes llega a 12,9 km/h y el del fin de semana, a 13,9 km/h. La última captura es del computador en modo de prueba (`?prueba`).
+Video de 27 s con manipulación y sonido ([youtu.be/0AbTBCM2pwg](https://youtu.be/0AbTBCM2pwg), el mismo de la portada; copia en [`docs/evidencia/e2-v4/demo-v4.mp4`](https://github.com/V1TSO/Visualizacion_de_Informacion_Grupo_16/blob/feat/v4-taxi-final/docs/evidencia/e2-v4/demo-v4.mp4)): a las 17:00, el taxi de lunes a viernes llega a 12,9 km/h y el del fin de semana, a 13,9 km/h. La última captura es del computador en modo de prueba (`?prueba`).
 
 ### Qué cambió
 <!-- máx 8 -->

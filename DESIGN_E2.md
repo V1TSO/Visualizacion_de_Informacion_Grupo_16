@@ -17,7 +17,7 @@
 
 ### Propósito de la fisicalización
 <!-- máx 10 -->
-En la pantalla de la E1, la velocidad de los taxis era una cifra en el taxímetro y una curva. Se podía leer, pero no se sentía la diferencia entre 12,5 km/h a las 11:00 de un día de semana y 27,4 km/h a las 05:00 del fin de semana (enero de 2026). En la maqueta, la velocidad mediana de cada hora se vuelve distancia: un taxi de juguete avanza 5 s a esa velocidad (28 km/h llega al final de la avenida). En el mismo tiempo, el taxi del fin de semana a las 05:00 llega más del doble de lejos que el de las 11:00 de un día de semana. Desde la V4, la carrera se elige tocando el taxi mismo: el celular que lleva encima es su taxímetro. Una voz dice qué carrera es, y el sonido sale del taxi mientras avanza: el tono sigue la velocidad y la bocina marca el tráfico lento. En la R2, el otro grupo destacó que lo físico «permite contrastar la velocidad», mientras que en la pantalla «tiene otros distractores».
+En la pantalla de la E1, la velocidad de los taxis era una cifra en el taxímetro y una curva. Se podía leer, pero no se sentía la diferencia entre 12,5 km/h a las 11:00 de un día de semana y 27,4 km/h a las 05:00 del fin de semana (enero de 2026). En la maqueta, la velocidad mediana de cada hora se vuelve distancia: un taxi de juguete avanza 5 s a esa velocidad (28 km/h llega al final de la avenida). En el mismo tiempo, el taxi del fin de semana a las 05:00 llega más del doble de lejos que el de las 11:00 de un día de semana. Desde la V4, la carrera se elige tocando el taxi mismo: el celular que lleva encima es su taxímetro y muestra la hora y el día. El sonido sale del taxi mientras avanza: el tono sigue la velocidad y la bocina marca el tráfico lento. En la R2, el otro grupo destacó que lo físico «permite contrastar la velocidad», mientras que en la pantalla «tiene otros distractores».
 
 ### Procesamiento de los datos
 <!-- máx 8 -->
@@ -143,33 +143,35 @@ En la pantalla de la E1, la velocidad de los taxis era una cifra en el taxímetr
 ### Evidencia
 <div class="fila"><img src="docs/evidencia/e2-v3/01-celular-listo.jpg" alt="V4: el celular sobre el taxi es su taxímetro: hora, tipo de día y Arrancar"><img src="docs/evidencia/e2-v3/02-celular-pausa.jpg" alt="V4: en la pausa, el taxímetro dice a qué velocidad llegó"><img src="docs/evidencia/e2-v3/03-computador.jpg" alt="V4: el computador, opcional, anota cada carrera sobre la curva del día"></div>
 
-Capturas en modo de prueba (`?prueba`): el computador muestra carreras simuladas. [completar: fotos del taxi decorado con el celular encima y video final con manipulación, voz y sonido (el mismo de la portada).]
+Capturas en modo de prueba (`?prueba`): el computador muestra carreras simuladas. [completar: fotos del taxi decorado con el celular encima y video final con manipulación y sonido (el mismo de la portada).]
 
 ### Qué cambió
 <!-- máx 8 -->
 - El celular sobre el taxi es su taxímetro: hora en grande, slider de hora, dos botones de día y Arrancar, que se vuelve Detener. Trae los datos de enero de 2026, sin selector de año.
-- Antes de salir, una voz dice la carrera («Fin de semana, a la una de la madrugada»). El sonido sale del taxi: tono = velocidad, timbre = tipo de día, bocina bajo 15 km/h y ritmo fijo.
+- El taxi sale al apretar Arrancar. El sonido sale del taxi: tono = velocidad, timbre = tipo de día, bocina bajo 15 km/h y ritmo fijo.
 - La página del computador pierde el 3D, el sonido y los controles: une, calibra y anota cada carrera sobre la curva.
+- Ajustes tras probar en la maqueta real: al enchufar el Arduino, el taxi andaba solo. Ahora el servo queda sin pulsos entre carreras y se apaga si el celular deja de hablarle. La fuerza base (el pulso con que el taxi apenas avanza, 0 km/h) y la máxima (28 km/h) se ajustan en el mismo celular.
 - Taxi decorado: [completar: cómo]. [confirmar] Regla impresa y banderitas (`npm run regla`). [completar: ajustes de la prueba en la maqueta real.]
 
 ### Por qué cambió — el rationale
 <!-- máx 12 -->
 - R2 y R3, «no hicimos nada»: fallaba «la interacción física no es descubrible». Los controles van en el taxi mismo: hora, día y botón.
 - R3: con la maqueta real, el 3D ya no cumplía su papel de Mago de Oz (cap. 29) y competía con el objeto (cap. 20).
-- R2, sin contexto: la voz da la hora y el día sin leer la pantalla. Es habla y no un earcon porque es un dato categórico que debe entenderse sin explicación (cap. 27).
-- Restricción técnica: el parlante es mono, así que el timbre y la voz reemplazan al estéreo, y la escala sube una octava porque casi no da graves. El ritmo queda fijo: los viajes no son parte del mensaje, y tono y ritmo juntos competían (cap. 20).
+- R2, sin contexto: la hora y el día van en grande en el taxímetro, sobre el mismo taxi, y el timbre distingue el tipo de día de oído.
+- Restricción técnica: el parlante es mono, así que el timbre reemplaza al estéreo, y la escala sube una octava porque casi no da graves. El ritmo queda fijo: los viajes no son parte del mensaje, y tono y ritmo juntos competían (cap. 20).
 - R2, «falta algo que dé a entender que se trata de un taxi»: la forma del objeto tiene que nombrar el dato.
+- Prueba en la maqueta real: un servo de rotación continua solo queda quieto en su pulso neutro exacto, y Protobject mandaba 1.501 µs para «quieto». Sin pulsos no gira. Con el celular encima, los pulsos bajos no movían el taxi: la fuerza base fija desde dónde parte la escala, sin depender del computador.
 - [confirmar] Regla: sin escala, la distancia no se lee como velocidad (cap. 16). Las banderitas dejan cada carrera en el objeto. [completar: ajustes de la prueba.]
 
 ### Qué se descartó
 <!-- máx 5 -->
 - Un segundo celular como control remoto: separa el gesto del objeto y suma otra conexión.
 - Eliminar el computador: hace falta para unir (QR) y calibrar.
-- Que la voz diga la velocidad: la lectura es la distancia, y la voz solo da el contexto.
+- La voz que decía la carrera antes de salir (estuvo en `e2-v3`): la hora y el día ya se leen en el taxímetro, sobre el taxi, y la voz atrasaba la salida.
 - Mantener el 3D como capa opcional: la R3 pidió sacarlo, y sigue publicado en `/e2/v1/` y `/e2/v2/`.
 
 ### Balance del recorrido
-- **Mejoró desde la V1:** de simulación (V1) a objeto que se mueve con cable (V2), sin cable y calibrado (V3), y que se maneja tocándolo (V4). El contexto de cada carrera pasó de la pantalla a la voz, el sonido pasó del computador al taxi y el taxi se lee como taxi (V4).
+- **Mejoró desde la V1:** de simulación (V1) a objeto que se mueve con cable (V2), sin cable y calibrado (V3), y que se maneja tocándolo (V4). El contexto de cada carrera pasó de la pantalla del computador al taxímetro sobre el taxi, el sonido pasó del computador al taxi y el taxi se lee como taxi (V4).
 - **No cambió, a propósito:** velocidad → distancia en 5 s fijos, en línea recta desde una misma salida (cap. 16; R1), la vuelta en silencio, la bocina bajo 15 km/h y el auto como forma (la R2 pidió conservarlo).
 
 ## El feedback al otro grupo (lo que dimos en la R2)
@@ -197,10 +199,10 @@ Grupo 2, el mismo que evaluamos en la E1, sobre estadios de fútbol y su capacid
 
 - **Pensador:** no hubo.
 - **Bitácora (tiempo · cita literal · acción física):** no hay.
-- **Qué dijo del sonido:** nadie externo lo comentó. Las únicas observaciones del sonido vienen de la R2, que no siguió la hoja del observador. Pidieron voz para el contexto, y la adoptamos en la V4.
+- **Qué dijo del sonido:** nadie externo lo comentó. Las únicas observaciones del sonido vienen de la R2, que no siguió la hoja del observador. Pidieron voz para el contexto: la V4 la probó y la cambió por el taxímetro sobre el taxi.
 - **Heurísticas que fallaron:** sin sesión, no las marcamos. En la R2 aparecieron dos: «falta contexto» y «la interacción física no es descubrible». Las tomamos como evidencia de pares, no de usuarios.
 - **Atasco, hipótesis equivocada y cambio concreto:** no aplican.
 - **Efecto en el proceso:** ninguno de una evaluación con usuarios. La V4 se apoya en la R2, la R3 y las pruebas del grupo con la maqueta real. Con una ronda habríamos probado tres hipótesis abiertas:
   - si el slider sobre el taxi se descubre sin explicación;
-  - si la voz se entiende con el ruido del servo;
-  - si el timbre distingue el tipo de día sin la voz.
+  - si la hora y el día del taxímetro se leen con el taxi en movimiento;
+  - si el timbre distingue el tipo de día sin mirar el taxímetro.
